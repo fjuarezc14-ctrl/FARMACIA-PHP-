@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Facturación Electrónica SUNAT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --secondary: #0ea5e9;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #cbd5e1;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Formato A4 para impresión y visualización */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            margin: 20px auto;
+            padding: 25mm;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        @media print {
+            body { background: white; }
+            .page { 
+                margin: 0; 
+                padding: 15mm; 
+                box-shadow: none; 
+                width: 100%; 
+                min-height: auto;
+                page-break-after: always;
+            }
+            .no-print { display: none !important; }
+        }
+
+        /* Encabezado del Documento */
+        .header {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header-titles h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
+        }
+
+        .header-titles p {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .header-logo {
+            text-align: right;
+        }
+
+        .header-logo svg {
+            width: 50px;
+            height: 50px;
+            fill: var(--primary);
+        }
+
+        /* Secciones */
+        .section {
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .section-title svg {
+            width: 24px;
+            height: 24px;
+            color: var(--secondary);
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #334155;
+            text-align: justify;
+        }
+
+        ul {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+
+        li {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #334155;
+        }
+
+        li strong {
+            color: var(--text-main);
+        }
+
+        /* Tarjetas de Información */
+        .info-card {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 6px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-card h4 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: var(--primary-dark);
+        }
+
+        .info-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Cajas de pasos */
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .step-box {
+            display: flex;
+            gap: 15px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            page-break-inside: avoid;
+        }
+
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            font-size: 15px;
+            color: var(--text-main);
+            margin-bottom: 5px;
+            margin-top: 6px;
+        }
+
+        .step-content p {
+            margin-bottom: 0;
+            font-size: 13.5px;
+        }
+
+        .alert-box {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-left: 4px solid var(--warning);
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            margin-bottom: 15px;
+            color: #92400e;
+        }
+
+        .alert-box strong {
+            color: #b45309;
+        }
+
+        /* Diagrama simplificado CSS */
+        .diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-light);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin: 25px 0;
+        }
+
+        .diagram-node {
+            text-align: center;
+            flex: 1;
+        }
+
+        .diagram-icon {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .diagram-icon svg {
+            width: 30px;
+            height: 30px;
+            color: var(--primary);
+        }
+
+        .diagram-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .diagram-arrow {
+            flex: 0.5;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        /* Action bar for screen */
+        .action-bar {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background: var(--primary-dark); }
+        
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #0f172a;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="action-bar no-print">
+        <button class="btn" onclick="window.print()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+            </svg>
+            Imprimir / Guardar como PDF
+        </button>
+        <p style="margin-top: 10px; font-size: 12px; color: #64748b; text-align: center;">Recomendación: En la ventana de impresión, cambia "Destino" a "Guardar como PDF" y desmarca "Encabezados y pies de página".</p>
+    </div>
+
+    <!-- PÁGINA 1 -->
+    <div class="page">
+        <div class="header">
+            <div class="header-titles">
+                <h1>Facturación Electrónica SUNAT</h1>
+                <p>Manual Técnico y Guía de Implementación en Producción</p>
+            </div>
+            <div class="header-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                1. Tecnología de Desarrollo
+            </div>
+            <p>La integración con SUNAT ha sido desarrollada utilizando una arquitectura nativa y altamente optimizada, garantizando velocidad y seguridad sin depender de librerías de terceros pesadas. La tecnología empleada incluye:</p>
+            
+            <div class="info-card">
+                <ul>
+                    <li><strong>Lenguaje Core:</strong> PHP (Arquitectura MVC).</li>
+                    <li><strong>Estándar de Intercambio:</strong> XML estructurado bajo el estándar internacional <strong>UBL 2.1</strong> (Universal Business Language), exigido normativamente por SUNAT.</li>
+                    <li><strong>Manipulación de Nodos:</strong> Librería nativa <code>DOMDocument</code> de PHP para la creación y formateo estricto del XML.</li>
+                    <li><strong>Comunicaciones (API REST/SOAP):</strong> Cliente <code>cURL</code> nativo configurado para consumir el WebService de SUNAT, soportando autenticación HTTP Basic y encriptación SSL/TLS.</li>
+                    <li><strong>Seguridad y Firma:</strong> Criptografía nativa de PHP para la lectura y firmado digital mediante certificados <code>.p12</code> / <code>.pfx</code>.</li>
+                    <li><strong>Empaquetado:</strong> Clase <code>ZipArchive</code> nativa para la compresión obligatoria de los envíos a SUNAT.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                2. Funcionalidades del Sistema
+            </div>
+            <p>El motor de facturación electrónica integrado al sistema POS ofrece las siguientes capacidades:</p>
+            <ul>
+                <li><strong>Generación Automática:</strong> Crea el XML UBL 2.1 instantáneamente al cerrar una venta tipo Boleta o Factura en el Punto de Venta (POS).</li>
+                <li><strong>Envío Síncrono Directo:</strong> Se comunica directamente con los servidores de SUNAT sin intermediarios, obteniendo la respuesta (CDR) en tiempo real.</li>
+                <li><strong>Modo Dual (Beta/Producción):</strong> Permite realizar simulaciones sin valor legal en el entorno Beta, y cambiar a Producción con un solo clic.</li>
+                <li><strong>Manejo de Contingencias:</strong> Si SUNAT presenta caídas temporales, el sistema guarda el estado como "Generado Local" para su posterior envío, sin detener las ventas de la botica.</li>
+                <li><strong>Cálculo Tributario Exacto:</strong> Desglosa automáticamente las operaciones gravadas, calcula el IGV (18%) línea por línea y convierte el monto total a texto legal (Ej: "SON: CIEN CON 00/100 SOLES").</li>
+                <li><strong>Representación Impresa (PDF/Ticket):</strong> Generación nativa de comprobantes en formato Ticket Térmico (80mm) y formato A4 profesional (PDF) con códigos QR simulados y layouts normativos.</li>
+                <li><strong>Gestión de CDR (Constancia de Recepción):</strong> Almacena, procesa y permite la descarga del archivo ZIP devuelto por SUNAT como comprobante de aceptación.</li>
+            </ul>
+
+            <div class="diagram">
+                <div class="diagram-node">
+                    <div class="diagram-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    </div>
+                    <div class="diagram-text">Sistema POS<br>(Boleta/Factura)</div>
+                </div>
+                <div class="diagram-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/></svg>
+                    <br><span style="font-size:10px;">XML UBL 2.1<br>+ ZIP Base64</span>
+                </div>
+                <div class="diagram-node">
+                    <div class="diagram-icon" style="border-color: #f59e0b; color: #f59e0b;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    </div>
+                    <div class="diagram-text">Firma con<br>Certificado .p12</div>
+                </div>
+                <div class="diagram-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/></svg>
+                    <br><span style="font-size:10px;">Autenticación<br>Usuario SOL</span>
+                </div>
+                <div class="diagram-node">
+                    <div class="diagram-icon" style="border-color: #10b981; color: #10b981;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    </div>
+                    <div class="diagram-text">Servidores<br>SUNAT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PÁGINA 2 -->
+    <div class="page">
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                3. Requisitos Previos (Gestión del Titular)
+            </div>
+            <p>Para que la Botica pueda emitir comprobantes con validez fiscal real, el representante legal debe gestionar los siguientes requisitos técnicos y administrativos:</p>
+
+            <div class="alert-box">
+                <strong>Importante:</strong> Esta información es sensible. Las claves y el certificado no deben ser compartidos con terceros, solo deben ser configurados directamente en el sistema.
+            </div>
+
+            <div class="step-container">
+                <div class="step-box">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>RUC Activo y Afecto a Impuestos</h4>
+                        <p>La empresa debe contar con un RUC en estado "Activo" y condición "Habido", perteneciendo a un régimen tributario que le permita emitir comprobantes electrónicos gravados con IGV (MYPE Tributario, Régimen General, etc).</p>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Certificado Digital (.p12 o .pfx)</h4>
+                        <p>Es la firma electrónica que da validez legal a los XML. Se debe adquirir en una Entidad de Certificación autorizada por Indecopi (Ej: <em>DigiCert, Llama.pe, Efact</em>). Costo aproximado: S/ 250 a S/ 500 anuales. SUNAT también otorga certificados gratuitos para mypes que cumplen ciertos requisitos. <strong>Al adquirirlo, le entregarán un archivo digital y una contraseña.</strong></p>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Creación de Usuario SOL Secundario</h4>
+                        <p>El sistema necesita permisos para enviar facturas en su nombre. Por seguridad, no se usa la Clave SOL principal. Debe ingresar al portal de SUNAT (Trámites y Consultas) y crear un <strong>Usuario Secundario</strong> otorgándole permisos exclusivos para "Comprobantes de Pago Electrónico".</p>
+                        <p style="margin-top: 5px;"><em>Resultado:</em> Obtendrá un Usuario (Ej: si su RUC es <code>20101010101</code> y el usuario creado es <code>SISTEMA1</code>, el Usuario SOL será <code>20101010101SISTEMA1</code>) y una Clave.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                4. Puesta en Marcha (Guía de Configuración)
+            </div>
+            <p>Una vez recabados los datos del punto anterior, la configuración en el sistema toma menos de 2 minutos siguiendo estos pasos:</p>
+
+            <div class="step-container">
+                <div class="step-box">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Ingresar al Módulo</h4>
+                        <p>En el menú lateral izquierdo del sistema, navegue hasta la sección "Ajustes & Sistema" y haga clic en <strong>"Facturación Electrónica"</strong>.</p>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Definir Entorno y Habilitar Envío</h4>
+                        <p>En la primera tarjeta "Modo de Operación", seleccione la opción <strong>"PRODUCCIÓN — Real"</strong>. Luego, active el interruptor (switch) indicando "Habilitar envío automático a SUNAT".</p>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Ingresar Credenciales SOL</h4>
+                        <p>En la sección "Credenciales SOL", ingrese el <strong>Usuario SOL</strong> (Ej: 20123456789FACTURA) y la <strong>Clave SOL</strong> que generó en el portal de SUNAT.</p>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Cargar el Certificado Digital</h4>
+                        <p>En el bloque "Certificado Digital (.p12 / .pfx)", haga clic en la zona punteada o arrastre el archivo de su certificado digital al recuadro. Inmediatamente debajo, en el campo correspondiente, <strong>ingrese la contraseña</strong> de dicho certificado.</p>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Guardar y Probar</h4>
+                        <p>Deje las URLs de Servicio Avanzado con sus valores por defecto (a menos que use una OSE externa). Haga clic en el botón <strong>"Guardar Configuración"</strong>. <br><br>
+                        <em>Para validar:</em> Diríjase al Punto de Venta (POS) y realice una venta de 1 céntimo emitiendo una "Boleta Electrónica". Si la configuración es correcta, verá que en el Historial de Ventas el estado indicará "Aceptado SUNAT".</p>
+                    </div>
+                </div>
+            </div>
+            <br><br>
+            <p style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 15px;">
+                Generado por el Sistema ERP Farmacéutico
+            </p>
+        </div>
+    </div>
+</body>
+</html>
