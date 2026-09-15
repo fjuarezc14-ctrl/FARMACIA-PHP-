@@ -2,7 +2,9 @@
 session_start();
 
 // Definir BASE_URL globalmente
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+$isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') 
+    || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+$protocol = $isHttps ? "https" : "http";
 $host = $_SERVER['HTTP_HOST'];
 $script = dirname($_SERVER['SCRIPT_NAME']);
 $script = str_replace('\\', '/', $script); // fix para windows

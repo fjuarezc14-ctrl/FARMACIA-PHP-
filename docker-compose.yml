@@ -1,0 +1,77 @@
+services:
+  botica-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sistema-botica-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8085}:80"
+    environment:
+      DB_HOST: botica-db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-botica_db}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-botica_root_2026}
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      botica-db:
+        condition: service_healthy
+    networks:
+      - botica-network
+
+  botica-db:
+    image: mysql:8.0
+    container_name: sistema-botica-db
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-3308}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-botica_root_2026}
+      MYSQL_DATABASE: ${DB_NAME:-botica_db}
+    volumes:
+      - botica_db_data:/var/lib/mysql
+      - ./bk_basededatos.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-botica_root_2026}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - botica-network
+
+  botica-pma:
+    image: phpmyadmin:latest
+    container_name: sistema-botica-pma
+    restart: unless-stopped
+    ports:
+      - "${PMA_PORT:-8086}:80"
+    environment:
+      PMA_HOST: botica-db
+      PMA_PORT: 3306
+    depends_on:
+      botica-db:
+        condition: service_healthy
+    networks:
+      - botica-network
+
+  botica-tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: sistema-botica-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://botica-app:80
+    depends_on:
+      - botica-app
+    networks:
+      - botica-network
+    profiles:
+      - tunnel
+
+volumes:
+  botica_db_data:
+
+networks:
+  botica-network:
+    driver: bridge

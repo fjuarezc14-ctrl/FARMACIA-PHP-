@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+scratch/
+*.pdf
+*.png
+Manual_Tecnico.md
+basededatos.md
+plantrabajo.md
+docker-compose*.yml
+Dockerfile
+.dockerignore
