@@ -2,15 +2,7 @@
 class ReporteController extends Controller {
 
     public function __construct() {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: ' . BASE_URL . 'auth/login');
-            exit;
-        }
-        // Solo el administrador debe poder ver reportes gerenciales
-        if ($_SESSION['rol_id'] != 1) {
-            header('Location: ' . BASE_URL . 'dashboard/index');
-            exit;
-        }
+        $this->requireRole(1, 'venta/pos');
     }
 
     public function index() {

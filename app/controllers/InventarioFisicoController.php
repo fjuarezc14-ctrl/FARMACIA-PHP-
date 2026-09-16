@@ -1,9 +1,11 @@
 <?php
 class InventarioFisicoController extends Controller {
 
+    public function __construct() {
+        $this->requireRole(1, 'venta/pos');
+    }
+
     public function index() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Inventario');
         $db = new Database();
         $conn = $db->getConnection();
@@ -20,9 +22,8 @@ class InventarioFisicoController extends Controller {
     }
 
     public function iniciar() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $modelo = $this->model('Inventario');
             $obs = $_POST['observaciones'] ?? '';
             $id = $modelo->iniciarAuditoria($_SESSION['user_id'], $obs);
@@ -37,8 +38,6 @@ class InventarioFisicoController extends Controller {
     }
 
     public function conteo($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Inventario');
         $detalles = $modelo->getDetallesAuditoria($id);
         
@@ -60,9 +59,8 @@ class InventarioFisicoController extends Controller {
     }
 
     public function finalizar() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_auditoria'])) {
+            $this->validateCsrf();
             $modelo = $this->model('Inventario');
             $id_audit = (int)$_POST['id_auditoria'];
             $conteos = $_POST['conteo'] ?? []; // Array [id_lote => valor]
@@ -79,3 +77,4 @@ class InventarioFisicoController extends Controller {
         header('Location: ' . BASE_URL . 'inventariofisico/index');
     }
 }
+

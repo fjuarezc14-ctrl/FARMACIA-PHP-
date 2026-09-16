@@ -3,9 +3,13 @@
         <h2 class="h3 text-gray-800 mb-0">Mi Perfil</h2>
     </div>
 
-    <?php if (isset($_SESSION['error_perfil'])): ?>
+    <?php if (isset($_SESSION['error']) || isset($_SESSION['error_perfil'])): ?>
         <div class="alert alert-danger alert-dismissible fade show">
-            <?php echo $_SESSION['error_perfil']; unset($_SESSION['error_perfil']); ?>
+            <?php 
+            $err = $_SESSION['error'] ?? $_SESSION['error_perfil'];
+            unset($_SESSION['error'], $_SESSION['error_perfil']);
+            echo $err; 
+            ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     <?php endif; ?>
@@ -25,6 +29,7 @@
                 </div>
                 <div class="card-body">
                     <form action="<?php echo BASE_URL; ?>perfil/update" method="POST">
+                        <?php echo Controller::csrfField(); ?>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Nombres <span class="text-danger">*</span></label>
@@ -60,6 +65,7 @@
                 </div>
                 <div class="card-body">
                     <form action="<?php echo BASE_URL; ?>perfil/updatePassword" method="POST">
+                        <?php echo Controller::csrfField(); ?>
                         <div class="mb-3">
                             <label class="form-label">Contraseña Actual <span class="text-danger">*</span></label>
                             <input type="password" name="current_password" class="form-control" required>

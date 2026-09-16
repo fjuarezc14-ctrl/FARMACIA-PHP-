@@ -14,6 +14,7 @@
     </div>
 
     <form action="<?php echo BASE_URL; ?>compra/procesar_recepcion" method="POST" id="formRecepcion">
+        <?php echo Controller::csrfField(); ?>
         <input type="hidden" name="id_compra" value="<?php echo $data['compra']['id']; ?>">
 
         <div class="card-metric p-4">

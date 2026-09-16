@@ -1,9 +1,11 @@
 <?php
 class CategoriaController extends Controller {
 
+    public function __construct() {
+        $this->requireRole(1, 'venta/pos');
+    }
+
     public function index() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Categoria');
         $categorias = $modelo->getAll();
         
@@ -11,9 +13,8 @@ class CategoriaController extends Controller {
     }
 
     public function save() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $modelo = $this->model('Categoria');
             $data = [
                 'nombre' => $_POST['nombre'],
@@ -31,11 +32,10 @@ class CategoriaController extends Controller {
     }
 
     public function delete($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Categoria');
         $modelo->delete($id);
         
         header('Location: ' . BASE_URL . 'categoria/index');
     }
 }
+

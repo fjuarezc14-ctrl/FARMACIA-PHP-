@@ -2,15 +2,7 @@
 class ConfiguracionController extends Controller {
 
     public function __construct() {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: ' . BASE_URL . 'auth/login');
-            exit;
-        }
-        // Solo el administrador debe poder cambiar configuración general de la botica
-        if ($_SESSION['rol_id'] != 1) {
-            header('Location: ' . BASE_URL . 'dashboard/index');
-            exit;
-        }
+        $this->requireRole(1, 'venta/pos');
     }
 
     public function index() {
@@ -27,6 +19,7 @@ class ConfiguracionController extends Controller {
 
     public function save() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $configModel = $this->model('Configuracion');
             
             $updates = [
@@ -52,13 +45,25 @@ class ConfiguracionController extends Controller {
                 }
             }
             
+            // Parámetros de la Suite Nativa de Accesibilidad Web (Sanitización y Whitelist)
+            $allowedPositions = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
+            $selectedPosition = isset($_POST['a11y_posicion']) && in_array(trim($_POST['a11y_posicion']), $allowedPositions) 
+                ? trim($_POST['a11y_posicion']) 
+                : 'bottom-right';
+
+            $updates['a11y_habilitado'] = isset($_POST['a11y_habilitado']) ? '1' : '0';
+            $updates['a11y_posicion']   = $selectedPosition;
+            $updates['a11y_lector_voz'] = isset($_POST['a11y_lector_voz']) ? '1' : '0';
+            
             if ($configModel->updateMultiples($updates)) {
+                $this->logAccion('Configuración', 'EDITAR', 'Actualización de ajustes generales y suite de accesibilidad');
                 $_SESSION['mensaje'] = "Parámetros actualizados correctamente.";
             } else {
                 $_SESSION['error'] = "Hubo un error al actualizar los datos de la botica en BD.";
             }
         }
         header('Location: ' . BASE_URL . 'configuracion/index');
+        exit;
     }
 
     public function sunat() {
@@ -74,6 +79,7 @@ class ConfiguracionController extends Controller {
             header('Location: ' . BASE_URL . 'configuracion/sunat'); exit;
         }
 
+        $this->validateCsrf();
         $configModel = $this->model('Configuracion');
 
         // Subida de certificado .p12

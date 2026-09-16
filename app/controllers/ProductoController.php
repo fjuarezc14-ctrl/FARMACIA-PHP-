@@ -1,9 +1,11 @@
 <?php
 class ProductoController extends Controller {
 
+    public function __construct() {
+        $this->requireRole(1, 'venta/pos');
+    }
+
     public function index() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Producto');
         $productos = $modelo->getAllAdmin();
         
@@ -11,8 +13,6 @@ class ProductoController extends Controller {
     }
 
     public function create() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         // Cargar combos para el formulario
         $catModel = $this->model('Categoria');
         $labModel = $this->model('Laboratorio');
@@ -28,8 +28,6 @@ class ProductoController extends Controller {
     }
     
     public function edit($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Producto');
         $catModel = $this->model('Categoria');
         $labModel = $this->model('Laboratorio');
@@ -45,9 +43,9 @@ class ProductoController extends Controller {
     }
 
     public function save() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
         
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $modelo = $this->model('Producto');
             
             $condicion_venta = $_POST['condicion_venta'] ?? 'Venta Libre';
@@ -88,8 +86,6 @@ class ProductoController extends Controller {
     }
 
     public function toggle($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Producto');
         $modelo->toggleEstado($id);
         $this->logAccion('Productos', 'ESTADO', "Se cambió el estado (Activo/Inactivo) del producto ID #" . $id);

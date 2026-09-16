@@ -1,9 +1,11 @@
 <?php
 class InventarioController extends Controller {
 
+    public function __construct() {
+        $this->requireRole(1, 'venta/pos');
+    }
+
     public function lotes() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Inventario');
         $lotes = $modelo->getLotesActivos();
         
@@ -11,8 +13,6 @@ class InventarioController extends Controller {
     }
 
     public function kardex() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Inventario');
         $prodModel = $this->model('Producto');
         
@@ -30,9 +30,8 @@ class InventarioController extends Controller {
     }
 
     public function entrada_manual() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $id_producto = (int)$_POST['id_producto'];
             $cantidad = (int)$_POST['cantidad'];
             $lote = trim($_POST['lote']) ?: 'SIN-LOTE';
@@ -62,3 +61,4 @@ class InventarioController extends Controller {
         exit;
     }
 }
+

@@ -1,9 +1,11 @@
 <?php
 class ClienteController extends Controller {
 
+    public function __construct() {
+        $this->requireAuth();
+    }
+
     public function index() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Cliente');
         $clientes = $modelo->getAll();
         
@@ -11,9 +13,8 @@ class ClienteController extends Controller {
     }
 
     public function save() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $modelo = $this->model('Cliente');
             $data = [
                 'tipo_documento' => $_POST['tipo_documento'],
@@ -34,7 +35,7 @@ class ClienteController extends Controller {
     }
 
     public function delete($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
+        $this->requireRole(1, 'cliente/index');
         
         $modelo = $this->model('Cliente');
         $modelo->delete($id);
@@ -42,3 +43,4 @@ class ClienteController extends Controller {
         header('Location: ' . BASE_URL . 'cliente/index');
     }
 }
+

@@ -1,9 +1,11 @@
 <?php
 class VentaController extends Controller {
 
+    public function __construct() {
+        $this->requireAuth();
+    }
+
     public function pos() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $cajaModel = $this->model('Caja');
         $cajaAbierta = $cajaModel->getCajaAbiertaPorUsuario($_SESSION['user_id']);
         if (!$cajaAbierta) {
@@ -29,7 +31,6 @@ class VentaController extends Controller {
     }
     
     public function index() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
         $modelo = $this->model('Venta');
         $configModel = $this->model('Configuracion');
         $this->view('ventas/index', [
@@ -40,8 +41,6 @@ class VentaController extends Controller {
     }
 
     public function ticket($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Venta');
         $ventas = $modelo->getAll();
         
@@ -68,8 +67,6 @@ class VentaController extends Controller {
     }
 
     public function pdf($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Venta');
         $ventas = $modelo->getAll();
         
@@ -95,9 +92,8 @@ class VentaController extends Controller {
     }
 
     public function save() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_cliente'])) {
+            $this->validateCsrf();
             $modelo = $this->model('Venta');
             
             $cajaModel = $this->model('Caja');
@@ -259,7 +255,7 @@ class VentaController extends Controller {
     }
 
     public function anular($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
+        $this->requireRole(1, 'venta/index');
         $modelo = $this->model('Venta');
         
         if($modelo->anularVenta($id, $_SESSION['user_id'])) {

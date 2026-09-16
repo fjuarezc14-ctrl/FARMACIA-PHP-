@@ -40,13 +40,19 @@ body { overflow-x: hidden; }
                 <?php endif; ?>
             </div>
         <?php endif; ?>
-        <?php if(isset($_SESSION['error_pos'])): ?>
+        <?php if(isset($_SESSION['error_pos']) || isset($_SESSION['error'])): ?>
             <div class="alert alert-danger mt-2 mb-2 p-2 px-3" style="background-color: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger);">
-                <i class="bi bi-exclamation-triangle-fill"></i> <?php echo $_SESSION['error_pos']; unset($_SESSION['error_pos']); ?>
+                <i class="bi bi-exclamation-triangle-fill"></i> 
+                <?php 
+                $err = $_SESSION['error_pos'] ?? $_SESSION['error'];
+                unset($_SESSION['error_pos'], $_SESSION['error']);
+                echo htmlspecialchars($err, ENT_QUOTES, 'UTF-8'); 
+                ?>
             </div>
         <?php endif; ?>
 
         <form action="<?php echo BASE_URL; ?>venta/save" method="POST" id="formVenta" style="display:flex; flex-direction:column; height: 100%;">
+            <?php echo Controller::csrfField(); ?>
             <!-- Header Carrito: Seleccion de Cliente -->
             <div class="d-flex gap-3 mb-3">
                 <div class="flex-grow-1">

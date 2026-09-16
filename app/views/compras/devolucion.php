@@ -10,6 +10,7 @@
     </div>
 
     <form action="<?php echo BASE_URL; ?>compra/save_devolucion" method="POST" id="formDevolucion">
+        <?php echo Controller::csrfField(); ?>
         <input type="hidden" name="id_compra" value="<?php echo $data['compra']['id']; ?>">
 
         <div class="row g-4">

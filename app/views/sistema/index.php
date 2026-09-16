@@ -56,6 +56,7 @@
                 </p>
                 
                 <form action="<?php echo BASE_URL; ?>sistema/restaurar" method="POST" enctype="multipart/form-data" id="form-restore" class="mt-3">
+                    <?php echo Controller::csrfField(); ?>
                     <input type="file" name="backup_file" id="backup_file" accept=".sql" class="d-none" required onchange="updateFileName()">
                     
                     <button type="button" class="btn btn-outline-secondary mb-3 w-100" onclick="document.getElementById('backup_file').click();" style="border-radius: 12px; border-style: dashed; padding: 12px;">
@@ -83,6 +84,7 @@
                 </p>
                 
                 <form action="<?php echo BASE_URL; ?>sistema/reset" method="POST" id="form-reset" class="mt-3 text-start">
+                    <?php echo Controller::csrfField(); ?>
                     <div class="mb-3">
                         <label class="form-label" style="font-size: 13px; font-weight: 600;">Alcance del Purgado:</label>
                         <select name="tipo_reset" class="form-control-custom" style="padding: 10px 15px; font-size: 13px;">

@@ -83,6 +83,7 @@
 <div class="modal fade" id="userModal" tabindex="-1">
     <div class="modal-dialog">
         <form action="<?php echo BASE_URL; ?>usuario/save" method="POST" class="modal-content">
+            <?php echo Controller::csrfField(); ?>
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTitle">Nuevo Usuario</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

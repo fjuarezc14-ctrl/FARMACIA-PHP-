@@ -135,6 +135,7 @@ $urlProd    = $data['configs']['sunat_url_produccion']['valor'] ?? 'https://e-fa
 <?php endif; ?>
 
 <form action="<?php echo BASE_URL; ?>configuracion/saveSunat" method="POST" enctype="multipart/form-data">
+<?php echo Controller::csrfField(); ?>
 
 <!-- ░░ BLOQUE 1: MODO ░░ -->
 <div class="s-card">

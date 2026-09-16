@@ -1,24 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    /* Fondo limpio general */
-    --bg-dark: #F4F7F6;
-    /* Fondo de paneles */
+    /* Fondo cálido general CENGFARMA */
+    --bg-dark: #FFF3EC;
+    /* Fondo de paneles, tarjetas y modales */
     --bg-card: #FFFFFF;
-    /* Textos nítidos pero no negros puros para evitar fatiga */
-    --text-primary: #2C3E50;
-    --text-secondary: #7F8C8D;
-    /* Acento Botica: Turquesa Médico */
-    --accent-primary: #00A896;
-    --accent-hover: #028090;
-    --accent-light: rgba(0, 168, 150, 0.1);
-    /* Otros */
-    --success: #02C39A;
-    --success-bg: rgba(2, 195, 154, 0.1);
+    /* Tipografía de alto contraste */
+    --text-primary: #1A2238;
+    --text-secondary: #5A6478;
+    
+    /* Identidad Corporativa CENGFARMA: Verde Botica */
+    --accent-primary: #047B07;
+    --accent-hover: #035E05;
+    --accent-light: rgba(4, 123, 7, 0.12);
+    
+    /* Acento Secundario: Coral Vibrante (Perfumería y Promociones) */
+    --secondary-accent: #FF6F59;
+    --secondary-hover: #E85842;
+    --secondary-light: rgba(255, 111, 89, 0.15);
+    
+    /* Alertas Semánticas de Salud (Preservadas) */
+    --success: #047B07;
+    --success-bg: rgba(4, 123, 7, 0.12);
     --danger: #E63946;
     --danger-bg: rgba(230, 57, 70, 0.1);
     --warning: #F4A261;
-    --border-color: #E2E8F0;
+    --warning-bg: rgba(244, 162, 97, 0.1);
+    
+    /* Estructura y Bordes */
+    --sidebar-bg: #1A2238;
+    --border-color: #E8DFD8;
 }
 
 body {
@@ -45,13 +56,13 @@ body {
 /* Sidebar flotante oscuro premium */
 #sidebar {
     width: 260px;
-    background-color: #1e293b; /* Dark Slate */
-    border-right: none;
+    background-color: var(--sidebar-bg); /* Azul Noche Profundo */
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     padding: 20px 0;
     flex-shrink: 0;
-    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    box-shadow: 4px 0 20px rgba(26, 34, 56, 0.25);
     z-index: 10;
 }
 
@@ -69,7 +80,7 @@ body {
 
 .sidebar-logo i {
     font-size: 28px;
-    background: linear-gradient(135deg, #00A896 0%, #02C39A 100%);
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--secondary-accent) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -84,7 +95,7 @@ body {
 
 /* Scrollbar para el sidebar oscuro */
 .sidebar-nav::-webkit-scrollbar { width: 4px; }
-.sidebar-nav::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
 .nav-item { margin-bottom: 6px; }
 
@@ -104,24 +115,24 @@ body {
 .nav-link i { font-size: 20px; width: 22px; text-align: center; transition: color 0.3s; color: #64748b; }
 
 .nav-link:hover {
-    background-color: #334155;
+    background-color: #242E47;
     color: #f8fafc;
 }
 .nav-link:hover i {
-    color: #00A896;
+    color: var(--accent-primary);
 }
 
 .nav-link.active {
     background-color: var(--accent-primary);
     color: #fff !important;
-    box-shadow: 0 4px 10px rgba(0, 168, 150, 0.3);
+    box-shadow: 0 4px 12px rgba(4, 123, 7, 0.35);
 }
 
 .nav-link.active-pos {
-    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--success) 100%);
+    background: linear-gradient(135deg, var(--accent-primary) 0%, #069A0A 100%);
     color: #fff !important;
     font-weight: 700;
-    box-shadow: 0 4px 15px rgba(2, 195, 154, 0.3);
+    box-shadow: 0 4px 15px rgba(4, 123, 7, 0.4);
     border: none;
 }
 
@@ -259,7 +270,7 @@ body {
 
 .card-metric:hover { 
     transform: translateY(-5px); 
-    box-shadow: 0 10px 25px rgba(0, 168, 150, 0.1); 
+    box-shadow: 0 10px 25px rgba(4, 123, 7, 0.12); 
 }
 
 .metric-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
@@ -279,12 +290,12 @@ body {
 
 /* Login Page Only - Split modern design */
 .login-body {
-    background-color: #f0f4f8; /* Soft blueish background */
+    background-color: var(--bg-dark); /* Crema Cálido */
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background-image: radial-gradient(circle at top right, var(--accent-light), transparent 40%), radial-gradient(circle at bottom left, rgba(2, 195, 154,0.1), transparent 40%);
+    background-image: radial-gradient(circle at top right, var(--accent-light), transparent 45%), radial-gradient(circle at bottom left, var(--secondary-light), transparent 45%);
 }
 
 .login-card {
@@ -293,20 +304,20 @@ body {
     max-width: 460px;
     padding: 50px 40px;
     border-radius: 24px;
-    border: none;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 45px rgba(26, 34, 56, 0.08);
 }
 
-.login-logo { text-align: center; margin-bottom: 35px; font-size: 32px; font-weight: 800; color: var(--text-primary); }
+.login-logo { text-align: center; margin-bottom: 30px; font-size: 30px; font-weight: 800; color: var(--text-primary); }
 .login-logo i { color: var(--accent-primary); font-size: 40px; display: block; margin-bottom: 10px;}
-.login-title { font-size: 22px; margin-bottom: 10px; font-weight: 700; text-align: center; color: var(--text-primary);}
-.login-subtitle { font-size: 15px; color: var(--text-secondary); margin-bottom: 35px; text-align: center;}
+.login-title { font-size: 22px; margin-bottom: 8px; font-weight: 700; text-align: center; color: var(--text-primary);}
+.login-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 30px; text-align: center;}
 
 .form-group { margin-bottom: 22px; }
 .form-label { display: block; font-size: 14px; color: var(--text-primary); margin-bottom: 8px; font-weight: 600; }
 .form-control-custom { 
     width: 100%; padding: 14px 18px; 
-    border-radius: 12px; background-color: #F8FAFC; 
+    border-radius: 12px; background-color: #FBF9F7; 
     border: 1px solid var(--border-color); color: var(--text-primary); 
     font-family: 'Inter'; transition: all 0.3s; font-size: 15px;
 }
@@ -319,7 +330,7 @@ body {
 .btn-primary-custom {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, var(--accent-primary), var(--success));
+    background: linear-gradient(135deg, var(--accent-primary) 0%, #058F08 100%);
     color: white;
     border: none;
     border-radius: 12px;
@@ -328,12 +339,32 @@ body {
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.3s;
     font-family: 'Inter';
-    box-shadow: 0 4px 15px var(--accent-light);
+    box-shadow: 0 4px 15px rgba(4, 123, 7, 0.25);
 }
 
 .btn-primary-custom:hover { 
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 168, 150, 0.3);
+    box-shadow: 0 8px 20px rgba(4, 123, 7, 0.35);
+}
+
+.btn-secondary-custom {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--secondary-accent) 0%, #FA553D 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.3s;
+    font-family: 'Inter';
+    box-shadow: 0 4px 15px var(--secondary-light);
+}
+
+.btn-secondary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 111, 89, 0.35);
 }
 
 .alert-danger { background-color: var(--danger-bg); color: var(--danger); padding: 14px; border-radius: 12px; font-size: 14px; margin-bottom: 25px; border: 1px solid rgba(230, 57, 70, 0.2); font-weight: 500; text-align: center;}
@@ -406,3 +437,91 @@ body {
     display: block;
     opacity: 1;
 }
+
+/* ==========================================================
+   CENGFARMA - Estandarización Global de Tablas
+   ========================================================== */
+.table {
+    --bs-table-bg: transparent;
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.table thead th,
+.table th {
+    background-color: #F8ECE4 !important;
+    color: var(--text-primary) !important;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-color) !important;
+    padding: 12px 16px;
+}
+
+.table tbody td {
+    padding: 13px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+}
+
+.table-hover tbody tr:hover td {
+    background-color: rgba(4, 123, 7, 0.04) !important;
+}
+
+/* Clases específicas para table-custom */
+.table-custom {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.table-custom thead th {
+    background-color: #F8ECE4 !important;
+    color: var(--text-primary) !important;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+.table-custom tbody td {
+    padding: 13px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+.table-custom tbody tr:hover td {
+    background-color: rgba(4, 123, 7, 0.04) !important;
+}
+
+.table-custom tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Acentos útiles */
+.badge-cengfarma {
+    background-color: var(--accent-primary);
+    color: #ffffff;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.badge-coral {
+    background-color: var(--secondary-accent);
+    color: #ffffff;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+

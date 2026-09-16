@@ -68,6 +68,7 @@
                 </div>
                 <div class="card-body">
                     <form action="<?php echo BASE_URL; ?>caja/cierre" method="POST">
+                        <?php echo Controller::csrfField(); ?>
                         
                         <div class="mb-4 text-center">
                             <label class="form-label font-weight-bold text-danger">Ingresar Monto Físico Contado (S/)</label>
@@ -104,6 +105,7 @@
                 <div class="card-body row">
                     <div class="col-md-5 border-end">
                         <form action="<?php echo BASE_URL; ?>caja/movimiento" method="POST">
+                            <?php echo Controller::csrfField(); ?>
                             <h6 class="mb-3 text-secondary">Registrar Nuevo Movimiento</h6>
                             <div class="mb-2">
                                 <label class="form-label" style="font-size:12px;">Tipo de Movimiento</label>

@@ -79,6 +79,7 @@ $logo_url = !empty($c['logo']['valor']) ? $c['logo']['valor'] : BASE_URL . 'img/
     <?php endif; ?>
 
     <form action="<?php echo BASE_URL; ?>configuracion/save" method="POST" enctype="multipart/form-data">
+        <?php echo Controller::csrfField(); ?>
         <div class="row g-4">
             
             <!-- Izquierda: Branding Logo -->
@@ -166,6 +167,60 @@ $logo_url = !empty($c['logo']['valor']) ? $c['logo']['valor'] : BASE_URL . 'img/
                                 <input type="number" step="0.01" name="igv" class="form-control-custom" value="<?php echo htmlspecialchars($c['igv']['valor'] ?? ''); ?>" required>
                             </div>
                             <small style="color:var(--text-secondary); font-size: 11px;"><?php echo htmlspecialchars($c['igv']['descripcion'] ?? ''); ?></small>
+                        </div>
+                    </div>
+
+                    <h5 style="color: #fff; font-size: 16px; margin-top: 35px; margin-bottom: 25px;"><i class="bi bi-universal-access-circle"></i> Suite Nativa de Accesibilidad Web (WCAG 2.1 / ADA)</h5>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <div class="p-3 rounded" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color);">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="a11y_habilitado" name="a11y_habilitado" value="1" <?php echo (isset($c['a11y_habilitado']['valor']) && $c['a11y_habilitado']['valor'] == '1') ? 'checked' : ''; ?>>
+                                    <label class="form-check-label fw-bold" for="a11y_habilitado" style="color: #fff;">
+                                        Activar Widget de Accesibilidad Nativo
+                                    </label>
+                                </div>
+                                <small style="color: var(--text-secondary); font-size: 12px; display:block;">
+                                    Habilita el disparador flotante y las herramientas de inclusión (alto contraste, fuentes para dislexia, escalado tipográfico, guía de lectura, lector de voz) en todo el sistema.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 form-group">
+                            <label class="form-label">Posición del Botón Flotante</label>
+                            <div class="form-control-custom-icon">
+                                <i class="bi bi-pin-map-fill"></i>
+                                <select name="a11y_posicion" class="form-control-custom" style="background-color: var(--bg-surface); color: var(--text-primary); cursor: pointer;">
+                                    <?php 
+                                    $currentPos = $c['a11y_posicion']['valor'] ?? 'bottom-right';
+                                    $positions = [
+                                        'bottom-right' => 'Inferior Derecha (Recomendado)',
+                                        'bottom-left'  => 'Inferior Izquierda',
+                                        'top-right'    => 'Superior Derecha',
+                                        'top-left'     => 'Superior Izquierda'
+                                    ];
+                                    foreach ($positions as $val => $label): ?>
+                                        <option value="<?php echo $val; ?>" <?php echo ($currentPos === $val) ? 'selected' : ''; ?>>
+                                            <?php echo $label; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <small style="color:var(--text-secondary); font-size: 11px;">Define la ubicación en pantalla del disparador de accesibilidad.</small>
+                        </div>
+
+                        <div class="col-md-6 form-group">
+                            <label class="form-label">Lector de Voz Nativo (Text-to-Speech)</label>
+                            <div class="p-2 rounded mt-1" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color);">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="a11y_lector_voz" name="a11y_lector_voz" value="1" <?php echo (isset($c['a11y_lector_voz']['valor']) && $c['a11y_lector_voz']['valor'] == '1') ? 'checked' : ''; ?>>
+                                    <label class="form-check-label" for="a11y_lector_voz" style="color: #fff; font-size: 13px;">
+                                        Permitir síntesis de voz en español
+                                    </label>
+                                </div>
+                            </div>
+                            <small style="color:var(--text-secondary); font-size: 11px;">Utiliza la Web Speech API del navegador sin costo ni dependencias.</small>
                         </div>
                     </div>
                 </div>

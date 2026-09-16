@@ -12,6 +12,7 @@
     </script>
 
     <form action="<?php echo BASE_URL; ?>compra/save" method="POST" id="formCompra">
+        <?php echo Controller::csrfField(); ?>
         <!-- CABECERA -->
         <div class="card-metric mb-4">
             <h5 style="color: #fff; font-size: 16px; margin-bottom: 20px;">Datos del Documento y Proveedor</h5>

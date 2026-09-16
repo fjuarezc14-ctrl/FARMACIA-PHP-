@@ -2,10 +2,7 @@
 class NotificacionController extends Controller {
 
     public function __construct() {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: ' . BASE_URL . 'auth/login');
-            exit;
-        }
+        $this->requireRole(1, 'venta/pos');
     }
 
     public function index() {

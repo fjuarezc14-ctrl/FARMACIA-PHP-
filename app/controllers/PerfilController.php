@@ -2,10 +2,7 @@
 class PerfilController extends Controller {
 
     public function __construct() {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: ' . BASE_URL . 'auth/login');
-            exit;
-        }
+        $this->requireAuth();
     }
 
     public function index() {
@@ -22,6 +19,7 @@ class PerfilController extends Controller {
 
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $userModel = $this->model('User');
             $id = $_SESSION['user_id'];
             
@@ -44,6 +42,7 @@ class PerfilController extends Controller {
 
     public function updatePassword() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $userModel = $this->model('User');
             $id = $_SESSION['user_id'];
             

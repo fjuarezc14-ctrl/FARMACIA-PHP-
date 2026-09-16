@@ -2,11 +2,7 @@
 class UsuarioController extends Controller {
 
     public function __construct() {
-        // Solo administradores pueden gestionar usuarios
-        if (!isset($_SESSION['user_id']) || $_SESSION['rol_id'] != 1) {
-            header('Location: ' . BASE_URL . 'auth/login');
-            exit;
-        }
+        $this->requireRole(1, 'venta/pos');
     }
 
     public function index() {
@@ -24,6 +20,7 @@ class UsuarioController extends Controller {
 
     public function save() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $userModel = $this->model('User');
             
             $data = [

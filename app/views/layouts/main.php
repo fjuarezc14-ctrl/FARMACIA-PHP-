@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?php echo Controller::generateCsrfToken(); ?>">
     <title><?php echo isset($data['title']) ? $data['title'] . ' | Mi Botica' : 'Mi Botica'; ?></title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,6 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css">
+    <!-- Suite Nativa de Accesibilidad Web (WCAG 2.1 AA) -->
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/accessibility.css">
 </head>
 <body>
 
@@ -30,12 +33,15 @@
         $_lotesVencer = $_globalInvModel->getLotesProximosVencer(90);
         $_stockBajo = $_globalInvModel->getProductosBajoStock(20);
         $_totalNotifs = count($_lotesVencer) + count($_stockBajo);
+        $boticaName = $configs['nombre_botica']['valor'] ?? 'CENGFARMA';
         ?>
         <a href="<?php echo BASE_URL; ?>auth/index" class="sidebar-logo text-center d-block">
-            <?php if (!empty($_globalLogo)): ?>
-                <img src="<?php echo htmlspecialchars($_globalLogo); ?>" alt="Logo Botica" style="max-height: 45px; max-width: 100%; object-fit: contain;">
+            <?php if (!empty($_globalLogo)): 
+                $logoSrc = (strpos($_globalLogo, 'http') === 0) ? $_globalLogo : BASE_URL . $_globalLogo;
+            ?>
+                <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="<?php echo htmlspecialchars($boticaName); ?>" style="max-height: 62px; max-width: 95%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
             <?php else: ?>
-                <i class="bi bi-heart-pulse-fill"></i> Mi Botica
+                <i class="bi bi-heart-pulse-fill"></i> <?php echo htmlspecialchars($boticaName); ?>
             <?php endif; ?>
         </a>
         <ul class="sidebar-nav">
@@ -292,5 +298,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
+
+<!-- Suite Nativa de Accesibilidad Web (Widget y Lógica) -->
+<?php require_once '../app/views/partials/accessibility_widget.php'; ?>
+<script src="<?php echo BASE_URL; ?>js/accessibility.js"></script>
 </body>
 </html>

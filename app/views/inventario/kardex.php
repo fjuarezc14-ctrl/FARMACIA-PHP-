@@ -107,6 +107,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="<?php echo BASE_URL; ?>inventario/entrada_manual" method="POST">
+                <?php echo Controller::csrfField(); ?>
                 <div class="modal-body bg-light">
                     <div class="mb-3">
                         <label class="form-label fw-bold text-secondary" style="font-size:13px;">Producto a afectar</label>

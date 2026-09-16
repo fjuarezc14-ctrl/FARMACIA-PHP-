@@ -2,13 +2,11 @@
 class CajaController extends Controller {
 
     public function __construct() {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: ' . BASE_URL . 'auth/login');
-            exit;
-        }
+        $this->requireAuth();
     }
 
     public function index() {
+        $this->requireRole(1, 'venta/pos');
         $cajaModel = $this->model('Caja');
         
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-d');
@@ -37,6 +35,7 @@ class CajaController extends Controller {
         }
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $monto_inicial = (float)($_POST['monto_inicial'] ?? 0);
             
             if ($cajaModel->abrirCaja($_SESSION['user_id'], $monto_inicial)) {
@@ -64,6 +63,7 @@ class CajaController extends Controller {
         }
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $monto_final_real = (float)($_POST['monto_final_real'] ?? 0);
             $observacion = trim($_POST['observacion'] ?? '');
             
@@ -97,6 +97,7 @@ class CajaController extends Controller {
             $_SESSION['error'] = "No tienes caja abierta para registrar movimientos.";
         } else {
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $this->validateCsrf();
                 $tipo = $_POST['tipo'];
                 $monto = (float)$_POST['monto'];
                 $motivo = trim($_POST['motivo']);
@@ -118,6 +119,13 @@ class CajaController extends Controller {
         
         if(!$caja) {
             die("Caja no encontrada.");
+        }
+
+        // Solo el administrador o el usuario dueño de la caja puede ver el ticket de arqueo
+        if ((int)($_SESSION['rol_id'] ?? 0) !== 1 && (int)$caja['id_usuario'] !== (int)$_SESSION['user_id']) {
+            $_SESSION['error'] = "No tiene permiso para visualizar arqueos de otros usuarios.";
+            header('Location: ' . BASE_URL . 'caja/cierre');
+            exit;
         }
         
         require_once '../app/views/cajas/ticket_arqueo.php';

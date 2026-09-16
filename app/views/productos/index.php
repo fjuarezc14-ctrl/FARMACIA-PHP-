@@ -1,4 +1,11 @@
 <div class="page-content">
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger mb-4"><i class="bi bi-exclamation-triangle-fill"></i> <?php echo $_SESSION['error']; unset($_SESSION['error']); ?></div>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['mensaje'])): ?>
+        <div class="alert alert-success mb-4"><i class="bi bi-check-circle-fill"></i> <?php echo $_SESSION['mensaje']; unset($_SESSION['mensaje']); ?></div>
+    <?php endif; ?>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="page-title">Catálogo de Productos</h1>

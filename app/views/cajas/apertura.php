@@ -17,6 +17,7 @@
                     <i class="bi bi-cash-stack text-success" style="font-size: 3rem;"></i>
                     <h5 class="mt-3 font-weight-bold text-success">Registrar Saldo Inicial</h5>
                     <form action="<?php echo BASE_URL; ?>caja/apertura" method="POST" class="mt-4">
+                        <?php echo Controller::csrfField(); ?>
                         <div class="mb-3">
                             <label class="form-label text-start d-block font-weight-bold">Monto Base (S/)</label>
                             <input type="number" step="0.01" name="monto_inicial" class="form-control form-control-lg text-center" style="font-size: 1.5rem; font-weight: bold;" placeholder="0.00" required autofocus>

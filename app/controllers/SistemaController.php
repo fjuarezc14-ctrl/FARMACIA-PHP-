@@ -2,10 +2,7 @@
 class SistemaController extends Controller {
 
     public function __construct() {
-        if (!isset($_SESSION['user_id']) || $_SESSION['rol_id'] != 1) {
-            header('Location: ' . BASE_URL . 'dashboard/index');
-            exit;
-        }
+        $this->requireRole(1, 'venta/pos');
     }
 
     public function index() {
@@ -57,6 +54,7 @@ class SistemaController extends Controller {
 
     public function restaurar() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['backup_file'])) {
+            $this->validateCsrf();
             $file = $_FILES['backup_file'];
             
             if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -100,6 +98,7 @@ class SistemaController extends Controller {
 
     public function reset() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
             $db = new Database();
             $conn = $db->getConnection();
             

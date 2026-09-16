@@ -14,6 +14,7 @@
     </div>
 
     <form action="<?php echo BASE_URL; ?>inventariofisico/finalizar" method="POST" id="formConteo">
+        <?php echo Controller::csrfField(); ?>
         <input type="hidden" name="id_auditoria" value="<?php echo $data['auditoria']['id']; ?>">
 
         <div class="card-metric p-4">

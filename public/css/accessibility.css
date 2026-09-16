@@ -1,0 +1,462 @@
+/**
+ * VT VALETEC - Suite de Accesibilidad Simplificada para Adultos Mayores
+ * Diseñada a medida para la identidad de CENGFARMA
+ * Cumplimiento WCAG 2.1 AA / ADA - 100% Nativo
+ */
+
+/* ==========================================================
+   1. Botón Flotante Disparador (Verde CENGFARMA)
+   ========================================================== */
+.a11y-trigger-btn {
+    position: fixed;
+    z-index: 99990;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #047B07; /* Verde CENGFARMA */
+    color: #ffffff;
+    border: 3px solid #ffffff;
+    box-shadow: 0 6px 22px rgba(4, 123, 7, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+    outline: none;
+    padding: 0;
+}
+
+.a11y-trigger-btn:hover {
+    transform: scale(1.08);
+    background: #035E05;
+    box-shadow: 0 8px 26px rgba(4, 123, 7, 0.6);
+}
+
+.a11y-trigger-btn:focus-visible {
+    outline: 4px solid #FF6F59;
+    outline-offset: 3px;
+}
+
+.a11y-trigger-btn svg {
+    width: 32px;
+    height: 32px;
+    fill: currentColor;
+    pointer-events: none;
+}
+
+/* Posiciones configurables */
+.a11y-pos-bottom-right { bottom: 25px; right: 25px; }
+.a11y-pos-bottom-left  { bottom: 25px; left: 25px; }
+.a11y-pos-top-right    { top: 25px; right: 25px; }
+.a11y-pos-top-left     { top: 25px; left: 25px; }
+
+/* ==========================================================
+   2. Panel Modal Senior-Friendly (Azul Noche CENGFARMA)
+   ========================================================== */
+.a11y-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 34, 56, 0.65);
+    backdrop-filter: blur(5px);
+    z-index: 99995;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.a11y-modal-backdrop.a11y-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.a11y-panel {
+    position: fixed;
+    z-index: 99998;
+    width: 450px;
+    max-width: calc(100vw - 28px);
+    max-height: calc(100vh - 40px);
+    background: #1A2238; /* Azul Noche */
+    color: #ffffff;
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 22px;
+    box-shadow: 0 25px 60px rgba(10, 14, 25, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.94) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+}
+
+.a11y-panel.a11y-active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) translateY(0);
+}
+
+.a11y-pos-bottom-right + .a11y-panel,
+.a11y-panel.a11y-panel-bottom-right { bottom: 92px; right: 25px; }
+.a11y-panel.a11y-panel-bottom-left  { bottom: 92px; left: 25px; }
+.a11y-panel.a11y-panel-top-right    { top: 92px; right: 25px; }
+.a11y-panel.a11y-panel-top-left     { top: 92px; left: 25px; }
+
+/* Cabecera */
+.a11y-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 22px;
+    background: linear-gradient(180deg, #222C46 0%, #1A2238 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.a11y-header-title-box {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.a11y-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+}
+
+.a11y-header-title svg {
+    width: 24px;
+    height: 24px;
+    fill: #00E676; /* Verde Esmeralda */
+}
+
+.a11y-header-subtitle {
+    font-size: 12px;
+    color: #A3B3CC;
+    font-weight: 500;
+}
+
+.a11y-btn-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.a11y-btn-close:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Cuerpo con 4 tarjetas grandes */
+.a11y-body {
+    padding: 20px 22px;
+    overflow-y: auto;
+    max-height: calc(85vh - 130px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Tarjeta Senior Amplia */
+.a11y-senior-card {
+    background: #222C46;
+    border: 1.5px solid rgba(255, 255, 255, 0.09);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    transition: all 0.25s ease;
+}
+
+.a11y-senior-card:hover {
+    border-color: rgba(0, 230, 118, 0.4);
+    background: #263250;
+}
+
+.a11y-card-active-cengfarma {
+    border-color: #00E676 !important;
+    background: rgba(0, 230, 118, 0.08) !important;
+}
+
+.a11y-card-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.a11y-card-icon-bubble {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(0, 230, 118, 0.12);
+    color: #00E676;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.a11y-card-icon-bubble svg {
+    width: 26px;
+    height: 26px;
+    fill: currentColor;
+}
+
+.a11y-card-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.a11y-card-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.a11y-card-desc {
+    font-size: 12px;
+    color: #94A3B8;
+    line-height: 1.35;
+}
+
+/* Control para Aumentar / Disminuir Fuente */
+.a11y-font-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.a11y-step-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #1A2238;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.a11y-step-btn:hover {
+    background: #047B07;
+    border-color: #00E676;
+}
+
+.a11y-step-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #00E676;
+    min-width: 52px;
+    text-align: center;
+}
+
+/* Botón Interruptor Táctil Grande */
+.a11y-toggle-action-btn {
+    background: #1A2238;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.a11y-toggle-action-btn:hover {
+    background: #242E47;
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.a11y-toggle-action-btn.a11y-btn-on {
+    background: #047B07;
+    border-color: #00E676;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(0, 230, 118, 0.3);
+}
+
+/* Botón Restablecer Grande */
+.a11y-reset-all-container {
+    margin-top: 5px;
+}
+
+.a11y-btn-reset-large {
+    width: 100%;
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.a11y-btn-reset-large:hover {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+/* ==========================================================
+   3. Modificadores de Accesibilidad en Vivo (WCAG AAA)
+   ========================================================== */
+
+/* --- 3.1 Escala de Fuentes para Adultos Mayores --- */
+html.a11y-font-scale-1 { font-size: 115% !important; }
+html.a11y-font-scale-2 { font-size: 130% !important; }
+
+/* --- 3.2 Alto Contraste Corporativo CENGFARMA --- */
+html.a11y-contrast-cengfarma body {
+    background-color: #0F1523 !important;
+    color: #FFFFFF !important;
+}
+
+html.a11y-contrast-cengfarma #content-wrapper,
+html.a11y-contrast-cengfarma .page-content {
+    background-color: #0F1523 !important;
+}
+
+html.a11y-contrast-cengfarma .card-metric,
+html.a11y-contrast-cengfarma .card,
+html.a11y-contrast-cengfarma #topbar,
+html.a11y-contrast-cengfarma .pos-cart,
+html.a11y-contrast-cengfarma .pos-totals,
+html.a11y-contrast-cengfarma .pos-catalog,
+html.a11y-contrast-cengfarma .settings-card,
+html.a11y-contrast-cengfarma .modal-content,
+html.a11y-contrast-cengfarma .login-card {
+    background-color: #1A2238 !important;
+    border: 2px solid #00E676 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 20px rgba(0, 230, 118, 0.15) !important;
+}
+
+html.a11y-contrast-cengfarma h1,
+html.a11y-contrast-cengfarma h2,
+html.a11y-contrast-cengfarma h3,
+html.a11y-contrast-cengfarma h4,
+html.a11y-contrast-cengfarma h5,
+html.a11y-contrast-cengfarma .page-title,
+html.a11y-contrast-cengfarma .metric-value,
+html.a11y-contrast-cengfarma .user-name {
+    color: #FFFFFF !important;
+}
+
+html.a11y-contrast-cengfarma .page-subtitle,
+html.a11y-contrast-cengfarma .text-muted,
+html.a11y-contrast-cengfarma .metric-title {
+    color: #B8C7DD !important;
+}
+
+html.a11y-contrast-cengfarma .table,
+html.a11y-contrast-cengfarma .table-custom {
+    background-color: #1A2238 !important;
+    border: 2px solid #00E676 !important;
+}
+
+html.a11y-contrast-cengfarma .table thead th,
+html.a11y-contrast-cengfarma .table-custom thead th {
+    background-color: #0B0E17 !important;
+    color: #00E676 !important;
+    border-bottom: 2px solid #00E676 !important;
+}
+
+html.a11y-contrast-cengfarma .table tbody td,
+html.a11y-contrast-cengfarma .table-custom tbody td {
+    background-color: #1A2238 !important;
+    color: #FFFFFF !important;
+    border-bottom: 1px solid rgba(0, 230, 118, 0.25) !important;
+}
+
+html.a11y-contrast-cengfarma .table-hover tbody tr:hover td {
+    background-color: rgba(0, 230, 118, 0.15) !important;
+}
+
+html.a11y-contrast-cengfarma .form-control-custom,
+html.a11y-contrast-cengfarma input,
+html.a11y-contrast-cengfarma select {
+    background-color: #0B0E17 !important;
+    border: 2px solid #00E676 !important;
+    color: #FFFFFF !important;
+}
+
+html.a11y-contrast-cengfarma a:not(.a11y-panel a):not(.a11y-trigger-btn) {
+    color: #00E676 !important;
+    text-decoration: underline !important;
+    font-weight: 700 !important;
+}
+
+html.a11y-contrast-cengfarma .btn-primary-custom,
+html.a11y-contrast-cengfarma .btn-success {
+    background: #047B07 !important;
+    border: 2px solid #00E676 !important;
+    color: #FFFFFF !important;
+}
+
+/* --- 3.3 Resaltar Botones y Clics (Cursor Grande + Marco Guiado) --- */
+html.a11y-highlight-clickable a:not(.a11y-panel a):not(.a11y-trigger-btn),
+html.a11y-highlight-clickable button:not(.a11y-panel button):not(.a11y-trigger-btn),
+html.a11y-highlight-clickable .btn,
+html.a11y-highlight-clickable input,
+html.a11y-highlight-clickable select,
+html.a11y-highlight-clickable .item-card {
+    outline: 3px solid #047B07 !important;
+    outline-offset: 3px !important;
+}
+
+html.a11y-highlight-clickable,
+html.a11y-highlight-clickable * {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 24 24'%3E%3Cpath fill='%23047B07' stroke='%23ffffff' stroke-width='1.5' d='M4.5 2.5l14 11-6.5.5 4 7.5-2.5 1.5-4-7.5-5 5z'/%3E%3C/svg%3E"), auto !important;
+}
+
+/* --- 3.4 Lector de Voz Activo (Feedback visual) --- */
+html.a11y-speech-active *:hover:not(.a11y-panel):not(.a11y-panel *):not(.a11y-trigger-btn):not(.a11y-trigger-btn *) {
+    outline: 3px solid #FF6F59 !important;
+    outline-offset: 2px !important;
+    background-color: rgba(255, 111, 89, 0.08) !important;
+}
+
+.a11y-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

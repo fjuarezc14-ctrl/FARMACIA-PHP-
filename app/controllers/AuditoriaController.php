@@ -1,15 +1,11 @@
 <?php
 class AuditoriaController extends Controller {
 
-    public function index() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
-        // Solo administradores pueden ver auditoría (Asumiendo rol_id = 1 para admin)
-        if ($_SESSION['rol_id'] != 1) {
-            header('Location: ' . BASE_URL . 'auth/index');
-            exit;
-        }
+    public function __construct() {
+        $this->requireRole(1, 'venta/pos');
+    }
 
+    public function index() {
         $modelo = $this->model('Auditoria');
         
         $data = [
@@ -21,3 +17,4 @@ class AuditoriaController extends Controller {
         $this->view('auditoria/index', $data);
     }
 }
+

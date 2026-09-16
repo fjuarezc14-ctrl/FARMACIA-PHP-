@@ -1,4 +1,11 @@
 <div class="page-content">
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger mb-4"><i class="bi bi-exclamation-triangle-fill"></i> <?php echo $_SESSION['error']; unset($_SESSION['error']); ?></div>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['mensaje'])): ?>
+        <div class="alert alert-success mb-4"><i class="bi bi-check-circle-fill"></i> <?php echo $_SESSION['mensaje']; unset($_SESSION['mensaje']); ?></div>
+    <?php endif; ?>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="page-title">Proveedores</h1>
@@ -16,7 +23,7 @@
                     <tr>
                         <th width="120">RUC</th>
                         <th>Razón Social</th>
-                        <th>Representante</th>
+                        <th>Contacto</th>
                         <th>Teléfono</th>
                         <th>Dirección</th>
                         <th width="120" class="text-end">Acciones</th>
@@ -28,11 +35,11 @@
                     <?php else: ?>
                     <?php foreach($data['proveedores'] as $prov): ?>
                     <tr>
-                        <td style="color:var(--text-secondary); font-family:monospace;"><?php echo htmlspecialchars($prov['ruc'] ?? ''); ?></td>
+                        <td style="color:var(--text-secondary); font-family:monospace;"><?php echo htmlspecialchars($prov['ruc']); ?></td>
                         <td style="font-weight:700; color:var(--text-primary);"><?php echo htmlspecialchars($prov['razon_social']); ?></td>
                         <td><?php echo htmlspecialchars($prov['representante'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars($prov['telefono'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($prov['direccion'] ?? ''); ?></td>
+                        <td style="font-size:12px;"><?php echo htmlspecialchars($prov['direccion'] ?? ''); ?></td>
                         <td class="text-end">
                             <button class="btn btn-sm" style="color: #00CFE8;" onclick="editarRegistro(<?php echo htmlspecialchars(json_encode($prov)); ?>)">
                                 <i class="bi bi-pencil-square"></i>
@@ -55,6 +62,7 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
       <form action="<?php echo BASE_URL; ?>proveedor/save" method="POST">
+          <?php echo Controller::csrfField(); ?>
           <input type="hidden" name="id" id="txtId">
           <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
             <h5 class="modal-title" id="modalTitle" style="color: var(--text-primary); font-size: 16px; font-weight:700;">Nuevo Proveedor</h5>

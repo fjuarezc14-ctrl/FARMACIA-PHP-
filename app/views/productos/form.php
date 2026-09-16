@@ -9,6 +9,7 @@
     <?php $p = $data['producto']; ?>
 
     <form action="<?php echo BASE_URL; ?>producto/save" method="POST">
+        <?php echo Controller::csrfField(); ?>
         <input type="hidden" name="id" value="<?php echo $p ? $p['id'] : ''; ?>">
         
         <div class="row g-4">

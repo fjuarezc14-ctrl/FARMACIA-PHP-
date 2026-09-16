@@ -2,14 +2,11 @@
 class AuthController extends Controller {
 
     public function index() {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: ' . BASE_URL . 'auth/login');
-            exit;
-        }
-        if ($_SESSION['rol_id'] == 2) {
-            header('Location: ' . BASE_URL . 'venta/pos');
-        } else {
+        $this->requireAuth();
+        if ((int)($_SESSION['rol_id'] ?? 0) === 1) {
             header('Location: ' . BASE_URL . 'dashboard/index');
+        } else {
+            header('Location: ' . BASE_URL . 'venta/pos');
         }
         exit;
     }
@@ -22,6 +19,8 @@ class AuthController extends Controller {
 
         $error = '';
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->validateCsrf();
+
             $userModel = $this->model('User');
             $username = $_POST['username'] ?? '';
             $password = $_POST['password'] ?? '';
@@ -29,10 +28,15 @@ class AuthController extends Controller {
             $user = $userModel->login($username, $password);
 
             if ($user) {
+                // Regenerar id de sesión para mitigar Session Fixation
+                session_regenerate_id(true);
+
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['usuario'];
                 $_SESSION['nombre'] = $user['nombres'] . ' ' . $user['apellidos'];
                 $_SESSION['rol_id'] = $user['rol_id'];
+                // Regenerar token CSRF para el nuevo estado autenticado
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                 
                 $userModel->updateLastLogin($user['id']);
                 
@@ -54,6 +58,14 @@ class AuthController extends Controller {
         if (isset($_SESSION['user_id'])) {
             $auditModel = $this->model('Auditoria');
             $auditModel->registrarAcceso($_SESSION['user_id'], 'LOGOUT');
+        }
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
         }
         session_destroy();
         header('Location: ' . BASE_URL . 'auth/login');

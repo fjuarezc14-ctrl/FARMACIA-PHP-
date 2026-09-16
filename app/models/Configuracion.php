@@ -24,24 +24,25 @@ class Configuracion {
         return $results;
     }
     
-    // Obtener solo el valor directo de una clave específica
-    public function get($clave) {
+    // Obtener solo el valor directo de una clave específica (con fallback opcional)
+    public function get($clave, $default = null) {
         $query = "SELECT valor FROM " . $this->table_name . " WHERE clave = :clave LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':clave', $clave);
         $stmt->execute();
         
         if($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            return $row['valor'];
+            return ($row['valor'] !== null && $row['valor'] !== '') ? $row['valor'] : $default;
         }
-        return null;
+        return $default;
     }
 
-    // Actualizar múltiple recibiendo un array de clave=>valor
+    // Actualizar múltiple recibiendo un array de clave=>valor (con inserción segura en caso no exista)
     public function updateMultiples($data) {
         try {
             $this->conn->beginTransaction();
-            $query = "UPDATE " . $this->table_name . " SET valor = :valor WHERE clave = :clave";
+            $query = "INSERT INTO " . $this->table_name . " (clave, valor) VALUES (:clave, :valor) 
+                      ON DUPLICATE KEY UPDATE valor = VALUES(valor)";
             $stmt = $this->conn->prepare($query);
             
             foreach($data as $clave => $valor) {

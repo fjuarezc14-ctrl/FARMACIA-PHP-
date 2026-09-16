@@ -1,4 +1,11 @@
 <div class="page-content">
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger mb-4"><i class="bi bi-exclamation-triangle-fill"></i> <?php echo $_SESSION['error']; unset($_SESSION['error']); ?></div>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['mensaje'])): ?>
+        <div class="alert alert-success mb-4"><i class="bi bi-check-circle-fill"></i> <?php echo $_SESSION['mensaje']; unset($_SESSION['mensaje']); ?></div>
+    <?php endif; ?>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="page-title">Directorio de Clientes</h1>
@@ -14,26 +21,25 @@
             <table class="table table-hover align-middle" style="width: 100%; font-size: 14px;">
                 <thead>
                     <tr>
-                        <th width="120">Documento</th>
-                        <th>Nombres o Razón Social</th>
+                        <th width="50">ID</th>
+                        <th>Documento</th>
+                        <th>Nombres / Razón Social</th>
                         <th>Teléfono</th>
                         <th>Dirección</th>
-                        <th width="120" class="text-end">Acciones</th>
+                        <th width="150" class="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if(empty($data['clientes'])): ?>
-                    <tr><td colspan="5" class="text-center text-muted">No hay datos registrados</td></tr>
+                    <tr><td colspan="6" class="text-center text-muted">No hay clientes registrados</td></tr>
                     <?php else: ?>
                     <?php foreach($data['clientes'] as $cli): ?>
                     <tr>
-                        <td style="color:var(--text-secondary); font-family:monospace;">
-                            <span style="font-size: 11px;"><?php echo htmlspecialchars($cli['tipo_documento']); ?></span><br>
-                            <?php echo htmlspecialchars($cli['num_documento']); ?>
-                        </td>
+                        <td><?php echo $cli['id']; ?></td>
+                        <td><span class="badge bg-secondary"><?php echo $cli['tipo_documento']; ?></span> <?php echo htmlspecialchars($cli['num_documento']); ?></td>
                         <td style="font-weight:700; color:var(--text-primary);"><?php echo htmlspecialchars($cli['nombres']); ?></td>
-                        <td><?php echo htmlspecialchars($cli['telefono'] ?? ''); ?></td>
-                        <td style="font-size:12px;"><?php echo htmlspecialchars($cli['direccion'] ?? ''); ?></td>
+                        <td style="color:var(--text-secondary);"><?php echo htmlspecialchars($cli['telefono'] ?? '-'); ?></td>
+                        <td style="color:var(--text-secondary);"><?php echo htmlspecialchars($cli['direccion'] ?? '-'); ?></td>
                         <td class="text-end">
                             <?php if($cli['id'] == 1): ?>
                             <span class="badge bg-secondary">Genérico</span>
@@ -41,7 +47,7 @@
                             <button class="btn btn-sm" style="color: #00CFE8;" onclick="editarRegistro(<?php echo htmlspecialchars(json_encode($cli)); ?>)">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
-                            <a href="<?php echo BASE_URL; ?>cliente/delete/<?php echo $cli['id']; ?>" class="btn btn-sm" style="color: var(--danger);" onclick="return confirm('¿Seguro que deseas eliminar el registro?')">
+                            <a href="<?php echo BASE_URL; ?>cliente/delete/<?php echo $cli['id']; ?>" class="btn btn-sm" style="color: var(--danger);" onclick="return confirm('¿Seguro que deseas eliminar este cliente?')">
                                 <i class="bi bi-trash"></i>
                             </a>
                             <?php endif; ?>
@@ -60,6 +66,7 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
       <form action="<?php echo BASE_URL; ?>cliente/save" method="POST">
+          <?php echo Controller::csrfField(); ?>
           <input type="hidden" name="id" id="txtId">
           <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
             <h5 class="modal-title" id="modalTitle" style="color: var(--text-primary); font-size: 16px; font-weight:700;">Nuevo Cliente</h5>

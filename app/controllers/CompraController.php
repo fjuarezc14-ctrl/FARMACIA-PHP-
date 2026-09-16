@@ -1,9 +1,11 @@
 <?php
 class CompraController extends Controller {
 
+    public function __construct() {
+        $this->requireRole(1, 'venta/pos');
+    }
+
     public function index() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Compra');
         $compras = $modelo->getAll();
         
@@ -11,8 +13,6 @@ class CompraController extends Controller {
     }
 
     public function create() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $provModel = $this->model('Proveedor');
         $prodModel = $this->model('Producto');
         
@@ -27,8 +27,6 @@ class CompraController extends Controller {
     }
     
     public function detalle($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Compra');
         $detalles = $modelo->getDetallesConLotes($id);
         echo json_encode($detalles);
@@ -36,8 +34,6 @@ class CompraController extends Controller {
     }
 
     public function devolver($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Compra');
         $compra = $modelo->getCompraPorId($id);
         if (!$compra) {
@@ -56,9 +52,9 @@ class CompraController extends Controller {
     }
 
     public function save() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
         
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_proveedor'])) {
+            $this->validateCsrf();
             $modelo = $this->model('Compra');
             
             // 1. Cabecera
@@ -108,9 +104,8 @@ class CompraController extends Controller {
     }
 
     public function save_devolucion() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_compra'])) {
+            $this->validateCsrf();
             $modelo = $this->model('Compra');
             
             $cabecera = [
@@ -153,8 +148,6 @@ class CompraController extends Controller {
     }
 
     public function recepcion($id) {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         $modelo = $this->model('Compra');
         $compra = $modelo->getCompraPorId($id);
         if (!$compra || $compra['estado'] !== 'Pendiente') {
@@ -173,9 +166,8 @@ class CompraController extends Controller {
     }
 
     public function procesar_recepcion() {
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'auth/login'); exit; }
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_compra'])) {
+            $this->validateCsrf();
             $modelo = $this->model('Compra');
             $id_compra = (int)$_POST['id_compra'];
             
