@@ -56,19 +56,6 @@ services:
         condition: service_healthy
     networks:
       - botica-network
-
-  botica-tunnel:
-    image: cloudflare/cloudflared:latest
-    container_name: sistema-botica-tunnel
-    restart: unless-stopped
-    command: tunnel --no-autoupdate --url http://botica-app:80
-    depends_on:
-      - botica-app
-    networks:
-      - botica-network
-    profiles:
-      - tunnel
-
 volumes:
   botica_db_data:
 
