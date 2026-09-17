@@ -124,7 +124,7 @@
             </tr>
             <?php if(isset($data['venta']['descuento']) && $data['venta']['descuento'] > 0): ?>
             <tr>
-                <td>DESCUENTO</td>
+                <td>DESCUENTO<?php if(!empty($data['venta']['motivo_descuento'])): ?><br><span style="font-size: 9px;">(<?php echo htmlspecialchars($data['venta']['motivo_descuento']); ?>)</span><?php endif; ?></td>
                 <td class="right">-S/ <?php echo number_format($data['venta']['descuento'], 2); ?></td>
             </tr>
             <?php endif; ?>

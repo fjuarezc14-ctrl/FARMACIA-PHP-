@@ -144,8 +144,8 @@ class Venta {
             $this->conn->beginTransaction();
 
             // 1. Insertar Cabecera de Venta
-            $query = "INSERT INTO ventas (caja_id, id_cliente, id_usuario, tipo_comprobante, serie_comprobante, num_comprobante, subtotal, descuento, igv, total, monto_efectivo, monto_transferencia, monto_tarjeta, num_operacion_trans, num_operacion_tarj, metodo_pago, pago_recibido, vuelto, puntos_ganados, puntos_usados, medico_cmp) 
-                      VALUES (:caj, :cli, :usr, :tip, :ser, :num, :sub, :desc, :igv, :tot, :m_efe, :m_tra, :m_tar, :op_tra, :op_tar, :met, :pag, :vue, :pgan, :puso, :cmp)";
+            $query = "INSERT INTO ventas (caja_id, id_cliente, id_usuario, tipo_comprobante, serie_comprobante, num_comprobante, subtotal, descuento, tipo_descuento, motivo_descuento, igv, total, monto_efectivo, monto_transferencia, monto_tarjeta, num_operacion_trans, num_operacion_tarj, metodo_pago, pago_recibido, vuelto, puntos_ganados, puntos_usados, medico_cmp) 
+                      VALUES (:caj, :cli, :usr, :tip, :ser, :num, :sub, :desc, :tdesc, :mdesc, :igv, :tot, :m_efe, :m_tra, :m_tar, :op_tra, :op_tar, :met, :pag, :vue, :pgan, :puso, :cmp)";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':caj', $cabecera['caja_id']);
             $stmt->bindParam(':cli', $cabecera['id_cliente']);
@@ -155,6 +155,8 @@ class Venta {
             $stmt->bindParam(':num', $cabecera['num_comprobante']); // EJ: T-0001
             $stmt->bindParam(':sub', $cabecera['subtotal']);
             $stmt->bindParam(':desc', $cabecera['descuento']);
+            $stmt->bindValue(':tdesc', $cabecera['tipo_descuento'] ?? null);
+            $stmt->bindValue(':mdesc', $cabecera['motivo_descuento'] ?? null);
             $stmt->bindParam(':igv', $cabecera['igv']);
             $stmt->bindParam(':tot', $cabecera['total']);
             $stmt->bindValue(':m_efe', $cabecera['monto_efectivo'] ?? 0.00);

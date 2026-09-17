@@ -160,6 +160,27 @@ class VentaController extends Controller {
             }
             $puntos_usados = isset($_POST['puntos_usados']) ? (int)$_POST['puntos_usados'] : 0;
             $descuento = isset($_POST['descuento_venta']) ? (float)$_POST['descuento_venta'] : 0.00;
+
+            // Trazabilidad del descuento: canje de puntos o manual con motivo obligatorio
+            $tipo_descuento = null;
+            $motivo_descuento = null;
+            if ($descuento > 0) {
+                if ($puntos_usados > 0 && $id_cliente != 1) {
+                    $tipo_descuento = 'Puntos';
+                    $motivo_descuento = "Canje de $puntos_usados puntos";
+                } else {
+                    $puntos_usados = 0;
+                    $tipo_descuento = 'Manual';
+                    $motivo_descuento = mb_substr(trim($_POST['motivo_descuento'] ?? ''), 0, 255);
+                    if ($motivo_descuento === '') {
+                        $_SESSION['error_pos'] = "Error: Debe indicar el motivo del descuento manual.";
+                        header('Location: ' . BASE_URL . 'venta/pos');
+                        exit;
+                    }
+                }
+            } else {
+                $puntos_usados = 0;
+            }
             $metodo_pago = trim($_POST['metodo_pago'] ?? 'Efectivo');
             
             // Procesamiento de montos por método
@@ -221,6 +242,8 @@ class VentaController extends Controller {
                 'num_comprobante' => $numero_t,
                 'subtotal' => (float)$_POST['subtotal_venta'],
                 'descuento' => $descuento,
+                'tipo_descuento' => $tipo_descuento,
+                'motivo_descuento' => $motivo_descuento,
                 'igv' => (float)$_POST['igv_venta'],
                 'total' => $total,
                 'monto_efectivo' => $monto_efectivo,
