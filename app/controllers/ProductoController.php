@@ -7,9 +7,40 @@ class ProductoController extends Controller {
 
     public function index() {
         $modelo = $this->model('Producto');
-        $productos = $modelo->getAllAdmin();
-        
-        $this->view('productos/index', ['title' => 'Productos', 'productos' => $productos]);
+        $catModel = $this->model('Categoria');
+        $labModel = $this->model('Laboratorio');
+
+        $filtros = [
+            'search'         => !empty($_GET['search']) ? trim($_GET['search']) : '',
+            'id_categoria'   => !empty($_GET['id_categoria']) ? (int)$_GET['id_categoria'] : '',
+            'id_laboratorio' => !empty($_GET['id_laboratorio']) ? (int)$_GET['id_laboratorio'] : '',
+            'estado'         => isset($_GET['estado']) && $_GET['estado'] !== '' ? (int)$_GET['estado'] : ''
+        ];
+
+        $page = isset($_GET['page']) && is_numeric($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $limit = isset($_GET['limit']) && in_array((int)$_GET['limit'], [15, 25, 50, 100]) ? (int)$_GET['limit'] : 25;
+        $offset = ($page - 1) * $limit;
+
+        $totalRegistros = $modelo->contarProductosAdmin($filtros);
+        $totalPaginas = max(1, ceil($totalRegistros / $limit));
+        if ($page > $totalPaginas) {
+            $page = $totalPaginas;
+            $offset = ($page - 1) * $limit;
+        }
+
+        $productos = $modelo->getPaginadosAdmin($filtros, $limit, $offset);
+
+        $this->view('productos/index', [
+            'title'           => 'Productos',
+            'productos'       => $productos,
+            'categorias'      => $catModel->getAll(),
+            'laboratorios'    => $labModel->getAll(),
+            'filtros'         => $filtros,
+            'pagina_actual'   => $page,
+            'total_paginas'   => $totalPaginas,
+            'total_registros' => $totalRegistros,
+            'limit'           => $limit
+        ]);
     }
 
     public function create() {

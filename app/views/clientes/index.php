@@ -16,6 +16,25 @@
         </button>
     </div>
 
+    <div class="card-metric mb-3 p-3">
+        <form method="GET" action="<?php echo BASE_URL; ?>cliente/index" class="row g-2 align-items-center">
+            <div class="col-md-9">
+                <div class="search-box w-100">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="search" value="<?php echo htmlspecialchars($data['search'] ?? ''); ?>" placeholder="Buscar cliente por DNI, RUC, Nombres o Teléfono...">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-success fw-bold flex-grow-1" style="height: 38px;">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                <a href="<?php echo BASE_URL; ?>cliente/index" class="btn btn-sm btn-outline-secondary" style="height: 38px; display: flex; align-items: center;" title="Limpiar Búsqueda">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
     <div class="card-metric">
         <div class="table-responsive">
             <table class="table table-hover align-middle" style="width: 100%; font-size: 14px;">
@@ -31,7 +50,7 @@
                 </thead>
                 <tbody>
                     <?php if(empty($data['clientes'])): ?>
-                    <tr><td colspan="6" class="text-center text-muted">No hay clientes registrados</td></tr>
+                    <tr><td colspan="6" class="text-center text-muted py-4">No se encontraron clientes</td></tr>
                     <?php else: ?>
                     <?php foreach($data['clientes'] as $cli): ?>
                     <tr>
@@ -62,6 +81,53 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- PAGINACIÓN SERVER-SIDE -->
+        <?php if(($data['total_paginas'] ?? 1) > 1 || ($data['total_registros'] ?? 0) > 0): ?>
+        <div class="d-flex justify-content-between align-items-center p-3 border-top border-secondary border-opacity-25 flex-wrap gap-2">
+            <div class="text-muted" style="font-size: 13px;">
+                Mostrando página <strong><?php echo $data['pagina_actual'] ?? 1; ?></strong> de <strong><?php echo $data['total_paginas'] ?? 1; ?></strong> (Total: <strong><?php echo $data['total_registros'] ?? count($data['clientes']); ?></strong> clientes)
+            </div>
+            <?php if(($data['total_paginas'] ?? 1) > 1): ?>
+            <nav aria-label="Paginación de clientes">
+                <ul class="pagination pagination-sm mb-0">
+                    <?php
+                    $queryParams = $_GET;
+                    if(($data['pagina_actual'] ?? 1) > 1):
+                        $queryParams['page'] = $data['pagina_actual'] - 1;
+                        $prevUrl = BASE_URL . 'cliente/index?' . http_build_query($queryParams);
+                    ?>
+                        <li class="page-item"><a class="page-link" href="<?php echo $prevUrl; ?>">&laquo; Anterior</a></li>
+                    <?php else: ?>
+                        <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
+                    <?php endif; ?>
+
+                    <?php
+                    $inicio = max(1, ($data['pagina_actual'] ?? 1) - 2);
+                    $fin = min($data['total_paginas'], ($data['pagina_actual'] ?? 1) + 2);
+                    for($i = $inicio; $i <= $fin; $i++):
+                        $queryParams['page'] = $i;
+                        $pageUrl = BASE_URL . 'cliente/index?' . http_build_query($queryParams);
+                    ?>
+                        <li class="page-item <?php echo $i == ($data['pagina_actual'] ?? 1) ? 'active' : ''; ?>">
+                            <a class="page-link" href="<?php echo $pageUrl; ?>"><?php echo $i; ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <?php
+                    if(($data['pagina_actual'] ?? 1) < ($data['total_paginas'] ?? 1)):
+                        $queryParams['page'] = $data['pagina_actual'] + 1;
+                        $nextUrl = BASE_URL . 'cliente/index?' . http_build_query($queryParams);
+                    ?>
+                        <li class="page-item"><a class="page-link" href="<?php echo $nextUrl; ?>">Siguiente &raquo;</a></li>
+                    <?php else: ?>
+                        <li class="page-item disabled"><span class="page-link">Siguiente &raquo;</span></li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

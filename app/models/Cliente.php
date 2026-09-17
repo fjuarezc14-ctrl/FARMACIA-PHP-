@@ -12,6 +12,43 @@ class Cliente {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Obtiene clientes paginados con filtro de búsqueda por DNI, Nombre o Teléfono
+     */
+    public function getPaginados($search = '', $limit = 25, $offset = 0) {
+        $limitInt = max(1, (int)$limit);
+        $offsetInt = max(0, (int)$offset);
+
+        if (empty($search)) {
+            $stmt = $this->conn->prepare("SELECT * FROM clientes WHERE estado = 1 ORDER BY id = 1 DESC, nombres ASC LIMIT $limitInt OFFSET $offsetInt");
+            $stmt->execute();
+        } else {
+            $stmt = $this->conn->prepare("SELECT * FROM clientes WHERE estado = 1 AND (num_documento LIKE :s OR nombres LIKE :s OR telefono LIKE :s) ORDER BY nombres ASC LIMIT $limitInt OFFSET $offsetInt");
+            $term = "%$search%";
+            $stmt->bindValue(':s', $term);
+            $stmt->execute();
+        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Cuenta el total de clientes según el término de búsqueda
+     */
+    public function contarClientes($search = '') {
+        if (empty($search)) {
+            $stmt = $this->conn->query("SELECT COUNT(*) as total FROM clientes WHERE estado = 1");
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ? (int)$row['total'] : 0;
+        } else {
+            $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM clientes WHERE estado = 1 AND (num_documento LIKE :s OR nombres LIKE :s OR telefono LIKE :s)");
+            $term = "%$search%";
+            $stmt->bindValue(':s', $term);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ? (int)$row['total'] : 0;
+        }
+    }
     
     public function getById($id) {
         $stmt = $this->conn->prepare("SELECT * FROM clientes WHERE id = :id AND estado = 1");
@@ -27,7 +64,10 @@ class Cliente {
         $stmt->bindParam(':nom', $data['nombres']);
         $stmt->bindParam(':tel', $data['telefono']);
         $stmt->bindParam(':dir', $data['direccion']);
-        return $stmt->execute();
+        if ($stmt->execute()) {
+            return (int)$this->conn->lastInsertId();
+        }
+        return false;
     }
 
     public function update($data) {

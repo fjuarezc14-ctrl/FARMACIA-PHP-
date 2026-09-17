@@ -28,7 +28,89 @@ class Producto {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
+    /**
+     * Obtiene productos con filtros de búsqueda y paginación para el panel de administración
+     */
+    public function getPaginadosAdmin($filtros = [], $limit = 25, $offset = 0) {
+        $where = ["1=1"];
+        $params = [];
+
+        if (!empty($filtros['search'])) {
+            $where[] = "(p.codigo_barras LIKE :s OR p.nombre_comercial LIKE :s OR p.nombre_generico LIKE :s)";
+            $params[':s'] = "%" . $filtros['search'] . "%";
+        }
+        if (!empty($filtros['id_categoria'])) {
+            $where[] = "p.id_categoria = :cat";
+            $params[':cat'] = (int)$filtros['id_categoria'];
+        }
+        if (!empty($filtros['id_laboratorio'])) {
+            $where[] = "p.id_laboratorio = :lab";
+            $params[':lab'] = (int)$filtros['id_laboratorio'];
+        }
+        if (isset($filtros['estado']) && $filtros['estado'] !== '') {
+            $where[] = "p.estado = :est";
+            $params[':est'] = (int)$filtros['estado'];
+        }
+
+        $whereClause = implode(" AND ", $where);
+        $limitInt = max(1, (int)$limit);
+        $offsetInt = max(0, (int)$offset);
+
+        $query = "SELECT p.*, c.nombre as categoria, l.nombre as laboratorio 
+                  FROM productos p 
+                  LEFT JOIN categorias c ON p.id_categoria = c.id 
+                  LEFT JOIN laboratorios l ON p.id_laboratorio = l.id 
+                  WHERE $whereClause 
+                  ORDER BY p.nombre_comercial ASC 
+                  LIMIT $limitInt OFFSET $offsetInt";
+
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Cuenta productos según los filtros aplicados para la paginación
+     */
+    public function contarProductosAdmin($filtros = []) {
+        $where = ["1=1"];
+        $params = [];
+
+        if (!empty($filtros['search'])) {
+            $where[] = "(p.codigo_barras LIKE :s OR p.nombre_comercial LIKE :s OR p.nombre_generico LIKE :s)";
+            $params[':s'] = "%" . $filtros['search'] . "%";
+        }
+        if (!empty($filtros['id_categoria'])) {
+            $where[] = "p.id_categoria = :cat";
+            $params[':cat'] = (int)$filtros['id_categoria'];
+        }
+        if (!empty($filtros['id_laboratorio'])) {
+            $where[] = "p.id_laboratorio = :lab";
+            $params[':lab'] = (int)$filtros['id_laboratorio'];
+        }
+        if (isset($filtros['estado']) && $filtros['estado'] !== '') {
+            $where[] = "p.estado = :est";
+            $params[':est'] = (int)$filtros['estado'];
+        }
+
+        $whereClause = implode(" AND ", $where);
+        $query = "SELECT COUNT(*) as total 
+                  FROM productos p 
+                  WHERE $whereClause";
+
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? (int)$row['total'] : 0;
+    }
+
     public function getProductosBajoStock() {
         $query = "SELECT p.*, l.nombre as laboratorio 
                   FROM productos p 

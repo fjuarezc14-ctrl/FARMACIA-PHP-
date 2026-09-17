@@ -17,17 +17,45 @@
     </div>
 
     <div class="card-metric mb-3 p-3">
-        <div class="row align-items-center">
-            <div class="col-md-6">
+        <form method="GET" action="<?php echo BASE_URL; ?>producto/index" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">Búsqueda Rápida:</label>
                 <div class="search-box w-100">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" onkeyup="tableSearch()" placeholder="Buscar por código de barras, nombre comercial o genérico...">
+                    <input type="text" name="search" value="<?php echo htmlspecialchars($data['filtros']['search'] ?? ''); ?>" placeholder="Código de barras, comercial o genérico...">
                 </div>
             </div>
-            <div class="col-md-2 offset-md-4 text-end">
-                <button class="btn btn-outline-secondary" style="color: var(--text-secondary); border-color: var(--border-color);"><i class="bi bi-filter"></i> Filtros</button>
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">Categoría:</label>
+                <select name="id_categoria" class="form-select form-select-sm">
+                    <option value="">-- Todas las Categorías --</option>
+                    <?php if(!empty($data['categorias'])): foreach($data['categorias'] as $cat): ?>
+                        <option value="<?php echo $cat['id']; ?>" <?php echo (isset($data['filtros']['id_categoria']) && $data['filtros']['id_categoria'] == $cat['id']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($cat['nombre']); ?>
+                        </option>
+                    <?php endforeach; endif; ?>
+                </select>
             </div>
-        </div>
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">Laboratorio:</label>
+                <select name="id_laboratorio" class="form-select form-select-sm">
+                    <option value="">-- Todos los Laboratorios --</option>
+                    <?php if(!empty($data['laboratorios'])): foreach($data['laboratorios'] as $lab): ?>
+                        <option value="<?php echo $lab['id']; ?>" <?php echo (isset($data['filtros']['id_laboratorio']) && $data['filtros']['id_laboratorio'] == $lab['id']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($lab['nombre']); ?>
+                        </option>
+                    <?php endforeach; endif; ?>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-success fw-bold flex-grow-1" style="height: 38px;">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                <a href="<?php echo BASE_URL; ?>producto/index" class="btn btn-sm btn-outline-secondary" style="height: 38px; display: flex; align-items: center;" title="Limpiar Filtros">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            </div>
+        </form>
     </div>
 
     <div class="card-metric">
@@ -114,28 +142,52 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- PAGINACIÓN SERVER-SIDE -->
+        <?php if(($data['total_paginas'] ?? 1) > 1 || ($data['total_registros'] ?? 0) > 0): ?>
+        <div class="d-flex justify-content-between align-items-center p-3 border-top border-secondary border-opacity-25 flex-wrap gap-2">
+            <div class="text-muted" style="font-size: 13px;">
+                Mostrando página <strong><?php echo $data['pagina_actual'] ?? 1; ?></strong> de <strong><?php echo $data['total_paginas'] ?? 1; ?></strong> (Total: <strong><?php echo $data['total_registros'] ?? count($data['productos']); ?></strong> productos)
+            </div>
+            <?php if(($data['total_paginas'] ?? 1) > 1): ?>
+            <nav aria-label="Paginación de productos">
+                <ul class="pagination pagination-sm mb-0">
+                    <?php
+                    $queryParams = $_GET;
+                    if(($data['pagina_actual'] ?? 1) > 1):
+                        $queryParams['page'] = $data['pagina_actual'] - 1;
+                        $prevUrl = BASE_URL . 'producto/index?' . http_build_query($queryParams);
+                    ?>
+                        <li class="page-item"><a class="page-link" href="<?php echo $prevUrl; ?>">&laquo; Anterior</a></li>
+                    <?php else: ?>
+                        <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
+                    <?php endif; ?>
+
+                    <?php
+                    $inicio = max(1, ($data['pagina_actual'] ?? 1) - 2);
+                    $fin = min($data['total_paginas'], ($data['pagina_actual'] ?? 1) + 2);
+                    for($i = $inicio; $i <= $fin; $i++):
+                        $queryParams['page'] = $i;
+                        $pageUrl = BASE_URL . 'producto/index?' . http_build_query($queryParams);
+                    ?>
+                        <li class="page-item <?php echo $i == ($data['pagina_actual'] ?? 1) ? 'active' : ''; ?>">
+                            <a class="page-link" href="<?php echo $pageUrl; ?>"><?php echo $i; ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <?php
+                    if(($data['pagina_actual'] ?? 1) < ($data['total_paginas'] ?? 1)):
+                        $queryParams['page'] = $data['pagina_actual'] + 1;
+                        $nextUrl = BASE_URL . 'producto/index?' . http_build_query($queryParams);
+                    ?>
+                        <li class="page-item"><a class="page-link" href="<?php echo $nextUrl; ?>">Siguiente &raquo;</a></li>
+                    <?php else: ?>
+                        <li class="page-item disabled"><span class="page-link">Siguiente &raquo;</span></li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
-
-<script>
-function tableSearch() {
-  var input, filter, table, tr, td, i, txtValue;
-  input = document.getElementById("searchInput");
-  filter = input.value.toUpperCase();
-  table = document.getElementById("productosTable");
-  tr = table.getElementsByTagName("tr");
-  for (i = 1; i < tr.length; i++) {
-    // Buscar en Código (0) o Producto (1)
-    var tdCode = tr[i].getElementsByTagName("td")[0];
-    var tdName = tr[i].getElementsByTagName("td")[1];
-    if (tdCode || tdName) {
-      txtValue = (tdCode.textContent || tdCode.innerText) + " " + (tdName.textContent || tdName.innerText);
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
-    }       
-  }
-}
-</script>

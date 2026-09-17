@@ -33,10 +33,41 @@ class VentaController extends Controller {
     public function index() {
         $modelo = $this->model('Venta');
         $configModel = $this->model('Configuracion');
+        $cliModel = $this->model('Cliente');
+        $usrModel = $this->model('User');
+
+        $filtros = [
+            'fecha_inicio' => !empty($_GET['fecha_inicio']) ? trim($_GET['fecha_inicio']) : '',
+            'fecha_fin'    => !empty($_GET['fecha_fin']) ? trim($_GET['fecha_fin']) : '',
+            'id_cliente'   => !empty($_GET['id_cliente']) ? (int)$_GET['id_cliente'] : '',
+            'id_usuario'   => !empty($_GET['id_usuario']) ? (int)$_GET['id_usuario'] : '',
+            'metodo_pago'  => !empty($_GET['metodo_pago']) ? trim($_GET['metodo_pago']) : ''
+        ];
+
+        $page = isset($_GET['page']) && is_numeric($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $limit = isset($_GET['limit']) && in_array((int)$_GET['limit'], [15, 25, 50, 100]) ? (int)$_GET['limit'] : 25;
+        $offset = ($page - 1) * $limit;
+
+        $totalRegistros = $modelo->contarVentas($filtros);
+        $totalPaginas = max(1, ceil($totalRegistros / $limit));
+        if ($page > $totalPaginas) {
+            $page = $totalPaginas;
+            $offset = ($page - 1) * $limit;
+        }
+
+        $ventas = $modelo->getVentasPaginadas($filtros, $limit, $offset);
+
         $this->view('ventas/index', [
-            'title'  => 'Historial de Ventas',
-            'ventas' => $modelo->getAll(),
-            'config' => $configModel->getAll()
+            'title'           => 'Historial de Ventas',
+            'ventas'          => $ventas,
+            'config'          => $configModel->getAll(),
+            'clientes'        => $cliModel->getAll(),
+            'cajeros'         => $usrModel->getAll(),
+            'filtros'         => $filtros,
+            'pagina_actual'   => $page,
+            'total_paginas'   => $totalPaginas,
+            'total_registros' => $totalRegistros,
+            'limit'           => $limit
         ]);
     }
 
@@ -129,7 +160,59 @@ class VentaController extends Controller {
             }
             $puntos_usados = isset($_POST['puntos_usados']) ? (int)$_POST['puntos_usados'] : 0;
             $descuento = isset($_POST['descuento_venta']) ? (float)$_POST['descuento_venta'] : 0.00;
+            $metodo_pago = trim($_POST['metodo_pago'] ?? 'Efectivo');
             
+            // Procesamiento de montos por método
+            $monto_efectivo = 0.00;
+            $monto_transferencia = 0.00;
+            $monto_tarjeta = 0.00;
+            $num_operacion_trans = !empty($_POST['num_operacion_trans']) ? trim($_POST['num_operacion_trans']) : null;
+            $num_operacion_tarj  = !empty($_POST['num_operacion_tarj']) ? trim($_POST['num_operacion_tarj']) : null;
+
+            if ($metodo_pago === 'Efectivo') {
+                $monto_efectivo = $total;
+                $pago_recibido = isset($_POST['pago_recibido']) && is_numeric($_POST['pago_recibido']) ? (float)$_POST['pago_recibido'] : 0.00;
+                
+                if ($pago_recibido < $total) {
+                    $_SESSION['error_pos'] = "Error: El efectivo recibido (S/ " . number_format($pago_recibido, 2) . ") debe ser igual o mayor al total (S/ " . number_format($total, 2) . ").";
+                    header('Location: ' . BASE_URL . 'venta/pos');
+                    exit;
+                }
+                $vuelto = round($pago_recibido - $total, 2);
+            } elseif ($metodo_pago === 'Yape/Plin') {
+                $monto_transferencia = $total;
+                $pago_recibido = $total;
+                $vuelto = 0.00;
+            } elseif ($metodo_pago === 'Tarjeta') {
+                $monto_tarjeta = $total;
+                $pago_recibido = $total;
+                $vuelto = 0.00;
+            } elseif ($metodo_pago === 'Mixto') {
+                $monto_efectivo = isset($_POST['monto_efectivo']) ? max(0, (float)$_POST['monto_efectivo']) : 0.00;
+                $monto_transferencia = isset($_POST['monto_transferencia']) ? max(0, (float)$_POST['monto_transferencia']) : 0.00;
+                $monto_tarjeta = isset($_POST['monto_tarjeta']) ? max(0, (float)$_POST['monto_tarjeta']) : 0.00;
+                
+                $sumaMixta = round($monto_efectivo + $monto_transferencia + $monto_tarjeta, 2);
+                if (abs($sumaMixta - $total) > 0.01) {
+                    $_SESSION['error_pos'] = "Error en Pago Mixto: La suma de montos (S/ $sumaMixta) no coincide con el total de la venta (S/ $total).";
+                    header('Location: ' . BASE_URL . 'venta/pos');
+                    exit;
+                }
+
+                $pago_recibido_efe = isset($_POST['pago_recibido']) && is_numeric($_POST['pago_recibido']) ? (float)$_POST['pago_recibido'] : $monto_efectivo;
+                if ($monto_efectivo > 0 && $pago_recibido_efe < $monto_efectivo) {
+                    $_SESSION['error_pos'] = "Error: El efectivo recibido (S/ $pago_recibido_efe) es menor a la porción en efectivo (S/ $monto_efectivo).";
+                    header('Location: ' . BASE_URL . 'venta/pos');
+                    exit;
+                }
+                $vuelto = $monto_efectivo > 0 ? round($pago_recibido_efe - $monto_efectivo, 2) : 0.00;
+                $pago_recibido = $pago_recibido_efe + $monto_transferencia + $monto_tarjeta;
+            } else {
+                $monto_efectivo = $total;
+                $pago_recibido = $total;
+                $vuelto = 0.00;
+            }
+
             $cabecera = [
                 'caja_id' => $cajaAbierta['id'],
                 'id_cliente' => $id_cliente,
@@ -140,9 +223,14 @@ class VentaController extends Controller {
                 'descuento' => $descuento,
                 'igv' => (float)$_POST['igv_venta'],
                 'total' => $total,
-                'metodo_pago' => $_POST['metodo_pago'],
-                'pago_recibido' => (float)($_POST['pago_recibido'] ?: $total),
-                'vuelto' => (float)($_POST['vuelto_venta'] ?: 0.00),
+                'monto_efectivo' => $monto_efectivo,
+                'monto_transferencia' => $monto_transferencia,
+                'monto_tarjeta' => $monto_tarjeta,
+                'num_operacion_trans' => $num_operacion_trans,
+                'num_operacion_tarj' => $num_operacion_tarj,
+                'metodo_pago' => $metodo_pago,
+                'pago_recibido' => $pago_recibido,
+                'vuelto' => $vuelto,
                 'puntos_ganados' => $puntos_ganados,
                 'puntos_usados' => $puntos_usados,
                 'medico_cmp' => $_POST['medico_cmp'] ?? null

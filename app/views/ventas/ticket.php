@@ -143,10 +143,55 @@
         <table style="font-size: 11px;">
             <tr>
                 <td>Forma de Pago:</td>
-                <td class="right"><?php echo htmlspecialchars($data['venta']['metodo_pago']); ?></td>
+                <td class="right bold"><?php echo htmlspecialchars($data['venta']['metodo_pago']); ?></td>
             </tr>
+            <?php if($data['venta']['metodo_pago'] === 'Mixto'): ?>
+                <?php if(($data['venta']['monto_efectivo'] ?? 0) > 0): ?>
+                <tr>
+                    <td> - Efectivo:</td>
+                    <td class="right">S/ <?php echo number_format($data['venta']['monto_efectivo'], 2); ?></td>
+                </tr>
+                <?php endif; ?>
+                <?php if(($data['venta']['monto_transferencia'] ?? 0) > 0): ?>
+                <tr>
+                    <td> - Yape/Plin:</td>
+                    <td class="right">S/ <?php echo number_format($data['venta']['monto_transferencia'], 2); ?></td>
+                </tr>
+                <?php if(!empty($data['venta']['num_operacion_trans'])): ?>
+                <tr>
+                    <td style="font-size: 9px; padding-left: 10px;">Op. Yape:</td>
+                    <td class="right" style="font-size: 9px;"><?php echo htmlspecialchars($data['venta']['num_operacion_trans']); ?></td>
+                </tr>
+                <?php endif; ?>
+                <?php endif; ?>
+                <?php if(($data['venta']['monto_tarjeta'] ?? 0) > 0): ?>
+                <tr>
+                    <td> - Tarjeta:</td>
+                    <td class="right">S/ <?php echo number_format($data['venta']['monto_tarjeta'], 2); ?></td>
+                </tr>
+                <?php if(!empty($data['venta']['num_operacion_tarj'])): ?>
+                <tr>
+                    <td style="font-size: 9px; padding-left: 10px;">Ref. Tarj:</td>
+                    <td class="right" style="font-size: 9px;"><?php echo htmlspecialchars($data['venta']['num_operacion_tarj']); ?></td>
+                </tr>
+                <?php endif; ?>
+                <?php endif; ?>
+            <?php else: ?>
+                <?php if(!empty($data['venta']['num_operacion_trans'])): ?>
+                <tr>
+                    <td>N° Op. Yape/Plin:</td>
+                    <td class="right"><?php echo htmlspecialchars($data['venta']['num_operacion_trans']); ?></td>
+                </tr>
+                <?php endif; ?>
+                <?php if(!empty($data['venta']['num_operacion_tarj'])): ?>
+                <tr>
+                    <td>N° Ref. Tarjeta:</td>
+                    <td class="right"><?php echo htmlspecialchars($data['venta']['num_operacion_tarj']); ?></td>
+                </tr>
+                <?php endif; ?>
+            <?php endif; ?>
             <tr>
-                <td>Pago Recibido:</td>
+                <td>Total Recibido:</td>
                 <td class="right">S/ <?php echo number_format($data['venta']['pago_recibido'], 2); ?></td>
             </tr>
             <tr>

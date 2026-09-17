@@ -33,6 +33,98 @@ class Venta {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Obtiene el listado de ventas con filtros avanzados y paginación
+     */
+    public function getVentasPaginadas($filtros = [], $limit = 25, $offset = 0) {
+        $where = ["1=1"];
+        $params = [];
+
+        if (!empty($filtros['fecha_inicio'])) {
+            $where[] = "v.fecha_venta >= :start";
+            $params[':start'] = $filtros['fecha_inicio'] . " 00:00:00";
+        }
+        if (!empty($filtros['fecha_fin'])) {
+            $where[] = "v.fecha_venta <= :end";
+            $params[':end'] = $filtros['fecha_fin'] . " 23:59:59";
+        }
+        if (!empty($filtros['id_cliente'])) {
+            $where[] = "v.id_cliente = :id_cliente";
+            $params[':id_cliente'] = (int)$filtros['id_cliente'];
+        }
+        if (!empty($filtros['id_usuario'])) {
+            $where[] = "v.id_usuario = :id_usuario";
+            $params[':id_usuario'] = (int)$filtros['id_usuario'];
+        }
+        if (!empty($filtros['metodo_pago'])) {
+            $where[] = "v.metodo_pago = :metodo_pago";
+            $params[':metodo_pago'] = $filtros['metodo_pago'];
+        }
+
+        $whereClause = implode(" AND ", $where);
+        $limitInt = max(1, (int)$limit);
+        $offsetInt = max(0, (int)$offset);
+
+        $query = "SELECT v.*, c.nombres as cliente, u.nombres as cajero 
+                  FROM ventas v 
+                  INNER JOIN clientes c ON v.id_cliente = c.id 
+                  INNER JOIN usuarios u ON v.id_usuario = u.id 
+                  WHERE $whereClause 
+                  ORDER BY v.id DESC 
+                  LIMIT $limitInt OFFSET $offsetInt";
+
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Cuenta el total de ventas según los filtros aplicados para la paginación
+     */
+    public function contarVentas($filtros = []) {
+        $where = ["1=1"];
+        $params = [];
+
+        if (!empty($filtros['fecha_inicio'])) {
+            $where[] = "v.fecha_venta >= :start";
+            $params[':start'] = $filtros['fecha_inicio'] . " 00:00:00";
+        }
+        if (!empty($filtros['fecha_fin'])) {
+            $where[] = "v.fecha_venta <= :end";
+            $params[':end'] = $filtros['fecha_fin'] . " 23:59:59";
+        }
+        if (!empty($filtros['id_cliente'])) {
+            $where[] = "v.id_cliente = :id_cliente";
+            $params[':id_cliente'] = (int)$filtros['id_cliente'];
+        }
+        if (!empty($filtros['id_usuario'])) {
+            $where[] = "v.id_usuario = :id_usuario";
+            $params[':id_usuario'] = (int)$filtros['id_usuario'];
+        }
+        if (!empty($filtros['metodo_pago'])) {
+            $where[] = "v.metodo_pago = :metodo_pago";
+            $params[':metodo_pago'] = $filtros['metodo_pago'];
+        }
+
+        $whereClause = implode(" AND ", $where);
+        $query = "SELECT COUNT(*) as total 
+                  FROM ventas v 
+                  INNER JOIN clientes c ON v.id_cliente = c.id 
+                  INNER JOIN usuarios u ON v.id_usuario = u.id 
+                  WHERE $whereClause";
+
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? (int)$row['total'] : 0;
+    }
     
     public function getDetalles($id_venta) {
         $query = "SELECT vd.*, p.nombre_comercial, p.unidades_por_caja, p.fraccionable, p.unidad_medida, p.unidad_fraccion, l.codigo_lote 
@@ -52,8 +144,8 @@ class Venta {
             $this->conn->beginTransaction();
 
             // 1. Insertar Cabecera de Venta
-            $query = "INSERT INTO ventas (caja_id, id_cliente, id_usuario, tipo_comprobante, serie_comprobante, num_comprobante, subtotal, descuento, igv, total, metodo_pago, pago_recibido, vuelto, puntos_ganados, puntos_usados, medico_cmp) 
-                      VALUES (:caj, :cli, :usr, :tip, :ser, :num, :sub, :desc, :igv, :tot, :met, :pag, :vue, :pgan, :puso, :cmp)";
+            $query = "INSERT INTO ventas (caja_id, id_cliente, id_usuario, tipo_comprobante, serie_comprobante, num_comprobante, subtotal, descuento, igv, total, monto_efectivo, monto_transferencia, monto_tarjeta, num_operacion_trans, num_operacion_tarj, metodo_pago, pago_recibido, vuelto, puntos_ganados, puntos_usados, medico_cmp) 
+                      VALUES (:caj, :cli, :usr, :tip, :ser, :num, :sub, :desc, :igv, :tot, :m_efe, :m_tra, :m_tar, :op_tra, :op_tar, :met, :pag, :vue, :pgan, :puso, :cmp)";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':caj', $cabecera['caja_id']);
             $stmt->bindParam(':cli', $cabecera['id_cliente']);
@@ -65,6 +157,11 @@ class Venta {
             $stmt->bindParam(':desc', $cabecera['descuento']);
             $stmt->bindParam(':igv', $cabecera['igv']);
             $stmt->bindParam(':tot', $cabecera['total']);
+            $stmt->bindValue(':m_efe', $cabecera['monto_efectivo'] ?? 0.00);
+            $stmt->bindValue(':m_tra', $cabecera['monto_transferencia'] ?? 0.00);
+            $stmt->bindValue(':m_tar', $cabecera['monto_tarjeta'] ?? 0.00);
+            $stmt->bindValue(':op_tra', $cabecera['num_operacion_trans'] ?? null);
+            $stmt->bindValue(':op_tar', $cabecera['num_operacion_tarj'] ?? null);
             $stmt->bindParam(':met', $cabecera['metodo_pago']);
             $stmt->bindParam(':pag', $cabecera['pago_recibido']);
             $stmt->bindParam(':vue', $cabecera['vuelto']);

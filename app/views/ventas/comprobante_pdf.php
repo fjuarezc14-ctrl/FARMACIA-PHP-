@@ -145,7 +145,20 @@
             <div class="dato-bloque">
                 <div class="dato-label">Forma de Pago</div>
                 <div class="dato-valor"><?php echo htmlspecialchars($data['venta']['metodo_pago']); ?></div>
-                <div class="dato-sub">Efectivo recibido: S/ <?php echo number_format($data['venta']['pago_recibido'], 2); ?> · Vuelto: S/ <?php echo number_format($data['venta']['vuelto'], 2); ?></div>
+                <?php if($data['venta']['metodo_pago'] === 'Mixto'): ?>
+                    <div class="dato-sub">
+                        Efe: S/ <?php echo number_format($data['venta']['monto_efectivo'] ?? 0, 2); ?> | 
+                        Yape: S/ <?php echo number_format($data['venta']['monto_transferencia'] ?? 0, 2); ?> | 
+                        Tarj: S/ <?php echo number_format($data['venta']['monto_tarjeta'] ?? 0, 2); ?>
+                    </div>
+                <?php endif; ?>
+                <?php if(!empty($data['venta']['num_operacion_trans'])): ?>
+                    <div class="dato-sub">Op. Yape/Plin: <?php echo htmlspecialchars($data['venta']['num_operacion_trans']); ?></div>
+                <?php endif; ?>
+                <?php if(!empty($data['venta']['num_operacion_tarj'])): ?>
+                    <div class="dato-sub">Ref. Tarjeta: <?php echo htmlspecialchars($data['venta']['num_operacion_tarj']); ?></div>
+                <?php endif; ?>
+                <div class="dato-sub">Recibido: S/ <?php echo number_format($data['venta']['pago_recibido'], 2); ?> · Vuelto: S/ <?php echo number_format($data['venta']['vuelto'], 2); ?></div>
             </div>
             <div class="dato-bloque">
                 <div class="dato-label">Atendido por</div>

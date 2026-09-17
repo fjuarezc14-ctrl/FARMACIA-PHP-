@@ -85,4 +85,60 @@ class UsuarioController extends Controller {
         header('Location: ' . BASE_URL . 'usuario/index');
         exit;
     }
+
+    public function delete($id = null) {
+        $this->requireRole(1, 'usuario/index');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método no permitido.';
+            header('Location: ' . BASE_URL . 'usuario/index');
+            exit;
+        }
+
+        $this->validateCsrf();
+
+        $userId = (int)($_POST['id'] ?? $id ?? 0);
+        if ($userId <= 0) {
+            $_SESSION['error'] = 'ID de usuario inválido.';
+            header('Location: ' . BASE_URL . 'usuario/index');
+            exit;
+        }
+
+        if ($userId === 1) {
+            $_SESSION['error'] = 'No se puede eliminar al Administrador principal del sistema.';
+            header('Location: ' . BASE_URL . 'usuario/index');
+            exit;
+        }
+
+        if ($userId === (int)($_SESSION['user_id'] ?? 0)) {
+            $_SESSION['error'] = 'No puedes eliminar tu propia cuenta en sesión.';
+            header('Location: ' . BASE_URL . 'usuario/index');
+            exit;
+        }
+
+        $userModel = $this->model('User');
+        $usuarioExistente = $userModel->getById($userId);
+        if (!$usuarioExistente) {
+            $_SESSION['error'] = 'El usuario especificado no existe.';
+            header('Location: ' . BASE_URL . 'usuario/index');
+            exit;
+        }
+
+        // Si tiene movimientos vinculados, advertir al admin y recomendar desactivación
+        if ($userModel->hasAssociatedRecords($userId)) {
+            $_SESSION['error'] = 'No se puede eliminar el usuario "' . htmlspecialchars($usuarioExistente['usuario']) . '" porque tiene ventas, compras, movimientos de caja o auditorías registradas. Para revocar su acceso, utiliza la opción "Desactivar".';
+            header('Location: ' . BASE_URL . 'usuario/index');
+            exit;
+        }
+
+        if ($userModel->delete($userId)) {
+            $this->logAccion('Personal', 'ELIMINAR', "Eliminación del usuario ID #$userId ({$usuarioExistente['usuario']}) por el administrador.");
+            $_SESSION['mensaje'] = 'Usuario eliminado correctamente del sistema.';
+        } else {
+            $_SESSION['error'] = 'No se pudo eliminar el usuario.';
+        }
+
+        header('Location: ' . BASE_URL . 'usuario/index');
+        exit;
+    }
 }

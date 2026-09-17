@@ -124,4 +124,58 @@ class User {
         }
         return false;
     }
+
+    /**
+     * Verifica si el usuario tiene registros operativos vinculados
+     * (Ventas, Compras, Cajas, Auditorías, Kardex)
+     */
+    public function hasAssociatedRecords($id) {
+        $checks = [
+            "SELECT COUNT(*) FROM ventas WHERE id_usuario = ?",
+            "SELECT COUNT(*) FROM compras WHERE id_usuario = ?",
+            "SELECT COUNT(*) FROM cajas WHERE usuario_id = ?",
+            "SELECT COUNT(*) FROM kardex WHERE id_usuario = ?",
+            "SELECT COUNT(*) FROM inventario_auditorias WHERE id_usuario = ?"
+        ];
+
+        foreach ($checks as $sql) {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$id]);
+            if ((int)$stmt->fetchColumn() > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Elimina físicamente un usuario de la base de datos
+     */
+    public function delete($id) {
+        if ((int)$id === 1) {
+            return false;
+        }
+
+        // Limpiar registros secundarios de logs si existen para permitir borrado limpio
+        try {
+            $this->conn->beginTransaction();
+
+            $stmtLog1 = $this->conn->prepare("DELETE FROM audit_accesos WHERE id_usuario = ?");
+            $stmtLog1->execute([$id]);
+
+            $stmtLog2 = $this->conn->prepare("DELETE FROM audit_acciones WHERE id_usuario = ?");
+            $stmtLog2->execute([$id]);
+
+            $stmtUser = $this->conn->prepare("DELETE FROM " . $this->table_name . " WHERE id = ?");
+            $deleted = $stmtUser->execute([$id]);
+
+            $this->conn->commit();
+            return $deleted;
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            error_log("[User::delete] Error al eliminar usuario ID #$id: " . $e->getMessage());
+            return false;
+        }
+    }
 }

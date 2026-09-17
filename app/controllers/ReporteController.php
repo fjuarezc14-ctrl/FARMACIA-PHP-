@@ -15,31 +15,108 @@ class ReporteController extends Controller {
         
         $ventaModel = $this->model('Venta');
         $filtradas = $ventaModel->getByDateRange($fecha_inicio, $fecha_fin);
+        $configModel = $this->model('Configuracion');
+        $configs = $configModel->getAll();
+        $nombreBotica = $configs['nombre_botica']['valor'] ?? 'BOTICA CENGFARMA';
+        $rucBotica = $configs['ruc']['valor'] ?? '';
         
         // Cabeceras Excel CSV
         header("Content-Type: text/csv; charset=utf-8");
         header("Content-Disposition: attachment; filename=Reporte_Ventas_{$fecha_inicio}_al_{$fecha_fin}.csv");
         
         $output = fopen("php://output", "w");
-        // UTF-8 BOM para soporte en Excel
+        // UTF-8 BOM para apertura perfecta en Excel
         fwrite($output, "\xEF\xBB\xBF");
         
-        fputcsv($output, ['ID Venta', 'Fecha', 'Cajero', 'Cliente', 'Doc', 'Numero', 'Subtotal', 'IGV', 'Total', 'Forma Pago']);
+        // Metadatos y Encabezado Corporativo
+        fputcsv($output, [$nombreBotica . ' - REPORTE OFICIAL DE VENTAS'], ";");
+        fputcsv($output, ["RUC: $rucBotica", "Periodo: $fecha_inicio al $fecha_fin", "Generado: " . date('d/m/Y H:i:s')], ";");
+        fputcsv($output, [], ";"); // Línea en blanco
         
+        // Encabezados de Columnas
+        fputcsv($output, [
+            'ID Venta',
+            'Fecha y Hora',
+            'Tipo Comprobante',
+            'Serie-Número',
+            'Cliente',
+            'Cajero',
+            'Método Pago',
+            'N° Op. Yape/Plin',
+            'N° Ref. Tarjeta',
+            'Efectivo (S/)',
+            'Yape/Plin (S/)',
+            'Tarjeta (S/)',
+            'Subtotal (S/)',
+            'Descuento (S/)',
+            'IGV (S/)',
+            'Total Cobrado (S/)',
+            'Estado'
+        ], ";");
+        
+        $totEfe = 0; $totTra = 0; $totTar = 0;
+        $totSub = 0; $totDesc = 0; $totIgv = 0; $totFinal = 0;
+
         foreach($filtradas as $v) {
+            $mEfe = isset($v['monto_efectivo']) ? (float)$v['monto_efectivo'] : ($v['metodo_pago'] === 'Efectivo' ? (float)$v['total'] : 0);
+            $mTra = isset($v['monto_transferencia']) ? (float)$v['monto_transferencia'] : (in_array($v['metodo_pago'], ['Yape', 'Yape/Plin']) ? (float)$v['total'] : 0);
+            $mTar = isset($v['monto_tarjeta']) ? (float)$v['monto_tarjeta'] : ($v['metodo_pago'] === 'Tarjeta' ? (float)$v['total'] : 0);
+            $mSub = (float)$v['subtotal'];
+            $mDesc = (float)($v['descuento'] ?? 0);
+            $mIgv = (float)$v['igv'];
+            $mTot = (float)$v['total'];
+
+            $totEfe += $mEfe;
+            $totTra += $mTra;
+            $totTar += $mTar;
+            $totSub += $mSub;
+            $totDesc += $mDesc;
+            $totIgv += $mIgv;
+            $totFinal += $mTot;
+
             fputcsv($output, [
                 $v['id'],
-                $v['fecha_venta'],
-                $v['cajero'],
-                $v['cliente'],
+                date('d/m/Y H:i:s', strtotime($v['fecha_venta'])),
                 $v['tipo_comprobante'],
-                $v['num_comprobante'],
-                $v['subtotal'],
-                $v['igv'],
-                $v['total'],
-                $v['metodo_pago']
-            ], ";"); // Usamos punto y coma para Excel español
+                $v['serie_comprobante'] . '-' . $v['num_comprobante'],
+                $v['cliente'],
+                $v['cajero'],
+                $v['metodo_pago'],
+                $v['num_operacion_trans'] ?? '-',
+                $v['num_operacion_tarj'] ?? '-',
+                number_format($mEfe, 2, '.', ''),
+                number_format($mTra, 2, '.', ''),
+                number_format($mTar, 2, '.', ''),
+                number_format($mSub, 2, '.', ''),
+                number_format($mDesc, 2, '.', ''),
+                number_format($mIgv, 2, '.', ''),
+                number_format($mTot, 2, '.', ''),
+                $v['estado'] ?? 'Emitida'
+            ], ";");
         }
+
+        // Fila de Totales
+        fputcsv($output, [], ";");
+        fputcsv($output, [
+            'TOTALES GENERALES',
+            count($filtradas) . ' ventas',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            number_format($totEfe, 2, '.', ''),
+            number_format($totTra, 2, '.', ''),
+            number_format($totTar, 2, '.', ''),
+            number_format($totSub, 2, '.', ''),
+            number_format($totDesc, 2, '.', ''),
+            number_format($totIgv, 2, '.', ''),
+            number_format($totFinal, 2, '.', ''),
+            ''
+        ], ";");
+
         fclose($output);
         exit;
     }

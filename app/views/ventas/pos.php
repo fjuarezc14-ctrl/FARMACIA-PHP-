@@ -16,18 +16,38 @@ body { overflow-x: hidden; }
 
 /* Pay Button */
 .btn-pay { background: linear-gradient(135deg, var(--accent-primary) 0%, #1FA95B 100%); width: 100%; color: #ffffff !important; font-weight: 800; font-size: 22px; padding: 20px; border-radius: 12px; border: none; cursor: pointer; transition: transform 0.2s; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-.btn-pay:hover { transform: translateY(-2px); }
-
 /* Catalogo Buscar */
 .pos-catalog { flex-grow: 1; overflow-y: auto; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; }
-.item-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
-.item-card:hover { border-color: var(--accent-primary); background: rgba(40, 199, 111, 0.05); }
+.item-card { background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+.item-card:hover { border-color: var(--accent-primary); background: rgba(40, 199, 111, 0.05); transform: translateX(2px); }
 .item-card.disabled { opacity: 0.5; pointer-events: none; }
+
+/* Responsive layout */
+@media (max-width: 991px) {
+    .pos-layout { flex-direction: column; height: auto; }
+    .pos-left, .pos-right { flex: 0 0 100%; width: 100%; }
+    .pos-mobile-tabs { display: flex !important; }
+    .pos-panel { display: none; }
+    .pos-panel.active { display: flex !important; }
+}
+@media (min-width: 992px) {
+    .pos-mobile-tabs { display: none !important; }
+    .pos-panel { display: flex !important; }
+}
+.pos-tab-btn { flex: 1; padding: 10px; font-weight: 700; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-secondary); border-radius: 8px; cursor: pointer; text-align: center; }
+.pos-tab-btn.active { background: var(--accent-primary); color: #fff; border-color: var(--accent-primary); }
 </style>
+
+
+<!-- Pestañas para vista Móvil / Tablet -->
+<div class="pos-mobile-tabs mb-2" style="display: none; gap: 8px;">
+    <button type="button" class="pos-tab-btn active" id="btnTabCart" onclick="switchPosTab('cart')"><i class="bi bi-cart3"></i> 🛒 Carrito y Cobro</button>
+    <button type="button" class="pos-tab-btn" id="btnTabCatalog" onclick="switchPosTab('catalog')"><i class="bi bi-grid"></i> 📦 Catálogo y Búsqueda</button>
+</div>
 
 <div class="pos-layout">
     <!-- LADO IZQUIERDO: CARRITO DE COMPRA -->
-    <div class="pos-left">
+    <div class="pos-left pos-panel active">
         <!-- Notificaciones PHP -->
         <?php if(isset($_SESSION['mensaje_pos'])): ?>
             <div class="alert alert-success mt-2 mb-2 p-2 px-3" style="background-color: var(--success-bg); color: var(--accent-primary); border: 1px solid var(--accent-primary); font-weight:600; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -53,23 +73,34 @@ body { overflow-x: hidden; }
 
         <form action="<?php echo BASE_URL; ?>venta/save" method="POST" id="formVenta" style="display:flex; flex-direction:column; height: 100%;">
             <?php echo Controller::csrfField(); ?>
-            <!-- Header Carrito: Seleccion de Cliente -->
-            <div class="d-flex gap-3 mb-3">
-                <div class="flex-grow-1">
-                    <select class="form-control-custom" name="id_cliente" required style="font-size: 16px; font-weight: 600;">
-                        <?php foreach($data['clientes'] as $cli): ?>
-                            <option value="<?php echo $cli['id']; ?>" data-puntos="<?php echo $cli['puntos_acumulados'] ?? 0; ?>"><?php echo htmlspecialchars($cli['num_documento'] . ' - ' . $cli['nombres']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+            <!-- Header Carrito: Seleccion y Búsqueda de Cliente y Tipo de Comprobante -->
+            <div class="row g-2 mb-3 align-items-center">
+                <div class="col-md-7">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-person-fill"></i></span>
+                        <select class="form-select form-control-custom border-start-0" name="id_cliente" id="selectCliente" required style="font-size: 14px; font-weight: 600;">
+                            <?php foreach($data['clientes'] as $cli): ?>
+                                <option value="<?php echo $cli['id']; ?>" data-puntos="<?php echo $cli['puntos_acumulados'] ?? 0; ?>"><?php echo htmlspecialchars($cli['num_documento'] . ' - ' . $cli['nombres']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="button" class="btn btn-outline-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevoClientePos" title="Registrar nuevo cliente">
+                            <i class="bi bi-person-plus-fill"></i> + Nuevo
+                        </button>
+                    </div>
+                    <!-- Buscador predictivo rápido de clientes -->
+                    <div class="mt-1 position-relative">
+                        <input type="text" id="filtroClientePos" class="form-control form-control-sm" placeholder="🔍 Escribe DNI/RUC o Nombre de cliente..." autocomplete="off" style="font-size: 11px; background: rgba(0,0,0,0.02);">
+                        <div id="resultadosClientePos" class="list-group position-absolute w-100 shadow-lg" style="z-index: 1050; display: none; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
                     <div id="puntosBlock" class="mt-1" style="display:none; font-size:12px; font-weight:600; color: var(--accent-primary);">
                         <i class="bi bi-star-fill text-warning"></i> Puntos Disponibles: <span id="lblPuntos">0</span> pts.
                     </div>
                 </div>
-                <div style="width: 200px;">
-                    <select class="form-control-custom" name="tipo_comprobante" required>
+                <div class="col-md-5">
+                    <select class="form-control-custom w-100" name="tipo_comprobante" required style="height: 38px; font-size:13px; font-weight:600;">
                         <option value="Ticket">Ticket de Venta</option>
-                        <option value="Boleta">Boleta Eléctronica</option>
-                        <option value="Factura">Factura Eléctronica</option>
+                        <option value="Boleta">Boleta Electrónica</option>
+                        <option value="Factura">Factura Electrónica</option>
                     </select>
                 </div>
             </div>
@@ -101,34 +132,116 @@ body { overflow-x: hidden; }
             <div class="pos-totals">
                 <div class="row">
                     <div class="col-md-7">
-                        <div class="d-flex flex-column gap-3 mb-3">
-                            <label class="form-label mb-0" style="color:var(--text-secondary);">Método de Pago</label>
-                            <div class="btn-group" role="group" aria-label="Metodo de pago">
-                                <input type="radio" class="btn-check" name="metodo_pago" id="btnEfecti" autocomplete="off" value="Efectivo" checked>
-                                <label class="btn btn-outline-success" for="btnEfecti">Efectivo</label>
+                        <div class="d-flex flex-column gap-2 mb-3">
+                            <label class="form-label mb-0" style="color:var(--text-secondary); font-size:12px; font-weight:600;">Método de Pago</label>
+                            <div class="btn-group w-100" role="group" aria-label="Metodo de pago">
+                                <input type="radio" class="btn-check" name="metodo_pago" id="btnEfecti" autocomplete="off" value="Efectivo" checked onchange="cambiarMetodoPago('Efectivo')">
+                                <label class="btn btn-outline-success btn-sm fw-bold" for="btnEfecti">Efectivo</label>
 
-                                <input type="radio" class="btn-check" name="metodo_pago" id="btnYape" autocomplete="off" value="Yape/Plin">
-                                <label class="btn btn-outline-info" for="btnYape">Yape/Plin</label>
+                                <input type="radio" class="btn-check" name="metodo_pago" id="btnYape" autocomplete="off" value="Yape/Plin" onchange="cambiarMetodoPago('Yape/Plin')">
+                                <label class="btn btn-outline-info btn-sm fw-bold" for="btnYape">Yape / Plin</label>
 
-                                <input type="radio" class="btn-check" name="metodo_pago" id="btnTarj" autocomplete="off" value="Tarjeta">
-                                <label class="btn btn-outline-primary" for="btnTarj">Tarjeta</label>
+                                <input type="radio" class="btn-check" name="metodo_pago" id="btnTarj" autocomplete="off" value="Tarjeta" onchange="cambiarMetodoPago('Tarjeta')">
+                                <label class="btn btn-outline-primary btn-sm fw-bold" for="btnTarj">Tarjeta</label>
+
+                                <input type="radio" class="btn-check" name="metodo_pago" id="btnMixto" autocomplete="off" value="Mixto" onchange="cambiarMetodoPago('Mixto')">
+                                <label class="btn btn-outline-warning btn-sm fw-bold" for="btnMixto">Mixto (Dividido)</label>
                             </div>
                         </div>
-                        
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <label class="form-label mb-0" style="color:var(--text-secondary); font-size:12px;">Efectivo Recibido</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-dark border-secondary text-white">S/</span>
-                                    <input type="number" step="0.01" class="form-control bg-dark border-secondary text-white fw-bold" name="pago_recibido" id="inPago" placeholder="0.00" oninput="calcularVuelto()">
+
+                        <!-- Panel: Efectivo Puro -->
+                        <div id="panelEfectivo" class="payment-panel">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label mb-0" style="color:var(--text-secondary); font-size:12px; font-weight:600;">Efectivo Recibido *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary text-white">S/</span>
+                                        <input type="number" step="0.01" class="form-control bg-dark border-secondary text-white fw-bold" name="pago_recibido" id="inPago" placeholder="0.00" oninput="calcularVuelto()">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label mb-0" style="color:var(--text-secondary); font-size:12px; font-weight:600;">Vuelto</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary text-white">S/</span>
+                                        <input type="number" class="form-control bg-dark border-secondary text-warning fw-bold" name="vuelto_venta" id="inVuelto" value="0.00" readonly>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <label class="form-label mb-0" style="color:var(--text-secondary); font-size:12px;">Vuelto</label>
+                        </div>
+
+                        <!-- Panel: Yape / Plin Puro -->
+                        <div id="panelYape" class="payment-panel" style="display:none;">
+                            <div class="mb-2">
+                                <label class="form-label mb-1" style="color:var(--text-secondary); font-size:12px; font-weight:600;">N° de Operación Yape/Plin *</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-dark border-secondary text-white">S/</span>
-                                    <input type="number" class="form-control bg-dark border-secondary text-warning fw-bold" name="vuelto_venta" id="inVuelto" value="0.00" readonly>
+                                    <span class="input-group-text bg-dark border-secondary text-info"><i class="bi bi-qr-code"></i></span>
+                                    <input type="text" class="form-control bg-dark border-secondary text-white fw-bold" name="num_operacion_trans" id="inOpTrans" placeholder="Ej. 084920">
                                 </div>
+                                <small class="text-muted" style="font-size:11px;">El monto total se registrará como transferencia digital.</small>
+                            </div>
+                        </div>
+
+                        <!-- Panel: Tarjeta Puro -->
+                        <div id="panelTarjeta" class="payment-panel" style="display:none;">
+                            <div class="mb-2">
+                                <label class="form-label mb-1" style="color:var(--text-secondary); font-size:12px; font-weight:600;">N° de Referencia / Voucher Tarjeta *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-primary"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                                    <input type="text" class="form-control bg-dark border-secondary text-white fw-bold" name="num_operacion_tarj" id="inOpTarj" placeholder="Ej. 102948">
+                                </div>
+                                <small class="text-muted" style="font-size:11px;">El monto total se registrará como cobro electrónico en POS.</small>
+                            </div>
+                        </div>
+
+                        <!-- Panel: Pago Mixto (Combinado Efectivo + Yape + Tarjeta) -->
+                        <div id="panelMixto" class="payment-panel" style="display:none; background: rgba(255,193,7,0.05); border: 1px solid rgba(255,193,7,0.3); border-radius: 8px; padding: 10px;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span style="font-size: 12px; font-weight:700; color: #ffc107;"><i class="bi bi-pie-chart-fill"></i> Desglose de Montos Mixtos</span>
+                                <span id="badgeEstadoMixto" class="badge bg-secondary" style="font-size: 11px;">Incompleto</span>
+                            </div>
+
+                            <!-- Fila Efectivo Mixto -->
+                            <div class="row g-1 align-items-center mb-1">
+                                <div class="col-4">
+                                    <span style="font-size:11px; font-weight:600;"><i class="bi bi-cash-stack text-success"></i> Efectivo:</span>
+                                </div>
+                                <div class="col-4">
+                                    <input type="number" step="0.01" min="0" class="form-control form-control-sm bg-dark text-white border-secondary" name="monto_efectivo" id="inMontoEfeMixto" placeholder="Monto S/" oninput="calcularMixto()">
+                                </div>
+                                <div class="col-4">
+                                    <input type="number" step="0.01" min="0" class="form-control form-control-sm bg-dark text-white border-secondary" id="inPagoEfeMixto" placeholder="Recibido S/" oninput="calcularMixto()" title="Efectivo entregado por el cliente">
+                                </div>
+                            </div>
+
+                            <!-- Fila Yape / Plin Mixto -->
+                            <div class="row g-1 align-items-center mb-1">
+                                <div class="col-4">
+                                    <span style="font-size:11px; font-weight:600;"><i class="bi bi-phone-fill text-info"></i> Yape/Plin:</span>
+                                </div>
+                                <div class="col-4">
+                                    <input type="number" step="0.01" min="0" class="form-control form-control-sm bg-dark text-white border-secondary" name="monto_transferencia" id="inMontoTransMixto" placeholder="Monto S/" oninput="calcularMixto()">
+                                </div>
+                                <div class="col-4">
+                                    <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="inOpTransMixto" placeholder="N° Op. Yape" title="Código de operación Yape/Plin">
+                                </div>
+                            </div>
+
+                            <!-- Fila Tarjeta Mixto -->
+                            <div class="row g-1 align-items-center mb-2">
+                                <div class="col-4">
+                                    <span style="font-size:11px; font-weight:600;"><i class="bi bi-credit-card text-primary"></i> Tarjeta:</span>
+                                </div>
+                                <div class="col-4">
+                                    <input type="number" step="0.01" min="0" class="form-control form-control-sm bg-dark text-white border-secondary" name="monto_tarjeta" id="inMontoTarjMixto" placeholder="Monto S/" oninput="calcularMixto()">
+                                </div>
+                                <div class="col-4">
+                                    <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="inOpTarjMixto" placeholder="N° Op. Tarj." title="Código de autorización tarjeta">
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between pt-1 border-top border-secondary" style="font-size: 11px;">
+                                <span>Total ingresado: <strong id="lblSumaMixta" class="text-white">S/ 0.00</strong></span>
+                                <span id="lblVueltoMixto" class="text-warning fw-bold">Vuelto Ef.: S/ 0.00</span>
                             </div>
                         </div>
                         
@@ -179,7 +292,7 @@ body { overflow-x: hidden; }
     </div>
 
     <!-- LADO DERECHO: BUSCADOR CATALOGO -->
-    <div class="pos-right">
+    <div class="pos-right pos-panel">
         <div class="search-box mb-3">
             <i class="bi bi-upc-scan"></i>
             <input type="text" id="buscadorPOS" placeholder="Código de barras o Nombre..." onkeyup="filtrarCatalogo()" autofocus>
@@ -227,6 +340,59 @@ body { overflow-x: hidden; }
                 </div>
             </div>
             <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL REGISTRO RÁPIDO DE CLIENTE DESDE POS -->
+<div class="modal fade" id="modalNuevoClientePos" tabindex="-1" aria-labelledby="modalNuevoClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header bg-success text-white py-2">
+                <h6 class="modal-title fw-bold" id="modalNuevoClienteLabel"><i class="bi bi-person-plus-fill me-2"></i> Nuevo Cliente Rápido</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formNuevoClientePos" onsubmit="guardarClientePos(event)">
+                <div class="modal-body p-3">
+                    <div id="alertaErrorClientePos" class="alert alert-danger py-2 d-none" style="font-size: 12px;"></div>
+                    
+                    <div class="row g-2 mb-2">
+                        <div class="col-5">
+                            <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: #444;">Tipo Doc *</label>
+                            <select class="form-select form-select-sm" name="tipo_documento" id="nuevoCliTipoDoc">
+                                <option value="DNI" selected>DNI</option>
+                                <option value="RUC">RUC</option>
+                                <option value="CE">Carnet Ext.</option>
+                                <option value="Pasaporte">Pasaporte</option>
+                            </select>
+                        </div>
+                        <div class="col-7">
+                            <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: #444;">N° Documento *</label>
+                            <input type="text" class="form-control form-control-sm" name="num_documento" id="nuevoCliNumDoc" required placeholder="Ej. 70854120">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: #444;">Nombres y Apellidos / Razón Social *</label>
+                        <input type="text" class="form-control form-control-sm" name="nombres" id="nuevoCliNombres" required placeholder="Ej. Juan Pérez García">
+                    </div>
+                    
+                    <div class="row g-2 mb-1">
+                        <div class="col-6">
+                            <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: #444;">Teléfono / Celular</label>
+                            <input type="text" class="form-control form-control-sm" name="telefono" id="nuevoCliTelefono" placeholder="Ej. 987654321">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: #444;">Dirección</label>
+                            <input type="text" class="form-control form-control-sm" name="direccion" id="nuevoCliDireccion" placeholder="Ej. Av. Principal 123">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success btn-sm fw-bold" id="btnGuardarClientePos"><i class="bi bi-check-circle"></i> Guardar y Asignar</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -319,18 +485,44 @@ document.getElementById("buscadorPOS").addEventListener('keydown', function(e) {
         let codigo = this.value.trim();
         if (codigo === '') return;
         
-        let productoList = catalogoGlobal.filter(p => p.codigo_barras === codigo);
+        let productoList = catalogoGlobal.filter(p => p.codigo_barras && p.codigo_barras.trim().toLowerCase() === codigo.toLowerCase());
         if(productoList.length > 0) {
             let prod = productoList[0];
             if (prod.stock <= 0) {
                 alert("Producto sin stock o agotado: " + prod.nombre);
                 this.value = '';
+                filtrarCatalogo();
                 return;
             }
             agregarAlCarrito(prod);
             this.value = '';
+            filtrarCatalogo();
         } else {
-            // alert('Código de barras no encontrado'); // Opcional
+            // Verificar si hay coincidencia exacta de nombre o exactamente 1 tarjeta visible
+            let coincidencias = catalogoGlobal.filter(p => p.nombre && p.nombre.toLowerCase() === codigo.toLowerCase());
+            if (coincidencias.length === 1) {
+                if (coincidencias[0].stock <= 0) {
+                    alert("Producto sin stock o agotado: " + coincidencias[0].nombre);
+                    this.value = '';
+                    filtrarCatalogo();
+                    return;
+                }
+                agregarAlCarrito(coincidencias[0]);
+                this.value = '';
+                filtrarCatalogo();
+                return;
+            }
+            
+            let visibleCards = Array.from(document.querySelectorAll('#catList .item-card')).filter(el => el.style.display !== 'none');
+            if (visibleCards.length === 1 && !visibleCards[0].classList.contains('disabled')) {
+                visibleCards[0].click();
+                this.value = '';
+                filtrarCatalogo();
+                return;
+            }
+
+            alert('No se encontró ningún producto con el código de barras o término: "' + codigo + '"');
+            this.select();
         }
     }
 });
@@ -565,6 +757,165 @@ function renderCarrito() {
     document.getElementById('fiDesc').value = descuento.toFixed(2);
     
     calcularVuelto();
+    if(document.getElementById('btnMixto') && document.getElementById('btnMixto').checked) {
+        calcularMixto();
+    }
+}
+
+// -----------------------------------------
+// PESTAÑAS RESPONSIVE (MÓVIL / TABLET)
+// -----------------------------------------
+function switchPosTab(tab) {
+    const leftPanel = document.querySelector('.pos-left');
+    const rightPanel = document.querySelector('.pos-right');
+    const btnCart = document.getElementById('btnTabCart');
+    const btnCatalog = document.getElementById('btnTabCatalog');
+    if (tab === 'cart') {
+        leftPanel.classList.add('active');
+        rightPanel.classList.remove('active');
+        btnCart.classList.add('active');
+        btnCatalog.classList.remove('active');
+    } else {
+        rightPanel.classList.add('active');
+        leftPanel.classList.remove('active');
+        btnCatalog.classList.add('active');
+        btnCart.classList.remove('active');
+        setTimeout(() => { document.getElementById('buscadorPOS').focus(); }, 150);
+    }
+}
+
+// -----------------------------------------
+// BÚSQUEDA PREDICTIVA Y REGISTRO DE CLIENTE
+// -----------------------------------------
+let searchCliTimeout = null;
+const inputFiltroCli = document.getElementById('filtroClientePos');
+const resDivCli = document.getElementById('resultadosClientePos');
+const selCli = document.getElementById('selectCliente');
+
+if (inputFiltroCli) {
+    inputFiltroCli.addEventListener('input', function() {
+        clearTimeout(searchCliTimeout);
+        const query = this.value.trim();
+        if (query.length === 0) {
+            resDivCli.style.display = 'none';
+            resDivCli.innerHTML = '';
+            return;
+        }
+        searchCliTimeout = setTimeout(() => {
+            fetch('<?php echo BASE_URL; ?>cliente/searchAjax?q=' + encodeURIComponent(query))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.clientes && data.clientes.length > 0) {
+                        let html = '';
+                        data.clientes.forEach(c => {
+                            let docSafe = (c.num_documento || '').replace(/'/g, "\\'");
+                            let nomSafe = (c.nombres || '').replace(/'/g, "\\'");
+                            html += `
+                                <button type="button" class="list-group-item list-group-item-action py-2 d-flex justify-content-between align-items-center" onclick="seleccionarClientePredictivo(${c.id}, '${docSafe}', '${nomSafe}', ${c.puntos_acumulados || 0})">
+                                    <div>
+                                        <span class="badge bg-secondary me-1">${c.tipo_documento || 'DOC'}: ${c.num_documento}</span>
+                                        <strong class="text-dark">${c.nombres}</strong>
+                                    </div>
+                                    <span class="badge bg-success">${c.puntos_acumulados || 0} pts</span>
+                                </button>
+                            `;
+                        });
+                        resDivCli.innerHTML = html;
+                        resDivCli.style.display = 'block';
+                    } else {
+                        resDivCli.innerHTML = '<div class="list-group-item text-muted py-2">No se encontraron clientes coincidentes</div>';
+                        resDivCli.style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    resDivCli.style.display = 'none';
+                });
+        }, 200);
+    });
+
+    document.addEventListener('click', function(e) {
+        if (inputFiltroCli && resDivCli && !inputFiltroCli.contains(e.target) && !resDivCli.contains(e.target)) {
+            resDivCli.style.display = 'none';
+        }
+    });
+}
+
+function seleccionarClientePredictivo(id, numDoc, nombres, puntos) {
+    let opt = Array.from(selCli.options).find(o => o.value == id);
+    if (!opt) {
+        opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = numDoc + ' - ' + nombres;
+        opt.setAttribute('data-puntos', puntos);
+        selCli.appendChild(opt);
+    }
+    selCli.value = id;
+    if (resDivCli) resDivCli.style.display = 'none';
+    if (inputFiltroCli) inputFiltroCli.value = numDoc + ' - ' + nombres;
+    evaluarClientePuntos();
+}
+
+function guardarClientePos(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarClientePos');
+    const alertBox = document.getElementById('alertaErrorClientePos');
+    alertBox.classList.add('d-none');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
+
+    const form = document.getElementById('formNuevoClientePos');
+    const formData = new FormData(form);
+    const csrfEl = document.querySelector('input[name="csrf_token"]');
+    if (csrfEl) formData.append('csrf_token', csrfEl.value);
+
+    fetch('<?php echo BASE_URL; ?>cliente/saveAjax', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle"></i> Guardar y Asignar';
+        if (data.success && data.cliente) {
+            const c = data.cliente;
+            seleccionarClientePredictivo(c.id, c.num_documento, c.nombres, 0);
+            
+            const modalEl = document.getElementById('modalNuevoClientePos');
+            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.hide();
+            form.reset();
+        } else {
+            alertBox.textContent = data.error || 'Error al registrar cliente.';
+            alertBox.classList.remove('d-none');
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle"></i> Guardar y Asignar';
+        alertBox.textContent = 'Error de comunicación con el servidor.';
+        alertBox.classList.remove('d-none');
+    });
+}
+
+// -----------------------------------------
+// GESTIÓN DE MÉTODOS DE PAGO Y VUELTO
+// -----------------------------------------
+function cambiarMetodoPago(metodo) {
+    document.getElementById('panelEfectivo').style.display = (metodo === 'Efectivo') ? 'block' : 'none';
+    document.getElementById('panelYape').style.display = (metodo === 'Yape/Plin') ? 'block' : 'none';
+    document.getElementById('panelTarjeta').style.display = (metodo === 'Tarjeta') ? 'block' : 'none';
+    document.getElementById('panelMixto').style.display = (metodo === 'Mixto') ? 'block' : 'none';
+
+    if (metodo === 'Efectivo') {
+        document.getElementById('inPago').focus();
+        calcularVuelto();
+    } else if (metodo === 'Yape/Plin') {
+        document.getElementById('inOpTrans').focus();
+    } else if (metodo === 'Tarjeta') {
+        document.getElementById('inOpTarj').focus();
+    } else if (metodo === 'Mixto') {
+        calcularMixto();
+    }
 }
 
 function calcularVuelto() {
@@ -577,37 +928,143 @@ function calcularVuelto() {
     document.getElementById('inVuelto').value = vuelto.toFixed(2);
 }
 
+function calcularMixto() {
+    let total = parseFloat(document.getElementById('fiTot').value) || 0;
+    let efe = parseFloat(document.getElementById('inMontoEfeMixto').value) || 0;
+    let tra = parseFloat(document.getElementById('inMontoTransMixto').value) || 0;
+    let tar = parseFloat(document.getElementById('inMontoTarjMixto').value) || 0;
+    let suma = Math.round((efe + tra + tar) * 100) / 100;
+    let dif = Math.round((total - suma) * 100) / 100;
+
+    document.getElementById('lblSumaMixta').innerText = 'S/ ' + suma.toFixed(2);
+    let badge = document.getElementById('badgeEstadoMixto');
+
+    if (Math.abs(dif) < 0.01 && total > 0) {
+        badge.className = 'badge bg-success';
+        badge.innerText = 'Cuadrado (100%)';
+    } else if (dif > 0) {
+        badge.className = 'badge bg-warning text-dark';
+        badge.innerText = 'Falta: S/ ' + dif.toFixed(2);
+    } else {
+        badge.className = 'badge bg-danger';
+        badge.innerText = 'Excede: S/ ' + Math.abs(dif).toFixed(2);
+    }
+
+    let recibidoEfe = parseFloat(document.getElementById('inPagoEfeMixto').value) || 0;
+    let vueltoEfe = 0;
+    if (recibidoEfe >= efe && efe > 0) {
+        vueltoEfe = recibidoEfe - efe;
+    }
+    document.getElementById('lblVueltoMixto').innerText = 'Vuelto Ef.: S/ ' + vueltoEfe.toFixed(2);
+}
+
 function confirmarVenta() {
     let total = parseFloat(document.getElementById('fiTot').value) || 0;
     if(total <= 0) {
-        alert("El carrito está vacío.");
+        alert("El carrito está vacío. Agregue productos antes de cobrar.");
         return;
     }
-    
-    // Optional: Validar el metodo de pago vs el monto recibido en Efectivo
-    if(document.getElementById('btnEfecti').checked) {
+
+    let metodo = document.querySelector('input[name="metodo_pago"]:checked').value;
+
+    // VALIDACIÓN ESTRICTA: EFECTIVO
+    if(metodo === 'Efectivo') {
         let pago = parseFloat(document.getElementById('inPago').value) || 0;
-        if (pago < total) {
-            alert("El monto de efectivo recibido es menor al total de la venta.");
+        if (pago <= 0) {
+            alert("Atención: Debe ingresar el efectivo recibido antes de procesar la venta.");
             document.getElementById('inPago').focus();
             return;
+        }
+        if (pago < total) {
+            alert("Error: El efectivo recibido (S/ " + pago.toFixed(2) + ") es menor al total de la venta (S/ " + total.toFixed(2) + ").");
+            document.getElementById('inPago').focus();
+            return;
+        }
+    } 
+    // VALIDACIÓN ESTRICTA: YAPE / PLIN
+    else if (metodo === 'Yape/Plin') {
+        let op = document.getElementById('inOpTrans').value.trim();
+        if (op === '') {
+            alert("Atención: Por favor ingrese el N° de Operación de Yape / Plin.");
+            document.getElementById('inOpTrans').focus();
+            return;
+        }
+    } 
+    // VALIDACIÓN ESTRICTA: TARJETA
+    else if (metodo === 'Tarjeta') {
+        let op = document.getElementById('inOpTarj').value.trim();
+        if (op === '') {
+            alert("Atención: Por favor ingrese el N° de Referencia / Voucher del POS Tarjeta.");
+            document.getElementById('inOpTarj').focus();
+            return;
+        }
+    } 
+    // VALIDACIÓN ESTRICTA: MIXTO
+    else if (metodo === 'Mixto') {
+        let efe = parseFloat(document.getElementById('inMontoEfeMixto').value) || 0;
+        let tra = parseFloat(document.getElementById('inMontoTransMixto').value) || 0;
+        let tar = parseFloat(document.getElementById('inMontoTarjMixto').value) || 0;
+        let suma = Math.round((efe + tra + tar) * 100) / 100;
+        let totRedondo = Math.round(total * 100) / 100;
+
+        if (Math.abs(suma - totRedondo) > 0.01) {
+            alert("Error en Pago Mixto: La suma de montos (S/ " + suma.toFixed(2) + ") debe ser exactamente igual al total a pagar (S/ " + totRedondo.toFixed(2) + ").");
+            return;
+        }
+
+        if (efe > 0) {
+            let pagoEfe = parseFloat(document.getElementById('inPagoEfeMixto').value) || 0;
+            if (pagoEfe <= 0) {
+                alert("Atención: Debe ingresar el efectivo recibido para la porción en efectivo.");
+                document.getElementById('inPagoEfeMixto').focus();
+                return;
+            }
+            if (pagoEfe < efe) {
+                alert("Error en Pago Mixto: El efectivo recibido (S/ " + pagoEfe.toFixed(2) + ") no cubre la porción en efectivo (S/ " + efe.toFixed(2) + ").");
+                document.getElementById('inPagoEfeMixto').focus();
+                return;
+            }
+            document.getElementById('inPago').value = pagoEfe;
+        } else {
+            document.getElementById('inPago').value = 0;
+        }
+
+        if (tra > 0) {
+            let opTra = document.getElementById('inOpTransMixto').value.trim();
+            if (opTra === '') {
+                alert("Atención: Ingrese el N° de Operación de Yape/Plin para el monto transferido.");
+                document.getElementById('inOpTransMixto').focus();
+                return;
+            }
+            document.getElementById('inOpTrans').value = opTra;
+        }
+
+        if (tar > 0) {
+            let opTar = document.getElementById('inOpTarjMixto').value.trim();
+            if (opTar === '') {
+                alert("Atención: Ingrese el N° de Operación de Tarjeta para el monto con tarjeta.");
+                document.getElementById('inOpTarjMixto').focus();
+                return;
+            }
+            document.getElementById('inOpTarj').value = opTar;
         }
     }
     
     // Validar CMP visible
-    if(document.getElementById('inCmp').hasAttribute('required') && document.getElementById('inCmp').value.trim() === '') {
+    let cmp = document.getElementById('inCmp');
+    if(cmp && cmp.hasAttribute('required') && cmp.value.trim() === '') {
         alert("Atención: Ha incluido productos controlados. Debe ingresar la colegiatura médica (CMP) del doctor.");
-        document.getElementById('inCmp').focus();
+        cmp.focus();
         return;
     }
 
-    if(confirm('¿Procesar venta por S/ ' + total.toFixed(2) + '?')) {
+    if(confirm('¿Procesar venta por S/ ' + total.toFixed(2) + ' mediante ' + metodo + '?')) {
         document.getElementById('formVenta').submit();
     }
 }
 
 // -----------------------------------------
-// OPTIMIZACIÓN DE HARDWARE (ATajos y Lector)
+// OPTIMIZACIÓN DE HARDWARE (Atajos y Lector)
 // -----------------------------------------
 document.addEventListener('keydown', function(e) {
     // F2: Enfocar Buscador (Lector láser)
@@ -619,6 +1076,7 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'F4') {
         e.preventDefault();
         document.getElementById('btnEfecti').checked = true;
+        cambiarMetodoPago('Efectivo');
         document.getElementById('inPago').focus();
         document.getElementById('inPago').select();
     }
@@ -631,11 +1089,9 @@ document.addEventListener('keydown', function(e) {
     // Lector de Código de Barras (Captura global pasiva)
     // Si el usuario escanea y no está enfocado en ningún input
     if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
-        // Ignorar teclas de control
         if (e.key.length === 1 && /[a-zA-Z0-9\-]/.test(e.key)) {
             let buscador = document.getElementById('buscadorPOS');
             buscador.focus();
-            // El primer carácter se escribirá automáticamente gracias al comportamiento natural del navegador al enfocar
         }
     }
 });
