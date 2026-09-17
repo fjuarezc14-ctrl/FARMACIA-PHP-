@@ -135,7 +135,9 @@ class User {
             "SELECT COUNT(*) FROM compras WHERE id_usuario = ?",
             "SELECT COUNT(*) FROM cajas WHERE usuario_id = ?",
             "SELECT COUNT(*) FROM kardex WHERE id_usuario = ?",
-            "SELECT COUNT(*) FROM inventario_auditorias WHERE id_usuario = ?"
+            "SELECT COUNT(*) FROM inventario_auditorias WHERE id_usuario = ?",
+            "SELECT COUNT(*) FROM compras_devoluciones WHERE id_usuario = ?",
+            "SELECT COUNT(*) FROM cliente_puntos_historial WHERE id_usuario = ?"
         ];
 
         foreach ($checks as $sql) {
