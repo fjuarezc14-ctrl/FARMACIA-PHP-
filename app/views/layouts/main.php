@@ -18,300 +18,381 @@
     <!-- Suite Nativa de Accesibilidad Web (WCAG 2.1 AA) -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/accessibility.css">
 </head>
-<body>
+<body class="ceng-body">
 
-<div id="sidebarOverlay"></div>
-<div id="wrapper">
-    <!-- Sidebar -->
-    <aside id="sidebar">
-        <?php
-        require_once '../app/models/Configuracion.php';
-        $_globalConfigModel = new Configuracion();
-        $_globalLogo = $_globalConfigModel->get('logo');
-        $configs     = $_globalConfigModel->getAll(); // disponible en todo el layout
+<?php
+require_once '../app/models/Configuracion.php';
+$_globalConfigModel = new Configuracion();
+$_globalLogo = $_globalConfigModel->get('logo');
+$configs     = $_globalConfigModel->getAll();
 
-        require_once '../app/models/Inventario.php';
-        $_globalInvModel = new Inventario();
-        $_lotesVencer = $_globalInvModel->getLotesProximosVencer(90);
-        $_stockBajo = $_globalInvModel->getProductosBajoStock(20);
-        $_totalNotifs = count($_lotesVencer) + count($_stockBajo);
-        $boticaName = $configs['nombre_botica']['valor'] ?? 'CENGFARMA';
-        ?>
-        <a href="<?php echo BASE_URL; ?>auth/index" class="sidebar-logo text-center d-block">
-            <?php 
-            $effectiveLogo = !empty($_globalLogo) ? $_globalLogo : 'img/cengfarma_banner.png';
-            $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . $effectiveLogo;
-            ?>
-            <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="<?php echo htmlspecialchars($boticaName); ?>" style="max-height: 62px; max-width: 95%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-        </a>
-        <ul class="sidebar-nav">
-            <?php if($_SESSION['rol_id'] == 1): ?>
-            <li class="nav-section-title" style="color: #38bdf8;">Visión General</li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>dashboard/index" class="nav-link">
-                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+require_once '../app/models/Inventario.php';
+$_globalInvModel = new Inventario();
+$_lotesVencer = $_globalInvModel->getLotesProximosVencer(90);
+$_stockBajo = $_globalInvModel->getProductosBajoStock(20);
+$_totalNotifs = count($_lotesVencer) + count($_stockBajo);
+$boticaName = $configs['nombre_botica']['valor'] ?? 'CENGFARMA';
+
+$sunatActivo = ($configs['sunat_habilitado']['valor'] ?? '0') === '1';
+$sunatModo   = $configs['sunat_modo']['valor'] ?? 'beta';
+
+$roles = [1 => 'Administrador', 2 => 'Farmacéutico', 3 => 'Cajero', 4 => 'Almacenero'];
+$userRoleName = $roles[$_SESSION['rol_id'] ?? 1] ?? 'Usuario';
+
+$effectiveLogo = !empty($_globalLogo) ? $_globalLogo : 'img/cengfarma_banner.png';
+$logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . $effectiveLogo;
+?>
+
+<!-- ======================================================= -->
+<!-- NAVEGACIÓN PRINCIPAL HORIZONTAL SUPERIOR (TOP BAR)     -->
+<!-- ======================================================= -->
+<header id="cengfarma-topbar" class="ceng-topbar sticky-top">
+    <div class="ceng-topbar-inner">
+        
+        <!-- Bloque Izquierdo Unificado: Marca + Navegación (Continuo y sin huecos) -->
+        <div class="ceng-topbar-left d-flex align-items-center gap-3">
+            <div class="ceng-brand-area d-flex align-items-center gap-2">
+                <!-- Botón Menú Móvil / Tablet (Offcanvas) -->
+                <button class="ceng-mobile-toggler d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#cengMobileDrawer" aria-controls="cengMobileDrawer" aria-label="Abrir Menú">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <!-- Logotipo & Acceso Inteligente a Dashboard -->
+                <?php 
+                $isDashboardActive = (strpos($_SERVER['REQUEST_URI'] ?? '', 'dashboard') !== false) || (trim($_SERVER['REQUEST_URI'] ?? '', '/') === 'public');
+                ?>
+                <a href="<?php echo BASE_URL; ?><?php echo ($_SESSION['rol_id'] == 1) ? 'dashboard/index' : 'venta/pos'; ?>" 
+                   class="ceng-brand-link <?php echo $isDashboardActive ? 'active-home' : ''; ?>" 
+                   title="Ir al Dashboard / Inicio">
+                    <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="<?php echo htmlspecialchars($boticaName); ?>" class="ceng-brand-logo">
+                    <?php if($isDashboardActive): ?>
+                    <span class="ceng-brand-active-indicator" title="Estás en el Dashboard"></span>
+                    <?php endif; ?>
                 </a>
-            </li>
-            <?php endif; ?>
+            </div>
 
-            <li class="nav-section-title" style="color: #fbbf24;">Comercio & Ventas</li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="collapse" href="#menuCaja" role="button" aria-expanded="false" aria-controls="menuCaja">
-                    <i class="bi bi-box-arrow-in-right"></i> Gestión de Caja
-                    <i class="bi bi-chevron-down ms-auto" style="font-size:12px"></i>
+            <!-- Separador Vertical Sutil -->
+            <div class="ceng-topbar-sep d-none d-lg-block"></div>
+
+            <!-- Menú de Navegación Principal (Continuo al logo, sin huecos vacíos) -->
+            <nav class="ceng-nav-menu d-none d-lg-flex align-items-center gap-2">
+
+                <!-- Botón Estrella: Vender (POS) -->
+                <a href="<?php echo BASE_URL; ?>venta/pos" class="ceng-pos-btn" id="nav-pos" data-route="venta/pos" title="Ir a Punto de Venta (Atajo F1)">
+                    <i class="bi bi-cart-fill"></i>
+                    <span>Vender</span>
+                    <span class="ceng-kbd-tag">F1</span>
                 </a>
-                <div class="collapse" id="menuCaja">
-                    <ul class="nav flex-column ms-3 mt-1" style="font-size: 13px;">
-                        <li class="nav-item">
-                            <a href="<?php echo BASE_URL; ?>caja/apertura" class="nav-link"><i class="bi bi-circle"></i> Abrir Turno (Caja)</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="<?php echo BASE_URL; ?>caja/cierre" class="nav-link"><i class="bi bi-circle"></i> Cerrar / Arqueo</a>
-                        </li>
+
+                <!-- Módulo: Ventas & Caja -->
+                <div class="dropdown ceng-dropdown">
+                    <button class="ceng-nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-route="caja,venta,cliente,puntos">
+                        <i class="bi bi-cash-coin"></i>
+                        <span>Ventas &amp; Caja</span>
+                    </button>
+                    <ul class="dropdown-menu ceng-dropdown-menu shadow-lg">
+                        <li class="ceng-dropdown-title"><i class="bi bi-wallet2 text-success me-1"></i> Gestión de Caja</li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>caja/apertura"><i class="bi bi-box-arrow-in-right"></i> Apertura de Turno</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>caja/cierre"><i class="bi bi-lock-fill"></i> Cerrar / Arqueo</a></li>
                         <?php if($_SESSION['rol_id'] == 1): ?>
-                        <li class="nav-item">
-                            <a href="<?php echo BASE_URL; ?>caja/index" class="nav-link"><i class="bi bi-circle"></i> Historial Arqueos</a>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>caja/index"><i class="bi bi-clock-history"></i> Historial Arqueos</a></li>
+                        <?php endif; ?>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="ceng-dropdown-title"><i class="bi bi-receipt text-warning me-1"></i> Ventas &amp; Clientes</li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>venta/index"><i class="bi bi-receipt"></i> Historial de Ventas</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>cliente/index"><i class="bi bi-people-fill"></i> Clientes</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>puntos/index"><i class="bi bi-star-fill text-warning"></i> Club de Puntos</a></li>
+                    </ul>
+                </div>
+
+                <!-- Módulo: Almacén & FEFO -->
+                <?php if(in_array($_SESSION['rol_id'], [1, 2, 4])): ?>
+                <div class="dropdown ceng-dropdown">
+                    <button class="ceng-nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-route="producto,categoria,laboratorio,inventario,compra,proveedor">
+                        <i class="bi bi-boxes"></i>
+                        <span>Almacén &amp; FEFO</span>
+                    </button>
+                    <ul class="dropdown-menu ceng-dropdown-menu shadow-lg">
+                        <li class="ceng-dropdown-title"><i class="bi bi-capsule text-primary me-1"></i> Catálogo Maestro</li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>producto/index"><i class="bi bi-box-seam"></i> Catálogo de Productos</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>categoria/index"><i class="bi bi-tags-fill"></i> Categorías</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>laboratorio/index"><i class="bi bi-building"></i> Laboratorios</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="ceng-dropdown-title"><i class="bi bi-calendar-check text-danger me-1"></i> Control FEFO &amp; Stock</li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>inventario/lotes"><i class="bi bi-calendar-event"></i> Fechas Vencimiento (FEFO)</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>inventario/kardex"><i class="bi bi-clipboard2-data"></i> Kardex General</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>inventariofisico/index"><i class="bi bi-check2-square"></i> Inventario Físico</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="ceng-dropdown-title"><i class="bi bi-truck text-info me-1"></i> Abastecimiento</li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>compra/index"><i class="bi bi-bag-plus"></i> Compras</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>proveedor/index"><i class="bi bi-truck"></i> Proveedores</a></li>
+                    </ul>
+                </div>
+                <?php endif; ?>
+
+                <!-- Módulo: Administración & Sistema -->
+                <div class="dropdown ceng-dropdown">
+                    <button class="ceng-nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-route="notificacion,reporte,usuario,configuracion,auditoria,sistema">
+                        <i class="bi bi-sliders"></i>
+                        <span>Administración</span>
+                    </button>
+                    <ul class="dropdown-menu ceng-dropdown-menu shadow-lg">
+                        <li class="ceng-dropdown-title"><i class="bi bi-graph-up text-info me-1"></i> Control &amp; Alertas</li>
+                        <li>
+                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="<?php echo BASE_URL; ?>notificacion/index">
+                                <span><i class="bi bi-bell"></i> Alertas Sanitarias</span>
+                                <?php if($_totalNotifs > 0): ?>
+                                <span class="badge rounded-pill bg-danger"><?php echo $_totalNotifs; ?></span>
+                                <?php endif; ?>
+                            </a>
                         </li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>reporte/index"><i class="bi bi-bar-chart-fill"></i> Reportes PDF / Excel</a></li>
+                        
+                        <?php if($_SESSION['rol_id'] == 1): ?>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="ceng-dropdown-title"><i class="bi bi-shield-lock-fill text-warning me-1"></i> Sistema &amp; SUNAT</li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>usuario/index"><i class="bi bi-person-badge"></i> Gestión de Personal</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>configuracion/index"><i class="bi bi-gear-fill"></i> Configuración General</a></li>
+                        <li>
+                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="<?php echo BASE_URL; ?>configuracion/sunat">
+                                <span><i class="bi bi-shield-check"></i> Facturación SUNAT</span>
+                                <span class="badge" style="font-size:9px; font-weight:800; padding:2px 6px; border-radius:10px;
+                                    background:<?php echo $sunatActivo ? ($sunatModo==='produccion' ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)') : 'rgba(239,68,68,0.15)'; ?>;
+                                    color:<?php echo $sunatActivo ? ($sunatModo==='produccion' ? '#10B981' : '#F59E0B') : '#ef4444'; ?>;">
+                                    <?php echo $sunatActivo ? strtoupper($sunatModo) : 'OFF'; ?>
+                                </span>
+                            </a>
+                        </li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>auditoria/index"><i class="bi bi-journal-text"></i> Logs de Auditoría</a></li>
+                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>sistema/index"><i class="bi bi-database-fill-gear"></i> Base de Datos &amp; Respaldos</a></li>
                         <?php endif; ?>
                     </ul>
                 </div>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>venta/pos" class="nav-link" id="nav-pos">
-                    <i class="bi bi-cart-fill"></i> PUNTO DE VENTA (POS)
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>venta/index" class="nav-link">
-                    <i class="bi bi-receipt"></i> Historial Ventas
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>cliente/index" class="nav-link">
-                    <i class="bi bi-people"></i> Clientes
-                </a>
-            </li>
+
+            </nav>
+        </div>
+
+        <!-- Zona Derecha: Buscador Rápido + Alertas + Perfil Usuario -->
+        <div class="ceng-user-area d-flex align-items-center gap-2 gap-md-3">
             
-            <?php if(in_array($_SESSION['rol_id'], [1, 2, 4])): ?>
-            <li class="nav-section-title" style="color: #34d399;">Logística & Inventario</li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="collapse" href="#menuProductos" role="button" aria-expanded="false" aria-controls="menuProductos">
-                    <i class="bi bi-box-seam"></i> Catálogo Maestro
-                    <i class="bi bi-chevron-down ms-auto" style="font-size:12px"></i>
-                </a>
-                <div class="collapse" id="menuProductos">
-                    <ul class="nav flex-column ms-3 mt-1" style="font-size: 13px;">
-                        <li class="nav-item">
-                            <a href="<?php echo BASE_URL; ?>producto/index" class="nav-link"><i class="bi bi-circle"></i> Productos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="<?php echo BASE_URL; ?>categoria/index" class="nav-link"><i class="bi bi-circle"></i> Categorías</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="<?php echo BASE_URL; ?>laboratorio/index" class="nav-link"><i class="bi bi-circle"></i> Laboratorios</a>
-                        </li>
-                    </ul>
+            <!-- Buscador Rápido de Productos en Topbar (Desktop Amplio) -->
+            <form action="<?php echo BASE_URL; ?>producto/index" method="GET" class="ceng-quick-search d-none d-xl-flex">
+                <i class="bi bi-search"></i>
+                <input type="text" name="search" placeholder="Buscar medicamento o código..." value="<?php echo htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+            </form>
+
+            <!-- Campana de Alertas Sanitarias -->
+            <a href="<?php echo BASE_URL; ?>notificacion/index" class="ceng-alert-bell" title="Alertas Sanitarias">
+                <i class="bi bi-bell-fill"></i>
+                <?php if($_totalNotifs > 0): ?>
+                <span class="ceng-bell-pulse"></span>
+                <span class="ceng-bell-badge"><?php echo $_totalNotifs; ?></span>
+                <?php endif; ?>
+            </a>
+
+            <!-- Dropdown Usuario / Perfil -->
+            <div class="dropdown">
+                <div class="ceng-user-card dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" role="button" tabindex="0">
+                    <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['nombre'] ?? 'U'); ?>&background=047B07&color=fff&bold=true" alt="Avatar" class="ceng-avatar">
+                    <div class="ceng-user-meta d-none d-sm-flex flex-column text-start">
+                        <span class="ceng-user-fullname"><?php echo htmlspecialchars($_SESSION['nombre'] ?? 'Administrador', ENT_QUOTES, 'UTF-8'); ?></span>
+                        <span class="ceng-user-role-badge"><?php echo $userRoleName; ?></span>
+                    </div>
                 </div>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>compra/index" class="nav-link">
-                    <i class="bi bi-cart"></i> Compras
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>proveedor/index" class="nav-link">
-                    <i class="bi bi-truck"></i> Proveedores
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="collapse" href="#menuInventario" role="button" aria-expanded="false" aria-controls="menuInventario">
-                    <i class="bi bi-clipboard-data"></i> Inventario
-                    <i class="bi bi-chevron-down ms-auto" style="font-size:12px"></i>
-                </a>
-                <div class="collapse" id="menuInventario">
-                    <ul class="nav flex-column ms-3 mt-1" style="font-size: 13px;">
-                        <li class="nav-item">
-                            <a href="<?php echo BASE_URL; ?>inventario/lotes" class="nav-link"><i class="bi bi-circle"></i> Fechas Vencimiento</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="<?php echo BASE_URL; ?>inventario/kardex" class="nav-link"><i class="bi bi-circle"></i> Kardex General</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="<?php echo BASE_URL; ?>inventariofisico/index" class="nav-link"><i class="bi bi-circle"></i> Inventario Físico</a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>puntos/index" class="nav-link">
-                    <i class="bi bi-star-fill" style="color: #fbbf24;"></i> Gestionar Puntos
-                </a>
-            </li>
-            <?php endif; ?>
-            
-            <li class="nav-section-title" style="color: #fb7185;">Gerencia & Control</li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>notificacion/index" class="nav-link">
-                    <i class="bi bi-bell"></i> Alertas Sanitarias
-                    <?php if($_totalNotifs > 0): ?>
-                    <span class="badge-sidebar" style="background-color: var(--danger);"><?php echo $_totalNotifs; ?></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>reporte/index" class="nav-link">
-                    <i class="bi bi-bar-chart-fill"></i> Reportes PDF/Excel
-                </a>
-            </li>
+                <ul class="dropdown-menu dropdown-menu-end ceng-dropdown-menu shadow-lg mt-2">
+                    <li class="px-3 py-2 border-bottom d-sm-none">
+                        <div class="fw-bold text-white"><?php echo htmlspecialchars($_SESSION['nombre'] ?? 'Administrador', ENT_QUOTES, 'UTF-8'); ?></div>
+                        <small class="text-secondary"><?php echo $userRoleName; ?></small>
+                    </li>
+                    <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>perfil/index"><i class="bi bi-person-gear me-2 text-info"></i> Mi Perfil</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger fw-bold" href="<?php echo BASE_URL; ?>auth/logout"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+</header>
+
+<!-- ======================================================= -->
+<!-- CAJÓN MÓVIL / TABLET (OFFCANVAS MODERNO)                -->
+<!-- ======================================================= -->
+<div class="offcanvas offcanvas-start ceng-offcanvas" tabindex="-1" id="cengMobileDrawer" aria-labelledby="cengMobileDrawerLabel">
+    <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+        <div class="d-flex align-items-center gap-2">
+            <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="CENGFARMA" class="ceng-brand-logo" style="max-height: 38px;">
+            <div>
+                <h5 class="offcanvas-title text-white fw-bold mb-0" id="cengMobileDrawerLabel"><?php echo htmlspecialchars($boticaName); ?></h5>
+                <small class="text-muted" style="font-size: 11px;">Botica &amp; Perfumería</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+    </div>
+    
+    <div class="offcanvas-body p-3">
+        <!-- Buscador móvil -->
+        <form action="<?php echo BASE_URL; ?>producto/index" method="GET" class="mb-3">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control bg-dark text-white border-secondary" placeholder="Buscar medicamento...">
+                <button class="btn btn-success" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+
+        <!-- Botón POS Móvil -->
+        <a href="<?php echo BASE_URL; ?>venta/pos" class="ceng-pos-btn w-100 justify-content-center py-2.5 mb-3">
+            <i class="bi bi-cart-fill"></i>
+            <span>Vender</span>
+            <span class="ceng-kbd-tag">F1</span>
+        </a>
+
+        <!-- Lista de navegación acordeón -->
+        <div class="accordion accordion-flush" id="mobileNavAccordion">
             
             <?php if($_SESSION['rol_id'] == 1): ?>
-            <li class="nav-section-title" style="color: #a78bfa;">Ajustes & Sistema</li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>usuario/index" class="nav-link">
-                    <i class="bi bi-person-badge"></i> Gestión de Personal
+            <div class="mb-2">
+                <a href="<?php echo BASE_URL; ?>dashboard/index" class="ceng-drawer-link">
+                    <i class="bi bi-grid-1x2-fill text-info"></i> Dashboard
                 </a>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>configuracion/index" class="nav-link">
-                    <i class="bi bi-gear-fill"></i> Configuración General
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>auditoria/index" class="nav-link">
-                    <i class="bi bi-shield-check"></i> Logs de Auditoría
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>sistema/index" class="nav-link">
-                    <i class="bi bi-database-fill-gear"></i> Base de Datos & Respaldos
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>configuracion/sunat" class="nav-link" style="position:relative;">
-                    <i class="bi bi-shield-lock-fill"></i> Facturación Electrónica
-                    <?php
-                    $sunatActivo = ($configs['sunat_habilitado']['valor'] ?? '0') === '1';
-                    $sunatModo   = $configs['sunat_modo']['valor'] ?? 'beta';
-                    ?>
-                    <span style="font-size:9px; font-weight:800; padding:2px 6px; border-radius:10px; margin-left:4px;
-                        background:<?php echo $sunatActivo ? ($sunatModo==='produccion' ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)') : 'rgba(239,68,68,0.15)'; ?>;
-                        color:<?php echo $sunatActivo ? ($sunatModo==='produccion' ? '#10B981' : '#F59E0B') : '#ef4444'; ?>;">
-                        <?php echo $sunatActivo ? strtoupper($sunatModo) : 'OFF'; ?>
-                    </span>
-                </a>
-            </li>
+            </div>
             <?php endif; ?>
-            <li class="nav-item">
-                <a href="<?php echo BASE_URL; ?>auth/logout" class="nav-link">
-                    <i class="bi bi-box-arrow-right"></i> Salir
-                </a>
-            </li>
-        </ul>
-    </aside>
 
-    <!-- Content Wrapper -->
-    <div id="content-wrapper">
-        <!-- Topbar -->
-        <header id="topbar">
-            <div class="d-flex align-items-center gap-3">
-                <button id="sidebarToggle" class="btn btn-link d-lg-none p-0 me-1" style="color: var(--text-primary); font-size: 26px; text-decoration: none;">
-                    <i class="bi bi-list"></i>
-                </button>
-                <!-- Encabezado CENGFARMA (Visible en móviles/tablets cuando el sidebar está oculto) -->
-                <div class="topbar-brand d-flex align-items-center gap-2 d-lg-none">
-                    <img src="<?php echo BASE_URL; ?>img/cengfarma_icon.png" alt="CENGFARMA" style="height: 38px; width: 38px; object-fit: contain; border-radius: 8px; box-shadow: 0 2px 8px rgba(4, 123, 7, 0.25);">
-                    <div class="d-flex flex-column justify-content-center">
-                        <span class="fw-bold text-uppercase" style="font-size: 15px; letter-spacing: 0.5px; color: #047b07; line-height: 1.1;">CENGFARMA</span>
-                        <small class="text-muted" style="font-size: 10px; font-weight: 600;">Botica &amp; Perfumería</small>
+            <!-- Grupo Ventas & Caja -->
+            <div class="accordion-item bg-transparent border-0 mb-2">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed ceng-drawer-acc-btn" type="button" data-bs-toggle="collapse" data-bs-target="#accCaja">
+                        <i class="bi bi-cash-coin me-2 text-warning"></i> Ventas &amp; Caja
+                    </button>
+                </h2>
+                <div id="accCaja" class="accordion-collapse collapse" data-bs-parent="#mobileNavAccordion">
+                    <div class="accordion-body p-0 ps-3">
+                        <a href="<?php echo BASE_URL; ?>caja/apertura" class="ceng-drawer-sublink"><i class="bi bi-box-arrow-in-right"></i> Apertura de Turno</a>
+                        <a href="<?php echo BASE_URL; ?>caja/cierre" class="ceng-drawer-sublink"><i class="bi bi-lock-fill"></i> Cerrar / Arqueo</a>
+                        <?php if($_SESSION['rol_id'] == 1): ?>
+                        <a href="<?php echo BASE_URL; ?>caja/index" class="ceng-drawer-sublink"><i class="bi bi-clock-history"></i> Historial Arqueos</a>
+                        <?php endif; ?>
+                        <a href="<?php echo BASE_URL; ?>venta/index" class="ceng-drawer-sublink"><i class="bi bi-receipt"></i> Historial de Ventas</a>
+                        <a href="<?php echo BASE_URL; ?>cliente/index" class="ceng-drawer-sublink"><i class="bi bi-people-fill"></i> Clientes</a>
+                        <a href="<?php echo BASE_URL; ?>puntos/index" class="ceng-drawer-sublink"><i class="bi bi-star-fill text-warning"></i> Club de Puntos</a>
                     </div>
                 </div>
-                <!-- Buscador de productos del Topbar (Directo a catálogo) -->
-                <form action="<?php echo BASE_URL; ?>producto/index" method="GET" class="search-box ms-2 d-none d-md-flex align-items-center mb-0">
-                    <i class="bi bi-search"></i>
-                    <input type="text" name="search" placeholder="Buscar producto o código de barras..." value="<?php echo htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" style="border:none; outline:none; background:transparent; width: 100%; color: var(--text-primary);">
-                </form>
             </div>
 
-            <div class="topbar-actions">
-                <a href="<?php echo BASE_URL; ?>notificacion/index" class="topbar-icon" style="text-decoration: none;">
-                    <i class="bi bi-bell-fill"></i>
-                    <?php if($_totalNotifs > 0): ?>
-                    <span class="badge rounded-pill bg-danger"><?php echo $_totalNotifs; ?></span>
-                    <?php endif; ?>
-                </a>
-                <div class="dropdown">
-                    <div class="user-profile dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                        <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['nombre'] ?? 'U'); ?>&background=00A896&color=fff&bold=true" alt="User Avatar">
-                        <div class="user-info">
-                            <span class="user-name"><?php echo htmlspecialchars($_SESSION['nombre'] ?? 'Administrador', ENT_QUOTES, 'UTF-8'); ?></span>
-                            <span class="user-role">
-                                <?php 
-                                $roles = [1 => 'Administrador', 2 => 'Farmacéutico', 3 => 'Cajero', 4 => 'Almacenero'];
-                                echo $roles[$_SESSION['rol_id'] ?? 1];
-                                ?>
-                            </span>
-                        </div>
+            <!-- Grupo Almacén & FEFO -->
+            <?php if(in_array($_SESSION['rol_id'], [1, 2, 4])): ?>
+            <div class="accordion-item bg-transparent border-0 mb-2">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed ceng-drawer-acc-btn" type="button" data-bs-toggle="collapse" data-bs-target="#accAlmacen">
+                        <i class="bi bi-boxes me-2 text-success"></i> Almacén &amp; FEFO
+                    </button>
+                </h2>
+                <div id="accAlmacen" class="accordion-collapse collapse" data-bs-parent="#mobileNavAccordion">
+                    <div class="accordion-body p-0 ps-3">
+                        <a href="<?php echo BASE_URL; ?>producto/index" class="ceng-drawer-sublink"><i class="bi bi-box-seam"></i> Productos</a>
+                        <a href="<?php echo BASE_URL; ?>categoria/index" class="ceng-drawer-sublink"><i class="bi bi-tags-fill"></i> Categorías</a>
+                        <a href="<?php echo BASE_URL; ?>laboratorio/index" class="ceng-drawer-sublink"><i class="bi bi-building"></i> Laboratorios</a>
+                        <a href="<?php echo BASE_URL; ?>inventario/lotes" class="ceng-drawer-sublink"><i class="bi bi-calendar-event"></i> Fechas Vencimiento (FEFO)</a>
+                        <a href="<?php echo BASE_URL; ?>inventario/kardex" class="ceng-drawer-sublink"><i class="bi bi-clipboard2-data"></i> Kardex General</a>
+                        <a href="<?php echo BASE_URL; ?>inventariofisico/index" class="ceng-drawer-sublink"><i class="bi bi-check2-square"></i> Inventario Físico</a>
+                        <a href="<?php echo BASE_URL; ?>compra/index" class="ceng-drawer-sublink"><i class="bi bi-bag-plus"></i> Compras</a>
+                        <a href="<?php echo BASE_URL; ?>proveedor/index" class="ceng-drawer-sublink"><i class="bi bi-truck"></i> Proveedores</a>
                     </div>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                        <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>perfil/index"><i class="bi bi-person text-secondary me-2"></i> Mi Perfil</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="<?php echo BASE_URL; ?>auth/logout"><i class="bi bi-box-arrow-right me-2"></i> Salir</a></li>
-                    </ul>
                 </div>
             </div>
-        </header>
+            <?php endif; ?>
 
-        <!-- Main Content ( injected by views ) -->
-        <?php require_once '../app/views/' . $view . '.php'; ?>
+            <!-- Grupo Administración -->
+            <div class="accordion-item bg-transparent border-0 mb-2">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed ceng-drawer-acc-btn" type="button" data-bs-toggle="collapse" data-bs-target="#accAdmin">
+                        <i class="bi bi-sliders me-2 text-info"></i> Administración &amp; Control
+                    </button>
+                </h2>
+                <div id="accAdmin" class="accordion-collapse collapse" data-bs-parent="#mobileNavAccordion">
+                    <div class="accordion-body p-0 ps-3">
+                        <a href="<?php echo BASE_URL; ?>notificacion/index" class="ceng-drawer-sublink d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-bell"></i> Alertas Sanitarias</span>
+                            <?php if($_totalNotifs > 0): ?>
+                            <span class="badge bg-danger"><?php echo $_totalNotifs; ?></span>
+                            <?php endif; ?>
+                        </a>
+                        <a href="<?php echo BASE_URL; ?>reporte/index" class="ceng-drawer-sublink"><i class="bi bi-bar-chart-fill"></i> Reportes PDF / Excel</a>
+                        
+                        <?php if($_SESSION['rol_id'] == 1): ?>
+                        <a href="<?php echo BASE_URL; ?>usuario/index" class="ceng-drawer-sublink"><i class="bi bi-person-badge"></i> Gestión de Personal</a>
+                        <a href="<?php echo BASE_URL; ?>configuracion/index" class="ceng-drawer-sublink"><i class="bi bi-gear-fill"></i> Configuración General</a>
+                        <a href="<?php echo BASE_URL; ?>configuracion/sunat" class="ceng-drawer-sublink"><i class="bi bi-shield-check"></i> Facturación SUNAT</a>
+                        <a href="<?php echo BASE_URL; ?>auditoria/index" class="ceng-drawer-sublink"><i class="bi bi-journal-text"></i> Logs Auditoría</a>
+                        <a href="<?php echo BASE_URL; ?>sistema/index" class="ceng-drawer-sublink"><i class="bi bi-database-fill-gear"></i> Base de Datos &amp; Respaldos</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Perfil & Salir Móvil -->
+            <div class="pt-3 mt-3 border-top border-secondary">
+                <a href="<?php echo BASE_URL; ?>perfil/index" class="ceng-drawer-link mb-2">
+                    <i class="bi bi-person-gear text-info"></i> Mi Perfil
+                </a>
+                <a href="<?php echo BASE_URL; ?>auth/logout" class="ceng-drawer-link text-danger">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                </a>
+            </div>
+
+        </div>
     </div>
 </div>
 
+<!-- ======================================================= -->
+<!-- CONTENIDO PRINCIPAL (100% ANCHO DE PANTALLA)            -->
+<!-- ======================================================= -->
+<div id="wrapper" class="ceng-wrapper">
+    <main id="content-wrapper" class="ceng-main-viewport">
+        <!-- Main Content (Inyectado dinámicamente por las vistas) -->
+        <?php require_once '../app/views/' . $view . '.php'; ?>
+    </main>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    let currentUrl = window.location.href.split('?')[0]; // Ignorar params
-    let links = document.querySelectorAll('#sidebar .nav-link');
+    // 1. Detección Inteligente de Enlace / Módulo Activo
+    const currentUrl = window.location.pathname.toLowerCase();
     
-    links.forEach(link => {
-        let href = link.getAttribute('href');
-        if (href && href !== '#' && currentUrl.includes(href)) {
-            // Si es POS, usa clase especial
-            if(href.includes('venta/pos')) {
-                link.classList.add('active-pos');
-            } else {
-                link.classList.add('active');
-            }
+    // Marcar enlaces individuales o botones dropdown
+    document.querySelectorAll('.ceng-nav-link, .ceng-pos-btn, .ceng-dropdown-menu .dropdown-item').forEach(item => {
+        const href = item.getAttribute('href');
+        const routeAttr = item.getAttribute('data-route');
+
+        if (href && currentUrl.includes(new URL(href, window.location.origin).pathname.toLowerCase())) {
+            item.classList.add('active');
             
-            // Expandir menú padre si está colapsado
-            let collapseParent = link.closest('.collapse');
-            if (collapseParent) {
-                new bootstrap.Collapse(collapseParent, {toggle: false}).show();
-                let toggleBtn = document.querySelector('[aria-controls="' + collapseParent.id + '"]');
-                if (toggleBtn) {
-                    toggleBtn.setAttribute('aria-expanded', 'true');
-                    toggleBtn.classList.add('active');
-                }
+            // Si está dentro de un dropdown, marcar el botón padre
+            const parentDropdown = item.closest('.ceng-dropdown');
+            if (parentDropdown) {
+                const triggerBtn = parentDropdown.querySelector('.dropdown-toggle');
+                if (triggerBtn) triggerBtn.classList.add('active');
+            }
+        } else if (routeAttr) {
+            const routes = routeAttr.split(',');
+            if (routes.some(r => currentUrl.includes(r.trim().toLowerCase()))) {
+                item.classList.add('active');
             }
         }
     });
 
-    // Lógica para Sidebar Responsivo
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-    if(sidebarToggle && sidebar && sidebarOverlay) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('show');
-            sidebarOverlay.classList.toggle('show');
-        });
-
-        sidebarOverlay.addEventListener('click', function() {
-            sidebar.classList.remove('show');
-            sidebarOverlay.classList.remove('show');
-        });
-    }
+    // 2. Atajo Global de Teclado F1 -> PUNTO DE VENTA (POS)
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "F1") {
+            event.preventDefault();
+            const posLink = document.getElementById("nav-pos");
+            if (posLink) {
+                window.location.href = posLink.getAttribute("href");
+            }
+        }
+    });
 });
 </script>
 
