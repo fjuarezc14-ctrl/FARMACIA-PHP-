@@ -147,8 +147,13 @@ class ProductoController extends Controller {
     }
 
     public function importarExcel() {
+        ob_start();
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(300);
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $_SESSION['error'] = 'Método no permitido.';
+            if (ob_get_length()) ob_end_clean();
             header('Location: ' . BASE_URL . 'producto/index');
             exit;
         }
@@ -157,6 +162,7 @@ class ProductoController extends Controller {
 
         if (empty($_FILES['archivo_excel']) || $_FILES['archivo_excel']['error'] !== UPLOAD_ERR_OK) {
             $_SESSION['error'] = 'Por favor seleccione un archivo Excel (.xlsx) válido.';
+            if (ob_get_length()) ob_end_clean();
             header('Location: ' . BASE_URL . 'producto/index');
             exit;
         }
@@ -166,6 +172,7 @@ class ProductoController extends Controller {
 
         if ($ext !== 'xlsx') {
             $_SESSION['error'] = 'Formato inválido. Debe subir un archivo con extensión .xlsx (Excel).';
+            if (ob_get_length()) ob_end_clean();
             header('Location: ' . BASE_URL . 'producto/index');
             exit;
         }
@@ -199,6 +206,7 @@ class ProductoController extends Controller {
             $_SESSION['error'] = "Error al procesar el archivo Excel: " . $e->getMessage();
         }
 
+        if (ob_get_length()) ob_end_clean();
         header('Location: ' . BASE_URL . 'producto/index');
         exit;
     }

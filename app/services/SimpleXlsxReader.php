@@ -112,7 +112,8 @@ class SimpleXlsxReader {
             return [];
         }
 
-        $rows = [];
+        $rawRows = [];
+        $globalMaxCol = 0;
 
         foreach ($xml->sheetData->row as $row) {
             $rowData = [];
@@ -123,6 +124,7 @@ class SimpleXlsxReader {
                 $colLetters = preg_replace('/[0-9]/', '', $cellRef);
                 $colIndex = $this->columnLetterToIndex($colLetters);
                 if ($colIndex > $maxCol) $maxCol = $colIndex;
+                if ($colIndex > $globalMaxCol) $globalMaxCol = $colIndex;
 
                 $type = (string)$c['t'];
                 $val = '';
@@ -145,14 +147,17 @@ class SimpleXlsxReader {
                 $rowData[$colIndex] = trim($val);
             }
 
-            // Rellenar columnas intermedias vacías
-            if ($maxCol >= 0) {
-                $completeRow = [];
-                for ($i = 0; $i <= $maxCol; $i++) {
-                    $completeRow[$i] = $rowData[$i] ?? '';
-                }
-                $rows[] = $completeRow;
+            $rawRows[] = $rowData;
+        }
+
+        // Rellenar de forma homogénea todas las filas hasta la columna máxima detectada
+        $rows = [];
+        foreach ($rawRows as $rData) {
+            $completeRow = [];
+            for ($i = 0; $i <= $globalMaxCol; $i++) {
+                $completeRow[$i] = $rData[$i] ?? '';
             }
+            $rows[] = $completeRow;
         }
 
         return $rows;

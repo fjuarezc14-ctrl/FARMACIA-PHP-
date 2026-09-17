@@ -274,12 +274,12 @@ class ExcelProductImporter {
                 }
 
                 // Precios y Márgenes
-                $precioVenta = isset($colMap['pvp1']) ? self::limpiarDecimal($r[$colMap['pvp1']], 0.00) : 0.00;
-                $precioMayor = isset($colMap['pvp2']) ? self::limpiarDecimal($r[$colMap['pvp2']], null) : null;
+                $precioVenta = isset($colMap['pvp1']) ? self::limpiarDecimal($r[$colMap['pvp1']] ?? '', 0.00) : 0.00;
+                $precioMayor = isset($colMap['pvp2']) ? self::limpiarDecimal($r[$colMap['pvp2']] ?? '', null) : null;
                 if ($precioMayor !== null && $precioMayor <= 0) $precioMayor = null;
 
-                $precioCompra = isset($colMap['precio_compra']) ? self::limpiarDecimal($r[$colMap['precio_compra']], 0.00) : 0.00;
-                $precioFraccion = isset($colMap['precio_fraccion']) ? self::limpiarDecimal($r[$colMap['precio_fraccion']], 0.00) : 0.00;
+                $precioCompra = isset($colMap['precio_compra']) ? self::limpiarDecimal($r[$colMap['precio_compra']] ?? '', 0.00) : 0.00;
+                $precioFraccion = isset($colMap['precio_fraccion']) ? self::limpiarDecimal($r[$colMap['precio_fraccion']] ?? '', 0.00) : 0.00;
 
                 $margen = 0.00;
                 if ($precioCompra > 0 && $precioVenta > $precioCompra) {
@@ -290,13 +290,13 @@ class ExcelProductImporter {
                 // Principio Activo
                 $codPrinActivo = null;
                 if (isset($colMap['prin_a'])) {
-                    $cpaVal = self::limpiarEntero($r[$colMap['prin_a']], 0);
+                    $cpaVal = self::limpiarEntero($r[$colMap['prin_a']] ?? '', 0);
                     if ($cpaVal > 0) $codPrinActivo = $cpaVal;
                 }
 
                 // Stock y Lotes
-                $stock = isset($colMap['stock']) ? max(0, self::limpiarEntero($r[$colMap['stock']], 0)) : 0;
-                $stockMin = isset($colMap['stock_min']) ? max(0, self::limpiarEntero($r[$colMap['stock_min']], 2)) : 2;
+                $stock = isset($colMap['stock']) ? max(0, self::limpiarEntero($r[$colMap['stock']] ?? '', 0)) : 0;
+                $stockMin = isset($colMap['stock_min']) ? max(0, self::limpiarEntero($r[$colMap['stock_min']] ?? '', 2)) : 2;
 
                 $loteCodigo = isset($colMap['lote']) ? trim((string)($r[$colMap['lote']] ?? '')) : '';
                 if (empty($loteCodigo) || $loteCodigo === '0') $loteCodigo = 'P. SIN LOTE';
