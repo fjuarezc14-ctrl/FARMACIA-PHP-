@@ -56,17 +56,33 @@ class UsuarioController extends Controller {
         header('Location: ' . BASE_URL . 'usuario/index');
     }
 
-    public function toggle($id) {
+    public function toggle($id = null) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método no permitido.';
+            header('Location: ' . BASE_URL . 'usuario/index');
+            exit;
+        }
+
+        $this->validateCsrf();
+
+        $userId = (int)($_POST['id'] ?? $id ?? 0);
+        if ($userId <= 0) {
+            $_SESSION['error'] = 'ID de usuario inválido.';
+            header('Location: ' . BASE_URL . 'usuario/index');
+            exit;
+        }
+
         $userModel = $this->model('User');
-        if($id == 1) {
+        if ($userId === 1) {
             $_SESSION['error'] = "No se puede desactivar al Administrador principal.";
         } else {
-            if ($userModel->toggleEstado($id)) {
-                $_SESSION['mensaje'] = "Estado de usuario cambiado.";
+            if ($userModel->toggleEstado($userId)) {
+                $_SESSION['mensaje'] = "Estado de usuario cambiado exitosamente.";
             } else {
-                $_SESSION['error'] = "Error al cambiar estado.";
+                $_SESSION['error'] = "Error al cambiar estado de usuario.";
             }
         }
         header('Location: ' . BASE_URL . 'usuario/index');
+        exit;
     }
 }

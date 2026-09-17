@@ -87,7 +87,7 @@ class ConfiguracionController extends Controller {
         if (isset($_FILES['cert_file']) && $_FILES['cert_file']['error'] == UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['cert_file']['name'], PATHINFO_EXTENSION));
             if (in_array($ext, ['p12', 'pfx'])) {
-                $certDir = $_SERVER['DOCUMENT_ROOT'] . '/sistema-botica/public/sunat/certs/';
+                $certDir = (defined('BASE_PATH') ? BASE_PATH : dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR) . 'public/sunat/certs/';
                 if (!file_exists($certDir)) mkdir($certDir, 0755, true);
                 $newCertName = 'cert_' . time() . '.' . $ext;
                 $newCertPath = $certDir . $newCertName;

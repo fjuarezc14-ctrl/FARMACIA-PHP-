@@ -15,7 +15,7 @@
 </head>
 <body onload="window.print()">
 
-<div class="center bold" style="font-size: 16px; margin-bottom:5px;">MI BOTICA</div>
+<div class="center bold" style="font-size: 16px; margin-bottom:5px;">CENGFARMA</div>
 <div class="center">TICKET DE ARQUEO CAJA</div>
 <div class="center bold" style="font-size: 14px; margin-top:5px;">#CAJ-<?php echo str_pad($caja['id'], 6, '0', STR_PAD_LEFT); ?></div>
 <div class="line"></div>

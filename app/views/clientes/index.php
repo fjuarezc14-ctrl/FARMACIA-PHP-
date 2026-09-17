@@ -47,9 +47,13 @@
                             <button class="btn btn-sm" style="color: #00CFE8;" onclick="editarRegistro(<?php echo htmlspecialchars(json_encode($cli)); ?>)">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
-                            <a href="<?php echo BASE_URL; ?>cliente/delete/<?php echo $cli['id']; ?>" class="btn btn-sm" style="color: var(--danger);" onclick="return confirm('¿Seguro que deseas eliminar este cliente?')">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            <form action="<?php echo BASE_URL; ?>cliente/delete" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar este cliente?');">
+                                <?php echo Controller::csrfField(); ?>
+                                <input type="hidden" name="id" value="<?php echo $cli['id']; ?>">
+                                <button type="submit" class="btn btn-sm" style="color: var(--danger);" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                             <?php endif; ?>
                         </td>
                     </tr>

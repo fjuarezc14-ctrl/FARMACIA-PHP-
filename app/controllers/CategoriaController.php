@@ -31,11 +31,31 @@ class CategoriaController extends Controller {
         header('Location: ' . BASE_URL . 'categoria/index');
     }
 
-    public function delete($id) {
+    public function delete($id = null) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método no permitido.';
+            header('Location: ' . BASE_URL . 'categoria/index');
+            exit;
+        }
+
+        $this->validateCsrf();
+
+        $categoryId = (int)($_POST['id'] ?? $id ?? 0);
+        if ($categoryId <= 0) {
+            $_SESSION['error'] = 'ID de categoría inválido.';
+            header('Location: ' . BASE_URL . 'categoria/index');
+            exit;
+        }
+
         $modelo = $this->model('Categoria');
-        $modelo->delete($id);
+        if ($modelo->delete($categoryId)) {
+            $_SESSION['mensaje'] = 'Categoría eliminada correctamente.';
+        } else {
+            $_SESSION['error'] = 'No se pudo eliminar la categoría.';
+        }
         
         header('Location: ' . BASE_URL . 'categoria/index');
+        exit;
     }
 }
 

@@ -17,6 +17,22 @@ class Venta {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getByDateRange($startDate, $endDate) {
+        $query = "SELECT v.*, c.nombres as cliente, u.nombres as cajero 
+                  FROM ventas v 
+                  INNER JOIN clientes c ON v.id_cliente = c.id 
+                  INNER JOIN usuarios u ON v.id_usuario = u.id 
+                  WHERE v.fecha_venta >= :start AND v.fecha_venta <= :end 
+                  ORDER BY v.fecha_venta DESC";
+        $stmt = $this->conn->prepare($query);
+        $start = $startDate . " 00:00:00";
+        $end   = $endDate . " 23:59:59";
+        $stmt->bindParam(':start', $start);
+        $stmt->bindParam(':end', $end);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     
     public function getDetalles($id_venta) {
         $query = "SELECT vd.*, p.nombre_comercial, p.unidades_por_caja, p.fraccionable, p.unidad_medida, p.unidad_fraccion, l.codigo_lote 
@@ -167,6 +183,7 @@ class Venta {
             return $id_venta;
 
         } catch (Exception $e) {
+            error_log("[Venta::registrarVenta] Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
             $this->conn->rollBack();
             return false;
         }
@@ -251,6 +268,7 @@ class Venta {
             return true;
 
         } catch (Exception $e) {
+            error_log("[Venta::anularVenta] Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
             $this->conn->rollBack();
             return false;
         }

@@ -16,7 +16,7 @@
             <!-- Izquierda: Datos Principales -->
             <div class="col-md-8">
                 <div class="card-metric">
-                    <h5 style="color: #fff; font-size: 16px; margin-bottom: 20px;">Información Principal</h5>
+                    <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin-bottom: 20px;">Información Principal</h5>
                     <div class="row g-3">
                         <div class="col-md-6 form-group">
                             <label class="form-label">Código de Barras</label>
@@ -113,7 +113,7 @@
 
                 <!-- Fraccionamiento Inteligente -->
                 <div class="card-metric mt-4">
-                    <h5 style="color: #fff; font-size: 16px; margin-bottom: 20px;">
+                    <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin-bottom: 20px;">
                         <i class="bi bi-box-seam"></i> Venta Fraccionada
                     </h5>
                     <div class="form-group form-check mb-3">
@@ -152,7 +152,7 @@
             <!-- Derecha: Finanzas e Inventario -->
             <div class="col-md-4">
                 <div class="card-metric mb-4">
-                    <h5 style="color: #fff; font-size: 16px; margin-bottom: 20px;">Precios y Márgenes</h5>
+                    <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin-bottom: 20px;">Precios y Márgenes</h5>
                     
                     <div class="form-group">
                         <label class="form-label">Precio Compra (S/)</label>
@@ -172,7 +172,7 @@
                 </div>
 
                 <div class="card-metric">
-                    <h5 style="color: #fff; font-size: 16px; margin-bottom: 20px;">Configuración de Stock</h5>
+                    <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin-bottom: 20px;">Configuración de Stock</h5>
                     <div class="form-group">
                         <label class="form-label">Alerta de Stock Mínimo</label>
                         <input type="number" class="form-control-custom" name="stock_minimo" value="<?php echo $p ? $p['stock_minimo'] : '10'; ?>" required>

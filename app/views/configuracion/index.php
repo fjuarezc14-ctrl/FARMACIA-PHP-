@@ -85,7 +85,7 @@ $logo_url = !empty($c['logo']['valor']) ? $c['logo']['valor'] : BASE_URL . 'img/
             <!-- Izquierda: Branding Logo -->
             <div class="col-md-4">
                 <div class="settings-card text-center">
-                    <h5 style="color: #fff; font-size: 16px; margin-bottom: 30px;">Identidad Visual</h5>
+                    <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin-bottom: 30px;">Identidad Visual</h5>
                     
                     <label for="fileLogo" style="width: 100%; cursor: pointer;">
                         <div class="logo-preview-container" id="logoContainer">
@@ -108,7 +108,7 @@ $logo_url = !empty($c['logo']['valor']) ? $c['logo']['valor'] : BASE_URL . 'img/
             <!-- Derecha: Datos Legales -->
             <div class="col-md-8">
                 <div class="settings-card">
-                    <h5 style="color: #fff; font-size: 16px; margin-bottom: 25px;"><i class="bi bi-building"></i> Información Fiscal y Comercial</h5>
+                    <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin-bottom: 25px;"><i class="bi bi-building"></i> Información Fiscal y Comercial</h5>
                     
                     <div class="row g-3">
                         <div class="col-md-12 form-group">
@@ -148,7 +148,7 @@ $logo_url = !empty($c['logo']['valor']) ? $c['logo']['valor'] : BASE_URL . 'img/
                         </div>
                     </div>
 
-                    <h5 style="color: #fff; font-size: 16px; margin-top: 35px; margin-bottom: 25px;"><i class="bi bi-cash-coin"></i> Valores Financieros Base</h5>
+                    <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin-top: 35px; margin-bottom: 25px;"><i class="bi bi-cash-coin"></i> Valores Financieros Base</h5>
                     
                     <div class="row g-3">
                         <div class="col-md-6 form-group">
@@ -161,7 +161,7 @@ $logo_url = !empty($c['logo']['valor']) ? $c['logo']['valor'] : BASE_URL . 'img/
                         </div>
 
                         <div class="col-md-6 form-group">
-                            <label class="form-label">Porcentaje de I.G.V. (%)</label>
+                            <label class="form-label">Impuesto IGV / IVA (%)</label>
                             <div class="form-control-custom-icon">
                                 <i class="bi bi-percent"></i>
                                 <input type="number" step="0.01" name="igv" class="form-control-custom" value="<?php echo htmlspecialchars($c['igv']['valor'] ?? ''); ?>" required>
@@ -170,14 +170,14 @@ $logo_url = !empty($c['logo']['valor']) ? $c['logo']['valor'] : BASE_URL . 'img/
                         </div>
                     </div>
 
-                    <h5 style="color: #fff; font-size: 16px; margin-top: 35px; margin-bottom: 25px;"><i class="bi bi-universal-access-circle"></i> Suite Nativa de Accesibilidad Web (WCAG 2.1 / ADA)</h5>
+                    <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin-top: 35px; margin-bottom: 25px;"><i class="bi bi-universal-access-circle"></i> Suite Nativa de Accesibilidad Web (WCAG 2.1 / ADA)</h5>
                     
                     <div class="row g-3">
                         <div class="col-md-12">
-                            <div class="p-3 rounded" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color);">
+                            <div class="p-3 rounded" style="background: rgba(0,0,0,0.03); border: 1px solid var(--border-color);">
                                 <div class="form-check form-switch mb-2">
                                     <input class="form-check-input" type="checkbox" role="switch" id="a11y_habilitado" name="a11y_habilitado" value="1" <?php echo (isset($c['a11y_habilitado']['valor']) && $c['a11y_habilitado']['valor'] == '1') ? 'checked' : ''; ?>>
-                                    <label class="form-check-label fw-bold" for="a11y_habilitado" style="color: #fff;">
+                                    <label class="form-check-label fw-bold" for="a11y_habilitado" style="color: var(--text-primary);">
                                         Activar Widget de Accesibilidad Nativo
                                     </label>
                                 </div>
@@ -212,10 +212,10 @@ $logo_url = !empty($c['logo']['valor']) ? $c['logo']['valor'] : BASE_URL . 'img/
 
                         <div class="col-md-6 form-group">
                             <label class="form-label">Lector de Voz Nativo (Text-to-Speech)</label>
-                            <div class="p-2 rounded mt-1" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color);">
+                            <div class="p-2 rounded mt-1" style="background: rgba(0,0,0,0.03); border: 1px solid var(--border-color);">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" role="switch" id="a11y_lector_voz" name="a11y_lector_voz" value="1" <?php echo (isset($c['a11y_lector_voz']['valor']) && $c['a11y_lector_voz']['valor'] == '1') ? 'checked' : ''; ?>>
-                                    <label class="form-check-label" for="a11y_lector_voz" style="color: #fff; font-size: 13px;">
+                                    <label class="form-check-label" for="a11y_lector_voz" style="color: var(--text-primary); font-size: 13px;">
                                         Permitir síntesis de voz en español
                                     </label>
                                 </div>

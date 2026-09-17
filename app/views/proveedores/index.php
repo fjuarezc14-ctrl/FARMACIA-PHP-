@@ -44,9 +44,13 @@
                             <button class="btn btn-sm" style="color: #00CFE8;" onclick="editarRegistro(<?php echo htmlspecialchars(json_encode($prov)); ?>)">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
-                            <a href="<?php echo BASE_URL; ?>proveedor/delete/<?php echo $prov['id']; ?>" class="btn btn-sm" style="color: var(--danger);" onclick="return confirm('¿Seguro que deseas eliminar este proveedor?')">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            <form action="<?php echo BASE_URL; ?>proveedor/delete" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar este proveedor?');">
+                                <?php echo Controller::csrfField(); ?>
+                                <input type="hidden" name="id" value="<?php echo $prov['id']; ?>">
+                                <button type="submit" class="btn btn-sm" style="color: var(--danger);" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     <?php endforeach; ?>

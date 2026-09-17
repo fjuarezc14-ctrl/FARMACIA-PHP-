@@ -99,7 +99,7 @@
                                 $ruc_empresa = !empty($configVals['ruc']['valor']) ? $configVals['ruc']['valor'] : '';
                                 $tipoDocCode = ($v['tipo_comprobante'] === 'Factura') ? '01' : '03';
                                 $xmlFile = "{$ruc_empresa}-{$tipoDocCode}-{$v['serie_comprobante']}-{$v['num_comprobante']}.xml";
-                                $xmlPath = $_SERVER['DOCUMENT_ROOT'] . "/sistema-botica/public/sunat/xml/{$xmlFile}";
+                                $xmlPath = (defined('BASE_PATH') ? BASE_PATH : dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR) . "public/sunat/xml/{$xmlFile}";
                                 if (($v['tipo_comprobante'] === 'Boleta' || $v['tipo_comprobante'] === 'Factura') && file_exists($xmlPath)):
                                 ?>
                                 <a href="<?php echo BASE_URL; ?>sunat/xml/<?php echo $xmlFile; ?>" download class="btn btn-sm btn-outline-primary" title="Descargar XML SUNAT">
@@ -107,9 +107,13 @@
                                 </a>
                                 <?php endif; ?>
                                 <?php if ($v['estado'] != 'Anulada'): ?>
-                                <a href="<?php echo BASE_URL; ?>venta/anular/<?php echo $v['id']; ?>" onclick="return confirm('¿Está seguro de ANULAR esta venta? El stock se devolverá al almacén de forma íntegra.')" class="btn btn-sm btn-outline-danger" title="Anular Venta">
-                                    <i class="bi bi-x-circle"></i>
-                                </a>
+                                <form action="<?php echo BASE_URL; ?>venta/anular" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de ANULAR esta venta? El stock se devolverá al almacén de forma íntegra.')">
+                                    <?php echo Controller::csrfField(); ?>
+                                    <input type="hidden" name="id_venta" value="<?php echo $v['id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Anular Venta">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </form>
                                 <?php endif; ?>
                             </div>
                         </td>

@@ -34,13 +34,33 @@ class ClienteController extends Controller {
         header('Location: ' . BASE_URL . 'cliente/index');
     }
 
-    public function delete($id) {
+    public function delete($id = null) {
         $this->requireRole(1, 'cliente/index');
-        
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método no permitido.';
+            header('Location: ' . BASE_URL . 'cliente/index');
+            exit;
+        }
+
+        $this->validateCsrf();
+
+        $clientId = (int)($_POST['id'] ?? $id ?? 0);
+        if ($clientId <= 0) {
+            $_SESSION['error'] = 'ID de cliente inválido.';
+            header('Location: ' . BASE_URL . 'cliente/index');
+            exit;
+        }
+
         $modelo = $this->model('Cliente');
-        $modelo->delete($id);
+        if ($modelo->delete($clientId)) {
+            $_SESSION['mensaje'] = 'Cliente eliminado correctamente.';
+        } else {
+            $_SESSION['error'] = 'No se pudo eliminar el cliente especificado.';
+        }
         
         header('Location: ' . BASE_URL . 'cliente/index');
+        exit;
     }
 }
 

@@ -65,9 +65,13 @@
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <?php if($u['id'] != 1): ?>
-                                    <a href="<?php echo BASE_URL; ?>usuario/toggle/<?php echo $u['id']; ?>" class="btn btn-sm btn-outline-<?php echo $u['estado'] ? 'danger' : 'success'; ?> ms-1" title="<?php echo $u['estado'] ? 'Desactivar' : 'Activar'; ?>">
-                                        <i class="bi bi-power"></i>
-                                    </a>
+                                    <form action="<?php echo BASE_URL; ?>usuario/toggle" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas <?php echo $u['estado'] ? 'desactivar' : 'activar'; ?> este usuario?');">
+                                        <?php echo Controller::csrfField(); ?>
+                                        <input type="hidden" name="id" value="<?php echo $u['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-<?php echo $u['estado'] ? 'danger' : 'success'; ?> ms-1" title="<?php echo $u['estado'] ? 'Desactivar' : 'Activar'; ?>">
+                                            <i class="bi bi-power"></i>
+                                        </button>
+                                    </form>
                                 <?php endif; ?>
                             </td>
                         </tr>

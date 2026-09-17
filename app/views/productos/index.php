@@ -85,19 +85,27 @@
                             <?php if(isset($prod['estado']) && $prod['estado'] == 0): ?>
                                 <span class="badge bg-secondary me-1" style="font-size: 10px;">Inactivo</span>
                                 <a href="<?php echo BASE_URL; ?>producto/edit/<?php echo $prod['id']; ?>" class="btn btn-sm" style="color: #00CFE8;" title="Editar">
-                                    <i class="bi bi-pencil-square"></i>
+                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                <a href="<?php echo BASE_URL; ?>producto/toggle/<?php echo $prod['id']; ?>" class="btn btn-sm" style="color: var(--success);" title="Activar Producto" onclick="return confirm('¿Seguro que deseas activar este producto para su venta?')">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                </a>
+                                <form action="<?php echo BASE_URL; ?>producto/toggle" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas activar este producto para su venta?');">
+                                    <?php echo Controller::csrfField(); ?>
+                                    <input type="hidden" name="id" value="<?php echo $prod['id']; ?>">
+                                    <button type="submit" class="btn btn-sm" style="color: var(--success);" title="Activar Producto">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </button>
+                                </form>
                             <?php else: ?>
                                 <span class="badge bg-success me-1" style="font-size: 10px;">Activo</span>
                                 <a href="<?php echo BASE_URL; ?>producto/edit/<?php echo $prod['id']; ?>" class="btn btn-sm" style="color: #00CFE8;" title="Editar">
-                                    <i class="bi bi-pencil-square"></i>
+                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                <a href="<?php echo BASE_URL; ?>producto/toggle/<?php echo $prod['id']; ?>" class="btn btn-sm" style="color: var(--warning);" title="Desactivar Producto" onclick="return confirm('¿Seguro que deseas desactivar este producto? Ya no aparecerá en el POS.')">
-                                    <i class="bi bi-x-circle-fill"></i>
-                                </a>
+                                <form action="<?php echo BASE_URL; ?>producto/toggle" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas desactivar este producto? Ya no aparecerá en el POS.');">
+                                    <?php echo Controller::csrfField(); ?>
+                                    <input type="hidden" name="id" value="<?php echo $prod['id']; ?>">
+                                    <button type="submit" class="btn btn-sm" style="color: var(--warning);" title="Desactivar Producto">
+                                        <i class="bi bi-x-circle-fill"></i>
+                                    </button>
+                                </form>
                             <?php endif; ?>
                         </td>
                     </tr>

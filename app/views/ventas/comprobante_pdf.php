@@ -101,10 +101,14 @@
         <!-- HEADER -->
         <div class="header">
             <div class="empresa-info">
-                <?php if(!empty($data['config']['logo']['valor'])): ?>
-                    <img src="<?php echo htmlspecialchars($data['config']['logo']['valor']); ?>" alt="Logo" style="max-height:50px; margin-bottom:10px; filter:brightness(0) invert(1);">
+                <?php 
+                $pdfLogo = $data['config']['logo']['valor'] ?? '';
+                if(!empty($pdfLogo)): 
+                    $pdfLogoSrc = (strpos($pdfLogo, 'http') === 0) ? $pdfLogo : BASE_URL . $pdfLogo;
+                ?>
+                    <img src="<?php echo htmlspecialchars($pdfLogoSrc); ?>" alt="CENGFARMA" style="max-height:55px; max-width:220px; object-fit:contain; margin-bottom:8px;">
                 <?php endif; ?>
-                <h1><?php echo htmlspecialchars($data['config']['nombre_botica']['valor'] ?? 'MI BOTICA'); ?></h1>
+                <h1><?php echo htmlspecialchars($data['config']['nombre_botica']['valor'] ?? 'CENGFARMA'); ?></h1>
                 <p>
                     RUC: <?php echo htmlspecialchars($data['config']['ruc']['valor'] ?? '---'); ?><br>
                     <?php echo htmlspecialchars($data['config']['direccion']['valor'] ?? ''); ?><br>

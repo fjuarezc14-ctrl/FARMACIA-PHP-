@@ -598,13 +598,13 @@ CREATE TABLE IF NOT EXISTS `configuracion` (
 -- Volcando datos para la tabla botica_db.configuracion: ~16 rows (aproximadamente)
 DELETE FROM `configuracion`;
 INSERT INTO `configuracion` (`id`, `clave`, `valor`, `descripcion`) VALUES
-	(1, 'nombre_botica', 'Mi Botica', 'Nombre comercial de la farmacia/botica'),
+	(1, 'nombre_botica', 'CENGFARMA', 'Nombre comercial de la farmacia/botica'),
 	(2, 'ruc', '20123456789', 'RUC de la empresa'),
 	(3, 'direccion', 'Av. Principal 123', 'Direcci├│n del establecimiento'),
 	(4, 'telefono', '999888777', 'Tel├®fono principal'),
 	(5, 'moneda', 'S/', 'S├¡mbolo de moneda'),
 	(6, 'igv', '18', 'Porcentaje de IGV'),
-	(8, 'logo', '', 'Ruta del logo institucional'),
+	(8, 'logo', 'img/cengfarma_banner.png', 'Ruta del logo institucional'),
 	(9, 'sunat_sol_usuario', '', NULL),
 	(10, 'sunat_sol_clave', '', NULL),
 	(11, 'sunat_cert_path', '', NULL),
@@ -613,7 +613,7 @@ INSERT INTO `configuracion` (`id`, `clave`, `valor`, `descripcion`) VALUES
 	(14, 'sunat_url_beta', 'https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService', NULL),
 	(15, 'sunat_url_produccion', 'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService', NULL),
 	(16, 'sunat_habilitado', '0', NULL),
-	(17, 'nombre_empresa', 'Mi Botica', NULL);
+	(17, 'nombre_empresa', 'CENGFARMA - Botica y Perfumería', NULL);
 
 -- Volcando estructura para tabla botica_db.inventario_auditorias
 CREATE TABLE IF NOT EXISTS `inventario_auditorias` (

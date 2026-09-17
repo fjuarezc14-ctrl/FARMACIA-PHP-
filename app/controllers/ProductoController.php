@@ -2,7 +2,7 @@
 class ProductoController extends Controller {
 
     public function __construct() {
-        $this->requireRole(1, 'venta/pos');
+        $this->requireRole([1, 2, 4], 'venta/pos');
     }
 
     public function index() {
@@ -85,11 +85,31 @@ class ProductoController extends Controller {
         header('Location: ' . BASE_URL . 'producto/index');
     }
 
-    public function toggle($id) {
+    public function toggle($id = null) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método no permitido.';
+            header('Location: ' . BASE_URL . 'producto/index');
+            exit;
+        }
+
+        $this->validateCsrf();
+
+        $productId = (int)($_POST['id'] ?? $id ?? 0);
+        if ($productId <= 0) {
+            $_SESSION['error'] = 'ID de producto inválido.';
+            header('Location: ' . BASE_URL . 'producto/index');
+            exit;
+        }
+
         $modelo = $this->model('Producto');
-        $modelo->toggleEstado($id);
-        $this->logAccion('Productos', 'ESTADO', "Se cambió el estado (Activo/Inactivo) del producto ID #" . $id);
+        if ($modelo->toggleEstado($productId)) {
+            $this->logAccion('Productos', 'ESTADO', "Se cambió el estado (Activo/Inactivo) del producto ID #" . $productId);
+            $_SESSION['mensaje'] = 'Estado del producto actualizado correctamente.';
+        } else {
+            $_SESSION['error'] = 'No se pudo actualizar el estado del producto.';
+        }
         
         header('Location: ' . BASE_URL . 'producto/index');
+        exit;
     }
 }

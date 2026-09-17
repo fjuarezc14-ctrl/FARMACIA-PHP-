@@ -31,11 +31,31 @@ class LaboratorioController extends Controller {
         header('Location: ' . BASE_URL . 'laboratorio/index');
     }
 
-    public function delete($id) {
+    public function delete($id = null) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método no permitido.';
+            header('Location: ' . BASE_URL . 'laboratorio/index');
+            exit;
+        }
+
+        $this->validateCsrf();
+
+        $labId = (int)($_POST['id'] ?? $id ?? 0);
+        if ($labId <= 0) {
+            $_SESSION['error'] = 'ID de laboratorio inválido.';
+            header('Location: ' . BASE_URL . 'laboratorio/index');
+            exit;
+        }
+
         $modelo = $this->model('Laboratorio');
-        $modelo->delete($id);
+        if ($modelo->delete($labId)) {
+            $_SESSION['mensaje'] = 'Laboratorio eliminado correctamente.';
+        } else {
+            $_SESSION['error'] = 'No se pudo eliminar el laboratorio.';
+        }
         
         header('Location: ' . BASE_URL . 'laboratorio/index');
+        exit;
     }
 }
 

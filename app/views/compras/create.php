@@ -15,7 +15,7 @@
         <?php echo Controller::csrfField(); ?>
         <!-- CABECERA -->
         <div class="card-metric mb-4">
-            <h5 style="color: #fff; font-size: 16px; margin-bottom: 20px;">Datos del Documento y Proveedor</h5>
+            <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin-bottom: 20px;">Datos del Documento y Proveedor</h5>
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Proveedor <span class="text-danger">*</span></label>
@@ -68,7 +68,7 @@
         <!-- DETALLE MULTILINEA -->
         <div class="card-metric mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 style="color: #fff; font-size: 16px; margin: 0;">Detalle de Productos a Ingresar (Lotes)</h5>
+                <h5 style="color: var(--text-primary); font-weight: 700; font-size: 16px; margin: 0;">Detalle de Productos a Ingresar (Lotes)</h5>
                 <button type="button" class="btn btn-sm" style="background-color: var(--success-bg); color: var(--accent-primary); border:none;" onclick="agregarFila()">
                     <i class="bi bi-plus-circle"></i> Añadir Ítem
                 </button>
@@ -109,7 +109,7 @@
                         <input type="hidden" name="impuesto" id="fiIgv" value="0.00">
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: #fff; font-size: 18px; font-weight: 700;">Total Compra:</span>
+                        <span style="color: var(--text-primary); font-size: 18px; font-weight: 700;">Total Compra:</span>
                         <span style="font-weight: 700; font-size: 18px; color: var(--accent-primary);" id="spTotalGlobal">S/ 0.00</span>
                         <input type="hidden" name="total_compra" id="fiTotal" value="0">
                     </div>

@@ -116,6 +116,7 @@ class Compra {
             return true;
 
         } catch (Exception $e) {
+            error_log("[Compra::registrarCompra] Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
             $this->conn->rollBack();
             return false;
         }
@@ -195,6 +196,7 @@ class Compra {
             $this->conn->commit();
             return true;
         } catch (Exception $e) {
+            error_log("[Compra::registrarDevolucion] Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
             $this->conn->rollBack();
             return $e->getMessage();
         }
@@ -262,6 +264,7 @@ class Compra {
             $this->conn->commit();
             return true;
         } catch (Exception $e) {
+            error_log("[Compra::procesarRecepcion] Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
             $this->conn->rollBack();
             return $e->getMessage();
         }

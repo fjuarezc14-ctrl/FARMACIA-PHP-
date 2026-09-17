@@ -55,7 +55,9 @@ INSERT IGNORE INTO `usuarios` (`id`, `nombres`, `apellidos`, `usuario`, `passwor
 
 -- Insertar valores de configuración
 INSERT IGNORE INTO `configuracion` (`clave`, `valor`, `descripcion`) VALUES
-('nombre_botica', 'Mi Botica', 'Nombre comercial de la farmacia/botica'),
+('nombre_botica', 'CENGFARMA', 'Nombre comercial de la farmacia/botica'),
+('nombre_empresa', 'CENGFARMA - Botica y Perfumería', 'Razón social'),
+('logo', 'img/cengfarma_banner.png', 'Ruta del logo institucional'),
 ('ruc', '20123456789', 'RUC de la empresa'),
 ('direccion', 'Av. Principal 123', 'Dirección del establecimiento'),
 ('telefono', '999888777', 'Teléfono principal'),

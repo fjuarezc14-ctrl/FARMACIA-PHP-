@@ -15,7 +15,7 @@ body { overflow-x: hidden; }
 .qty-input { width: 50px; text-align: center; background: transparent; border: none; color: #222; font-weight: bold;}
 
 /* Pay Button */
-.btn-pay { background: linear-gradient(135deg, var(--accent-primary) 0%, #1FA95B 100%); width: 100%; color: #000; font-weight: 800; font-size: 22px; padding: 20px; border-radius: 12px; border: none; cursor: pointer; transition: transform 0.2s; }
+.btn-pay { background: linear-gradient(135deg, var(--accent-primary) 0%, #1FA95B 100%); width: 100%; color: #ffffff !important; font-weight: 800; font-size: 22px; padding: 20px; border-radius: 12px; border: none; cursor: pointer; transition: transform 0.2s; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 .btn-pay:hover { transform: translateY(-2px); }
 
 /* Catalogo Buscar */
@@ -90,6 +90,7 @@ body { overflow-x: hidden; }
                         <!-- JS Inyecta Filas -->
                     </tbody>
                 </table>
+                <div id="cartHiddenInputs"></div>
                 <div id="cartEmpty" class="text-center text-muted mt-5 mt-md-5 pt-5">
                     <i class="bi bi-cart" style="font-size: 48px; opacity:0.3;"></i>
                     <p class="mt-2">El carrito está vacío.<br>Busca un producto a la derecha para iniciar la venta.</p>
@@ -488,10 +489,11 @@ function renderCarrito() {
         });
     }
     
-    // Anexar inputs form ocultos (podemos meterlos al final de la tabla)
-    let tmpDiv = document.createElement('div');
-    tmpDiv.innerHTML = formsHtml;
-    tbody.appendChild(tmpDiv);
+    // Anexar inputs form ocultos en su contenedor válido
+    let hiddenContainer = document.getElementById('cartHiddenInputs');
+    if (hiddenContainer) {
+        hiddenContainer.innerHTML = formsHtml;
+    }
     
     // Toggle CMP validation field
     if(requiereCmp) {

@@ -32,7 +32,7 @@
                         <?php foreach($data['detalles'] as $det): ?>
                         <tr>
                             <td>
-                                <strong style="color: #fff;"><?php echo htmlspecialchars($det['nombre_comercial']); ?></strong>
+                                <strong style="color: var(--text-primary); font-weight: 700;"><?php echo htmlspecialchars($det['nombre_comercial']); ?></strong>
                                 <input type="hidden" name="detalle_id[]" value="<?php echo $det['id']; ?>">
                             </td>
                             <td class="text-center" style="font-size: 16px; font-weight: bold;">

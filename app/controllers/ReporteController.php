@@ -14,19 +14,7 @@ class ReporteController extends Controller {
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         
         $ventaModel = $this->model('Venta');
-        $ventas = $ventaModel->getAll(); // En un caso real se filtraría por fecha en BD ->getVentasPorFecha($fi, $ff)
-        // Como estamos simplificando y 'getAll' trae las ventas, filtramos en PHP
-        $filtradas = [];
-        
-        $ts_inicio = strtotime($fecha_inicio . " 00:00:00");
-        $ts_fin = strtotime($fecha_fin . " 23:59:59");
-        
-        foreach($ventas as $v) {
-            $ts_v = strtotime($v['fecha_venta']);
-            if($ts_v >= $ts_inicio && $ts_v <= $ts_fin) {
-                $filtradas[] = $v;
-            }
-        }
+        $filtradas = $ventaModel->getByDateRange($fecha_inicio, $fecha_fin);
         
         // Cabeceras Excel CSV
         header("Content-Type: text/csv; charset=utf-8");
@@ -90,18 +78,7 @@ class ReporteController extends Controller {
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         
         $ventaModel = $this->model('Venta');
-        $ventas = $ventaModel->getAll(); 
-        $filtradas = [];
-        
-        $ts_inicio = strtotime($fecha_inicio . " 00:00:00");
-        $ts_fin = strtotime($fecha_fin . " 23:59:59");
-        
-        foreach($ventas as $v) {
-            $ts_v = strtotime($v['fecha_venta']);
-            if($ts_v >= $ts_inicio && $ts_v <= $ts_fin) {
-                $filtradas[] = $v;
-            }
-        }
+        $filtradas = $ventaModel->getByDateRange($fecha_inicio, $fecha_fin); 
 
         $configModel = $this->model('Configuracion');
         

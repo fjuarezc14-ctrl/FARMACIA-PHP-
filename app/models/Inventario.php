@@ -126,6 +126,7 @@ class Inventario {
             $this->conn->commit();
             return $id_audit;
         } catch (Exception $e) {
+            error_log("[Inventario::iniciarAuditoria] Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
             $this->conn->rollBack();
             return false;
         }
@@ -214,6 +215,7 @@ class Inventario {
             $this->conn->commit();
             return true;
         } catch (Exception $e) {
+            error_log("[Inventario::finalizarAuditoria] Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
             $this->conn->rollBack();
             return $e->getMessage();
         }

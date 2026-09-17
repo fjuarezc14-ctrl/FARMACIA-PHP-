@@ -34,11 +34,31 @@ class ProveedorController extends Controller {
         header('Location: ' . BASE_URL . 'proveedor/index');
     }
 
-    public function delete($id) {
+    public function delete($id = null) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método no permitido.';
+            header('Location: ' . BASE_URL . 'proveedor/index');
+            exit;
+        }
+
+        $this->validateCsrf();
+
+        $supplierId = (int)($_POST['id'] ?? $id ?? 0);
+        if ($supplierId <= 0) {
+            $_SESSION['error'] = 'ID de proveedor inválido.';
+            header('Location: ' . BASE_URL . 'proveedor/index');
+            exit;
+        }
+
         $modelo = $this->model('Proveedor');
-        $modelo->delete($id);
+        if ($modelo->delete($supplierId)) {
+            $_SESSION['mensaje'] = 'Proveedor eliminado correctamente.';
+        } else {
+            $_SESSION['error'] = 'No se pudo eliminar el proveedor.';
+        }
         
         header('Location: ' . BASE_URL . 'proveedor/index');
+        exit;
     }
 }
 

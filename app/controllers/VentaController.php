@@ -254,12 +254,32 @@ class VentaController extends Controller {
         header('Location: ' . BASE_URL . 'venta/pos');
     }
 
-    public function anular($id) {
+    public function anular($id = null) {
         $this->requireRole(1, 'venta/index');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método no permitido.';
+            header('Location: ' . BASE_URL . 'venta/index');
+            exit;
+        }
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
+            $_SESSION['error'] = 'Token CSRF inválido o expirado.';
+            header('Location: ' . BASE_URL . 'venta/index');
+            exit;
+        }
+
+        $saleId = (int)($_POST['id_venta'] ?? $id ?? 0);
+        if ($saleId <= 0) {
+            $_SESSION['error'] = 'ID de venta inválido.';
+            header('Location: ' . BASE_URL . 'venta/index');
+            exit;
+        }
+
         $modelo = $this->model('Venta');
-        
-        if($modelo->anularVenta($id, $_SESSION['user_id'])) {
-            $this->logAccion('Ventas', 'ANULAR', "Anulación de venta ID #$id por el usuario.");
+        if ($modelo->anularVenta($saleId, $_SESSION['user_id'])) {
+            $this->logAccion('Ventas', 'ANULAR', "Anulación de venta ID #$saleId por el usuario.");
             $_SESSION['success'] = "Venta anulada correctamente. El stock ha sido devuelto al inventario.";
         } else {
             $_SESSION['error'] = "No se pudo anular la venta. Verifique que no esté ya anulada.";

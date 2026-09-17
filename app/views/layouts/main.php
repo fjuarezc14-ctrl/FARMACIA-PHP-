@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo Controller::generateCsrfToken(); ?>">
-    <title><?php echo isset($data['title']) ? $data['title'] . ' | Mi Botica' : 'Mi Botica'; ?></title>
+    <title><?php echo isset($data['title']) ? $data['title'] . ' | CENGFARMA' : 'CENGFARMA | Botica & Perfumería'; ?></title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>img/cengfarma_icon.png">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -36,13 +38,11 @@
         $boticaName = $configs['nombre_botica']['valor'] ?? 'CENGFARMA';
         ?>
         <a href="<?php echo BASE_URL; ?>auth/index" class="sidebar-logo text-center d-block">
-            <?php if (!empty($_globalLogo)): 
-                $logoSrc = (strpos($_globalLogo, 'http') === 0) ? $_globalLogo : BASE_URL . $_globalLogo;
+            <?php 
+            $effectiveLogo = !empty($_globalLogo) ? $_globalLogo : 'img/cengfarma_banner.png';
+            $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . $effectiveLogo;
             ?>
-                <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="<?php echo htmlspecialchars($boticaName); ?>" style="max-height: 62px; max-width: 95%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-            <?php else: ?>
-                <i class="bi bi-heart-pulse-fill"></i> <?php echo htmlspecialchars($boticaName); ?>
-            <?php endif; ?>
+            <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="<?php echo htmlspecialchars($boticaName); ?>" style="max-height: 62px; max-width: 95%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
         </a>
         <ul class="sidebar-nav">
             <?php if($_SESSION['rol_id'] == 1): ?>
@@ -92,7 +92,7 @@
                 </a>
             </li>
             
-            <?php if($_SESSION['rol_id'] == 1): ?>
+            <?php if(in_array($_SESSION['rol_id'], [1, 2, 4])): ?>
             <li class="nav-section-title" style="color: #34d399;">Logística & Inventario</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#menuProductos" role="button" aria-expanded="false" aria-controls="menuProductos">
@@ -142,6 +142,7 @@
                     </ul>
                 </div>
             </li>
+            <?php endif; ?>
             
             <li class="nav-section-title" style="color: #fb7185;">Gerencia & Control</li>
             <li class="nav-item">
@@ -158,6 +159,7 @@
                 </a>
             </li>
             
+            <?php if($_SESSION['rol_id'] == 1): ?>
             <li class="nav-section-title" style="color: #a78bfa;">Ajustes & Sistema</li>
             <li class="nav-item">
                 <a href="<?php echo BASE_URL; ?>usuario/index" class="nav-link">
@@ -206,11 +208,19 @@
     <div id="content-wrapper">
         <!-- Topbar -->
         <header id="topbar">
-            <div class="d-flex align-items-center">
-                <button id="sidebarToggle" class="btn btn-link d-lg-none p-0 me-3" style="color: var(--text-primary); font-size: 26px; text-decoration: none;">
+            <div class="d-flex align-items-center gap-3">
+                <button id="sidebarToggle" class="btn btn-link d-lg-none p-0 me-1" style="color: var(--text-primary); font-size: 26px; text-decoration: none;">
                     <i class="bi bi-list"></i>
                 </button>
-                <div class="search-box">
+                <!-- Encabezado CENGFARMA -->
+                <div class="topbar-brand d-flex align-items-center gap-2">
+                    <img src="<?php echo BASE_URL; ?>img/cengfarma_icon.png" alt="CENGFARMA" style="height: 40px; width: 40px; object-fit: contain; border-radius: 8px; box-shadow: 0 2px 8px rgba(4, 123, 7, 0.25);">
+                    <div class="d-flex flex-column justify-content-center">
+                        <span class="fw-bold text-uppercase" style="font-size: 16px; letter-spacing: 0.6px; color: #047b07; line-height: 1.1;">CENGFARMA</span>
+                        <small class="text-muted" style="font-size: 11px; font-weight: 600; letter-spacing: 0.2px;">Botica &amp; Perfumería</small>
+                    </div>
+                </div>
+                <div class="search-box ms-3 d-none d-md-block">
                     <i class="bi bi-search"></i>
                     <input type="text" placeholder="Buscar producto o código de barras...">
                 </div>

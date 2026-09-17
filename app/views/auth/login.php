@@ -7,7 +7,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo Controller::generateCsrfToken(); ?>">
-    <title>Acceso - Sistema de Botica</title>
+    <title>Acceso - CENGFARMA</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>img/cengfarma_icon.png">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -21,7 +23,7 @@
 
 <div class="login-card">
     <div class="login-logo">
-        <img src="<?php echo BASE_URL; ?>img/logo_cengfarma.jpg" alt="CENGFARMA" style="max-height: 88px; max-width: 95%; object-fit: contain; border-radius: 10px; margin-bottom: 16px; box-shadow: 0 6px 22px rgba(4, 123, 7, 0.2);">
+        <img src="<?php echo BASE_URL; ?>img/cengfarma_banner.png" alt="CENGFARMA" style="max-height: 88px; max-width: 95%; object-fit: contain; border-radius: 10px; margin-bottom: 16px; box-shadow: 0 6px 22px rgba(4, 123, 7, 0.2);">
     </div>
     <div class="login-title">Bienvenido a CENGFARMA 👋</div>
     <div class="login-subtitle">Soluciones para tu bienestar y salud</div>
