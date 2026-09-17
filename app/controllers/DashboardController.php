@@ -9,7 +9,9 @@ class DashboardController extends Controller {
 
         $modelo = $this->model('Dashboard');
         $metricas = $modelo->getMetricasHoy();
+        $graficoHoy = $modelo->getGraficoHoy();
         $grafico = $modelo->getGraficoSemanal();
+        $graficoMensual = $modelo->getGraficoMensual();
         $pagos = $modelo->getMediosPago();
         $topProductos = $modelo->getTopProductos();
         $topCategorias = $modelo->getTopCategorias();
@@ -17,7 +19,9 @@ class DashboardController extends Controller {
         $data = [
             'title' => 'Dashboard Gerencial',
             'metricas' => $metricas,
+            'graficoHoy' => $graficoHoy,
             'grafico' => $grafico,
+            'graficoMensual' => $graficoMensual,
             'pagos' => $pagos,
             'topProductos' => $topProductos,
             'topCategorias' => $topCategorias
