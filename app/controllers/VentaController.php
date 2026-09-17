@@ -18,12 +18,14 @@ class VentaController extends Controller {
         $prodModel = $this->model('Producto');
         
         $configModel = $this->model('Configuracion');
+        $puntoModel = $this->model('Punto');
         
         $data = [
             'title' => 'Punto de Venta',
             'clientes' => $cliModel->getAll(),
             'productos' => $prodModel->getAll(),
-            'igv' => $configModel->get('igv')
+            'igv' => $configModel->get('igv'),
+            'configPuntos' => $puntoModel->getConfig()
         ];
         
         // Vista directa para el POS (usa layout de main)
@@ -153,21 +155,25 @@ class VentaController extends Controller {
             $total = (float)$_POST['total_venta'];
             $id_cliente = (int)$_POST['id_cliente'];
             
+            $puntoModel = $this->model('Punto');
+            $configPuntos = $puntoModel->getConfig();
+
             $puntos_ganados = 0;
-            if($id_cliente != 1) {
-                // 1 Sol = 1 Punto (basado en el total final)
-                $puntos_ganados = floor($total);
+            if($id_cliente != 1 && !empty($configPuntos['habilitado'])) {
+                $consumoBase = (float)$configPuntos['consumo_base'];
+                if ($consumoBase > 0) {
+                    $puntos_ganados = (int)floor($total / $consumoBase);
+                }
             }
             $puntos_usados = isset($_POST['puntos_usados']) ? (int)$_POST['puntos_usados'] : 0;
             $descuento = isset($_POST['descuento_venta']) ? (float)$_POST['descuento_venta'] : 0.00;
-
             // Trazabilidad del descuento: canje de puntos o manual con motivo obligatorio
             $tipo_descuento = null;
             $motivo_descuento = null;
             if ($descuento > 0) {
                 if ($puntos_usados > 0 && $id_cliente != 1) {
                     $tipo_descuento = 'Puntos';
-                    $motivo_descuento = "Canje de $puntos_usados puntos";
+                    $motivo_descuento = "Canje de $puntos_usados puntos (-S/ " . number_format($descuento, 2) . ")";
                 } else {
                     $puntos_usados = 0;
                     $tipo_descuento = 'Manual';
@@ -277,9 +283,26 @@ class VentaController extends Controller {
                 $id_venta = $modelo->registrarVenta($cabecera, $detalles, $_SESSION['user_id']);
                 if ($id_venta) {
                     if($id_cliente != 1) {
-                        $cliModel = $this->model('Cliente');
-                        $delta = $puntos_ganados - $puntos_usados;
-                        $cliModel->actualizarPuntos($id_cliente, $delta);
+                        if ($puntos_ganados > 0) {
+                            $puntoModel->registrarMovimiento(
+                                $id_cliente,
+                                $_SESSION['user_id'],
+                                'ACUMULACION',
+                                $puntos_ganados,
+                                "Compra {$cabecera['tipo_comprobante']} {$cabecera['serie_comprobante']}-{$cabecera['num_comprobante']}",
+                                $id_venta
+                            );
+                        }
+                        if ($puntos_usados > 0) {
+                            $puntoModel->registrarMovimiento(
+                                $id_cliente,
+                                $_SESSION['user_id'],
+                                'CANJE',
+                                -$puntos_usados,
+                                "Canje de puntos en {$cabecera['tipo_comprobante']} {$cabecera['serie_comprobante']}-{$cabecera['num_comprobante']}",
+                                $id_venta
+                            );
+                        }
                     }
 
                     // Generar XML SUNAT si es Boleta o Factura

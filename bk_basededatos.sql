@@ -613,7 +613,10 @@ INSERT INTO `configuracion` (`id`, `clave`, `valor`, `descripcion`) VALUES
 	(14, 'sunat_url_beta', 'https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService', NULL),
 	(15, 'sunat_url_produccion', 'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService', NULL),
 	(16, 'sunat_habilitado', '0', NULL),
-	(17, 'nombre_empresa', 'CENGFARMA - Botica y Perfumería', NULL);
+	(17, 'nombre_empresa', 'CENGFARMA - Botica y Perfumería', NULL),
+	(21, 'puntos_consumo_base', '10.00', 'Monto en soles de consumo requerido para acumular 1 punto'),
+	(22, 'puntos_valor_canje', '0.10', 'Valor en soles de descuento por cada punto canjeado'),
+	(23, 'puntos_habilitado', '1', 'Habilita el programa de fidelización por puntos (1=Activo, 0=Inactivo)');
 
 -- Volcando estructura para tabla botica_db.inventario_auditorias
 CREATE TABLE IF NOT EXISTS `inventario_auditorias` (
@@ -1116,9 +1119,9 @@ CREATE TABLE IF NOT EXISTS `ventas` (
   `igv` decimal(10,2) NOT NULL DEFAULT '0.00',
   `total` decimal(12,2) NOT NULL DEFAULT '0.00',
   `metodo_pago` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Efectivo',
-  `monto_efectivo` decimal(12,2) DEFAULT NULL,
-  `monto_transferencia` decimal(12,2) DEFAULT NULL,
-  `monto_tarjeta` decimal(12,2) DEFAULT NULL,
+  `monto_efectivo` decimal(12,2) DEFAULT '0.00',
+  `monto_transferencia` decimal(12,2) DEFAULT '0.00',
+  `monto_tarjeta` decimal(12,2) DEFAULT '0.00',
   `num_operacion_trans` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `num_operacion_tarj` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `pago_recibido` decimal(12,2) DEFAULT NULL,
@@ -1135,6 +1138,26 @@ CREATE TABLE IF NOT EXISTS `ventas` (
   CONSTRAINT `ventas_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ventas_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Volcando estructura para tabla botica_db.cliente_puntos_historial
+CREATE TABLE IF NOT EXISTS `cliente_puntos_historial` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `id_cliente` int NOT NULL,
+  `id_usuario` int NOT NULL,
+  `tipo` enum('ACUMULACION','CANJE','AJUSTE_MANUAL','ANULACION') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `puntos` int NOT NULL,
+  `saldo_anterior` int NOT NULL DEFAULT '0',
+  `saldo_nuevo` int NOT NULL DEFAULT '0',
+  `motivo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_venta` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_cli_puntos` (`id_cliente`),
+  KEY `idx_usr_puntos` (`id_usuario`),
+  KEY `idx_venta_puntos` (`id_venta`),
+  CONSTRAINT `fk_puntos_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_puntos_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Volcando datos para la tabla botica_db.ventas: ~111 rows (aproximadamente)
 DELETE FROM `ventas`;

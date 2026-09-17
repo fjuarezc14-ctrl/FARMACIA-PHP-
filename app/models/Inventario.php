@@ -25,7 +25,7 @@ class Inventario {
     }
     
     public function getLotesProximosVencer($dias = 90) {
-        $query = "SELECT p.nombre_comercial as producto, l.codigo_lote as lote, l.fecha_vencimiento, l.cantidad_disponible as stock
+        $query = "SELECT p.id as id_producto, p.nombre_comercial as producto, l.id as id_lote, l.codigo_lote as lote, l.fecha_vencimiento, l.cantidad_disponible as stock
                   FROM inventario_lotes l
                   INNER JOIN productos p ON l.id_producto = p.id
                   WHERE l.cantidad_disponible > 0 

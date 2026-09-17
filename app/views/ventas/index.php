@@ -164,8 +164,18 @@
                                 <span class="badge bg-warning text-dark" style="font-size:10px;">Pendiente</span>
                             <?php endif; ?>
                         </td>
-                        <td class="text-end" style="font-size: 16px; font-weight:700; color: var(--accent-primary);">
-                            S/ <?php echo number_format($v['total'], 2); ?>
+                        <td class="text-end">
+                            <div style="font-size: 15px; font-weight:700; color: var(--accent-primary);">
+                                S/ <?php echo number_format($v['total'], 2); ?>
+                            </div>
+                            <?php if(!empty($v['descuento']) && (float)$v['descuento'] > 0): ?>
+                                <small class="text-danger d-block mt-1" style="font-size: 11px; font-weight: 600;">
+                                    <i class="bi bi-tag-fill me-1"></i>Desc: -S/ <?php echo number_format($v['descuento'], 2); ?>
+                                    <?php if(!empty($v['motivo_descuento'])): ?>
+                                        <br><span class="text-muted fst-italic" style="font-size: 10px; font-weight: normal;"><?php echo htmlspecialchars($v['motivo_descuento']); ?></span>
+                                    <?php endif; ?>
+                                </small>
+                            <?php endif; ?>
                         </td>
                         <td class="text-center">
                             <div class="d-flex gap-1 justify-content-center flex-wrap">

@@ -104,6 +104,35 @@ $migraciones = [
         if ($n) logm("  ~ $n ventas antiguas marcadas como descuento por puntos");
     },
 
+    '2026_09_17_fase15_puntos_fidelizacion' => function (PDO $pdo) {
+        agregarColumna($pdo, 'clientes', 'puntos_acumulados', "int NOT NULL DEFAULT 0 AFTER `direccion`");
+        agregarColumna($pdo, 'ventas', 'puntos_ganados', "int DEFAULT 0 AFTER `vuelto`");
+        agregarColumna($pdo, 'ventas', 'puntos_usados', "int DEFAULT 0 AFTER `puntos_ganados`");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `cliente_puntos_historial` (
+            `id` int NOT NULL AUTO_INCREMENT,
+            `id_cliente` int NOT NULL,
+            `id_usuario` int NOT NULL,
+            `tipo` enum('ACUMULACION','CANJE','AJUSTE_MANUAL','ANULACION') COLLATE utf8mb4_unicode_ci NOT NULL,
+            `puntos` int NOT NULL,
+            `saldo_anterior` int NOT NULL DEFAULT '0',
+            `saldo_nuevo` int NOT NULL DEFAULT '0',
+            `motivo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+            `id_venta` int DEFAULT NULL,
+            `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `idx_cph_cliente` (`id_cliente`),
+            KEY `idx_cph_tipo` (`tipo`),
+            KEY `idx_cph_fecha` (`created_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $pdo->exec("INSERT IGNORE INTO `configuracion` (`clave`, `valor`) VALUES 
+            ('puntos_consumo_base', '10.00'),
+            ('puntos_valor_canje', '0.10'),
+            ('puntos_habilitado', '1')");
+        logm("  + cliente_puntos_historial y configuracion de puntos listos");
+    },
+
 ];
 
 // ---------------------------------------------------------------------------

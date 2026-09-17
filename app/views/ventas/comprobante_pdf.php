@@ -236,7 +236,12 @@
                 </tr>
                 <?php if(!empty($data['venta']['descuento']) && $data['venta']['descuento'] > 0): ?>
                 <tr>
-                    <td>Descuento<?php echo !empty($data['venta']['motivo_descuento']) ? ' (' . htmlspecialchars($data['venta']['motivo_descuento']) . ')' : ' aplicado'; ?>:</td>
+                    <td>
+                        Descuento aplicado:
+                        <?php if(!empty($data['venta']['motivo_descuento'])): ?>
+                            <br><small style="font-size:10px; color:#64748b; font-weight:normal;">(<?php echo htmlspecialchars($data['venta']['motivo_descuento']); ?>)</small>
+                        <?php endif; ?>
+                    </td>
                     <td style="color:#ef4444;">- S/ <?php echo number_format($data['venta']['descuento'], 2); ?></td>
                 </tr>
                 <?php endif; ?>

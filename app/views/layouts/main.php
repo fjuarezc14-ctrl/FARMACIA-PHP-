@@ -142,6 +142,11 @@
                     </ul>
                 </div>
             </li>
+            <li class="nav-item">
+                <a href="<?php echo BASE_URL; ?>puntos/index" class="nav-link">
+                    <i class="bi bi-star-fill" style="color: #fbbf24;"></i> Gestionar Puntos
+                </a>
+            </li>
             <?php endif; ?>
             
             <li class="nav-section-title" style="color: #fb7185;">Gerencia & Control</li>
@@ -212,18 +217,19 @@
                 <button id="sidebarToggle" class="btn btn-link d-lg-none p-0 me-1" style="color: var(--text-primary); font-size: 26px; text-decoration: none;">
                     <i class="bi bi-list"></i>
                 </button>
-                <!-- Encabezado CENGFARMA -->
-                <div class="topbar-brand d-flex align-items-center gap-2">
-                    <img src="<?php echo BASE_URL; ?>img/cengfarma_icon.png" alt="CENGFARMA" style="height: 40px; width: 40px; object-fit: contain; border-radius: 8px; box-shadow: 0 2px 8px rgba(4, 123, 7, 0.25);">
+                <!-- Encabezado CENGFARMA (Visible en móviles/tablets cuando el sidebar está oculto) -->
+                <div class="topbar-brand d-flex align-items-center gap-2 d-lg-none">
+                    <img src="<?php echo BASE_URL; ?>img/cengfarma_icon.png" alt="CENGFARMA" style="height: 38px; width: 38px; object-fit: contain; border-radius: 8px; box-shadow: 0 2px 8px rgba(4, 123, 7, 0.25);">
                     <div class="d-flex flex-column justify-content-center">
-                        <span class="fw-bold text-uppercase" style="font-size: 16px; letter-spacing: 0.6px; color: #047b07; line-height: 1.1;">CENGFARMA</span>
-                        <small class="text-muted" style="font-size: 11px; font-weight: 600; letter-spacing: 0.2px;">Botica &amp; Perfumería</small>
+                        <span class="fw-bold text-uppercase" style="font-size: 15px; letter-spacing: 0.5px; color: #047b07; line-height: 1.1;">CENGFARMA</span>
+                        <small class="text-muted" style="font-size: 10px; font-weight: 600;">Botica &amp; Perfumería</small>
                     </div>
                 </div>
-                <div class="search-box ms-3 d-none d-md-block">
+                <!-- Buscador de productos del Topbar (Directo a catálogo) -->
+                <form action="<?php echo BASE_URL; ?>producto/index" method="GET" class="search-box ms-2 d-none d-md-flex align-items-center mb-0">
                     <i class="bi bi-search"></i>
-                    <input type="text" placeholder="Buscar producto o código de barras...">
-                </div>
+                    <input type="text" name="search" placeholder="Buscar producto o código de barras..." value="<?php echo htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" style="border:none; outline:none; background:transparent; width: 100%; color: var(--text-primary);">
+                </form>
             </div>
 
             <div class="topbar-actions">

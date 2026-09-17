@@ -215,6 +215,7 @@ kbd.pos-kbd { background: #f1f3f5; color: var(--text-secondary); border: 1px sol
                 <button class="btn btn-sm btn-success" onclick="window.open('<?php echo BASE_URL; ?>venta/pdf/<?php echo $_SESSION['last_ticket']; unset($_SESSION['last_ticket']); ?>', 'PDF', 'width=900,height=700')"><i class="bi bi-file-earmark-pdf-fill"></i> PDF A4</button>
             </div>
         <?php endif; ?>
+
     </div>
 <?php endif; ?>
 <?php if(isset($_SESSION['error_pos']) || isset($_SESSION['error'])): ?>
@@ -564,6 +565,50 @@ function posBilletes($ctx) { ?>
     </div>
 </div>
 
+<!-- Modal: Canje de Puntos de Fidelización en POS -->
+<div class="modal fade" id="modalCanjePuntos" tabindex="-1" aria-labelledby="modalCanjeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="background: var(--bg-card); color: var(--text-primary); border-radius: 14px;">
+            <div class="modal-header border-bottom py-2 px-3">
+                <h6 class="modal-title fw-bold" id="modalCanjeLabel">
+                    <i class="bi bi-star-fill text-warning me-1"></i> Canjear Puntos
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <div class="p-2 mb-3 rounded" style="background: var(--bg-dark); font-size: 12px;">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Puntos Disponibles:</span>
+                        <strong id="modalCanjeDisponibles" class="text-warning">0 pts</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span class="text-muted">Equivalente Total:</span>
+                        <strong id="modalCanjeEquivMax" class="text-success">S/ 0.00</strong>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label mb-1" style="font-size: 12px; font-weight: 600;">Puntos a canjear en esta venta:</label>
+                    <input type="number" min="1" step="1" id="inModalPuntosCanjear" class="form-control form-control-sm bg-dark text-white border-secondary fw-bold text-center" style="font-size: 16px;" oninput="actualizarPreviewCanje()">
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2" style="font-size: 11px;">
+                    <span class="text-muted">Descuento que genera:</span>
+                    <strong id="modalCanjeDescuentoPreview" class="text-danger fw-bold fs-6">S/ 0.00</strong>
+                </div>
+                <button type="button" class="btn btn-outline-warning btn-sm w-100" onclick="usarMaximosPuntosCanje()">
+                    <i class="bi bi-lightning-fill"></i> Usar Máximo Posible
+                </button>
+            </div>
+            <div class="modal-footer border-top py-2 px-3">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning btn-sm px-3 fw-bold" onclick="aplicarCanjePuntos()">
+                    <i class="bi bi-check-lg"></i> Aplicar Canje
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 let carrito = {};
 
@@ -593,7 +638,12 @@ const clientesPos = <?php echo json_encode($clientesPos, JSON_HEX_TAG | JSON_HEX
 let clienteActual = <?php echo json_encode($clienteDefault, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 
 const IGV_PCT = <?php echo floatval($data['igv']); ?>;
-let ratioCanje = 10; // 10 puntos = 1 Sol
+
+// Reglas Dinámicas de Fidelidad y Puntos
+let puntosValorCanje = <?php echo floatval($data['configPuntos']['valor_canje'] ?? 0.10); ?>;
+let puntosConsumoBase = <?php echo floatval($data['configPuntos']['consumo_base'] ?? 10.00); ?>;
+let puntosHabilitado = <?php echo intval($data['configPuntos']['habilitado'] ?? 1); ?>;
+let ratioCanje = puntosValorCanje > 0 ? (1 / puntosValorCanje) : 10;
 
 function escHtml(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -698,17 +748,30 @@ inputFiltroCli.addEventListener('keydown', function(e) {
 
 function evaluarClientePuntos() {
     const c = clienteActual;
-    const pts = c ? c.puntos : 0;
-    document.getElementById('cliDocInfo').textContent = c ? (c.id === 1 ? 'Venta sin datos de cliente' : c.tipo + ': ' + c.doc) : '';
+    const pts = c ? (parseInt(c.puntos) || 0) : 0;
+    const docInfo = document.getElementById('cliDocInfo');
+    if (docInfo) {
+        docInfo.textContent = c ? (c.id === 1 ? 'Venta sin datos de cliente' : c.tipo + ': ' + c.doc) : '';
+    }
 
-    if (!c || c.id == 1) { // Público General
-        document.getElementById('puntosBlock').style.display = 'none';
-        document.getElementById('btnCanjear').style.display = 'none';
-        document.getElementById('fiPuso').value = 0;
+    const pBlock = document.getElementById('puntosBlock');
+    const bCanjear = document.getElementById('btnCanjear');
+    const fPuso = document.getElementById('fiPuso');
+
+    if (!c || c.id == 1 || !puntosHabilitado) { // Público General o puntos deshabilitados
+        if (pBlock) pBlock.style.display = 'none';
+        if (bCanjear) bCanjear.style.display = 'none';
+        if (fPuso) fPuso.value = 0;
     } else {
-        document.getElementById('puntosBlock').style.display = 'inline';
-        document.getElementById('lblPuntos').innerText = pts;
-        document.getElementById('btnCanjear').style.display = pts >= ratioCanje ? 'inline-block' : 'none';
+        if (pBlock) {
+            pBlock.style.display = 'inline';
+            let valorSoles = (pts * puntosValorCanje).toFixed(2);
+            let lbl = document.getElementById('lblPuntos');
+            if (lbl) lbl.innerHTML = `${pts} <span class="text-muted" style="font-size:11px;">(equiv. S/ ${valorSoles})</span>`;
+        }
+        if (bCanjear) {
+            bCanjear.style.display = (pts > 0 && ratioCanje > 0) ? 'inline-block' : 'none';
+        }
     }
     renderCarrito();
 }
@@ -729,8 +792,8 @@ function actualizarMotivoDescuento(descuento) {
     document.getElementById('descPtsChip').style.display = porPuntos ? 'inline-flex' : 'none';
     inMotivo.style.display = porPuntos ? 'none' : 'block';
     if (porPuntos) {
-        document.getElementById('descPtsTxt').textContent = 'Descuento por canje de ' + puntos + ' puntos';
-        inMotivo.value = '';
+        document.getElementById('descPtsTxt').textContent = 'Canje de ' + puntos + ' puntos (-S/ ' + money(descuento) + ')';
+        inMotivo.value = 'Canje de ' + puntos + ' puntos';
     }
 }
 
@@ -755,17 +818,18 @@ function quitarDescuento() {
 }
 
 function canjearPuntos() {
-    let pts = clienteActual ? clienteActual.puntos : 0;
-    let maxSoles = pts / ratioCanje;
+    let pts = clienteActual ? (parseInt(clienteActual.puntos) || 0) : 0;
+    let maxSoles = pts * puntosValorCanje;
 
     let sum = 0;
     Object.values(carrito).forEach(i => { sum += (i.tipo_unidad == 'CAJA' ? i.precio_caja : i.precio_fraccion) * i.cantidad; });
 
     if(sum <= 0) { alert("Primero agrega productos al carrito."); return; }
+    if(pts <= 0 || maxSoles <= 0) { alert("El cliente no tiene puntos acumulados suficientes."); return; }
 
     let dsctoSoles = Math.min(maxSoles, sum);
-    let puntosAUsar = Math.floor(dsctoSoles * ratioCanje);
-    dsctoSoles = puntosAUsar / ratioCanje;
+    let puntosAUsar = Math.min(pts, Math.ceil(dsctoSoles / (puntosValorCanje > 0 ? puntosValorCanje : 0.1)));
+    dsctoSoles = Math.min(sum, +(puntosAUsar * puntosValorCanje).toFixed(2));
 
     document.getElementById('inDesc').value = dsctoSoles.toFixed(2);
     document.getElementById('fiPuso').value = puntosAUsar;
@@ -1357,8 +1421,10 @@ function confirmarVenta() {
     }
 
     const btn = document.getElementById('btnConfirmarVenta');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
+    }
     document.getElementById('formVenta').submit();
 }
 

@@ -156,7 +156,7 @@ class Venta {
             $stmt->bindParam(':sub', $cabecera['subtotal']);
             $stmt->bindParam(':desc', $cabecera['descuento']);
             $stmt->bindValue(':tdesc', $cabecera['tipo_descuento'] ?? null);
-            $stmt->bindValue(':mdesc', $cabecera['motivo_descuento'] ?? null);
+            $stmt->bindValue(':mdesc', !empty($cabecera['motivo_descuento']) ? $cabecera['motivo_descuento'] : null);
             $stmt->bindParam(':igv', $cabecera['igv']);
             $stmt->bindParam(':tot', $cabecera['total']);
             $stmt->bindValue(':m_efe', $cabecera['monto_efectivo'] ?? 0.00);
@@ -350,16 +350,34 @@ class Venta {
             $updVenta->bindParam(':id', $id_venta);
             $updVenta->execute();
 
-            // 4. Revertir puntos del cliente
+            // 4. Revertir puntos del cliente con trazabilidad en historial
             if($venta['id_cliente'] != 1) {
+                $sCli = $this->conn->prepare("SELECT puntos_acumulados FROM clientes WHERE id = :idc FOR UPDATE");
+                $sCli->execute([':idc' => $venta['id_cliente']]);
+                $saldoAnt = (int)($sCli->fetchColumn() ?: 0);
+
                 // Si ganó puntos, se los quitamos (-puntos_ganados)
                 // Si usó puntos, se los devolvemos (+puntos_usados)
-                $delta_puntos = $venta['puntos_usados'] - $venta['puntos_ganados'];
+                $delta_puntos = (int)($venta['puntos_usados'] ?? 0) - (int)($venta['puntos_ganados'] ?? 0);
                 if($delta_puntos != 0) {
-                    $updCli = $this->conn->prepare("UPDATE clientes SET puntos_acumulados = puntos_acumulados + :delta WHERE id = :idc");
-                    $updCli->bindParam(':delta', $delta_puntos);
-                    $updCli->bindParam(':idc', $venta['id_cliente']);
-                    $updCli->execute();
+                    $saldoNuevo = max(0, $saldoAnt + $delta_puntos);
+                    $updCli = $this->conn->prepare("UPDATE clientes SET puntos_acumulados = :snue WHERE id = :idc");
+                    $updCli->execute([':snue' => $saldoNuevo, ':idc' => $venta['id_cliente']]);
+
+                    $insH = $this->conn->prepare("INSERT INTO cliente_puntos_historial
+                                                    (id_cliente, id_usuario, tipo, puntos, saldo_anterior, saldo_nuevo, motivo, id_venta)
+                                                 VALUES
+                                                    (:cli, :usr, 'ANULACION', :pts, :sant, :snue, :mot, :vta)");
+                    $motivoRev = "Reversión por anulación de " . $venta['tipo_comprobante'] . " " . $venta['serie_comprobante'] . "-" . $venta['num_comprobante'];
+                    $insH->execute([
+                        ':cli'  => $venta['id_cliente'],
+                        ':usr'  => $id_usuario,
+                        ':pts'  => $delta_puntos,
+                        ':sant' => $saldoAnt,
+                        ':snue' => $saldoNuevo,
+                        ':mot'  => $motivoRev,
+                        ':vta'  => $id_venta
+                    ]);
                 }
             }
 
