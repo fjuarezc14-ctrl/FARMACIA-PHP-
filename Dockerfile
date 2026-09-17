@@ -32,6 +32,12 @@ COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
+# Entrypoint: aplica migraciones de BD pendientes al iniciar el contenedor
+COPY docker/entrypoint.sh /usr/local/bin/botica-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/botica-entrypoint.sh \
+    && chmod +x /usr/local/bin/botica-entrypoint.sh
+
 EXPOSE 80
 
+ENTRYPOINT ["botica-entrypoint.sh"]
 CMD ["apache2-foreground"]
