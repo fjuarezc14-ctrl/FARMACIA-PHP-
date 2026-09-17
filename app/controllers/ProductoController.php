@@ -74,7 +74,6 @@ class ProductoController extends Controller {
     }
 
     public function save() {
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->validateCsrf();
             $modelo = $this->model('Producto');
@@ -82,38 +81,126 @@ class ProductoController extends Controller {
             $condicion_venta = $_POST['condicion_venta'] ?? 'Venta Libre';
             $requiere_receta = ($condicion_venta === 'Receta Médica Simple' || $condicion_venta === 'Receta Médica Retenida') ? 1 : 0;
             
+            // Sanitización y blindaje numérico robusto (evita caídas si se ingresan letras)
+            $pCompra = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_compra'] ?? 0));
+            $pVenta = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_venta'] ?? 0));
+            $pMayor = (isset($_POST['precio_mayor']) && trim($_POST['precio_mayor']) !== '') 
+                      ? (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_mayor'])) 
+                      : null;
+            $pMargen = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['margen_ganancia'] ?? 0));
+            $pMargen = min(999999.99, max(0.00, $pMargen));
+            $stockMin = (int)preg_replace('/[^\d]/', '', $_POST['stock_minimo'] ?? 10);
+            if ($stockMin <= 0) $stockMin = 10;
+
+            $fraccionable = isset($_POST['fraccionable']) ? 1 : 0;
+            $uCaja = $fraccionable ? (int)preg_replace('/[^\d]/', '', $_POST['unidades_por_caja'] ?? 1) : 1;
+            if ($uCaja <= 0) $uCaja = 1;
+            $uFraccion = $fraccionable && !empty($_POST['unidad_fraccion']) ? trim($_POST['unidad_fraccion']) : null;
+            $pFraccion = $fraccionable ? (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_fraccion'] ?? 0)) : 0.00;
+
+            $codPrinActivo = !empty($_POST['codigo_prin_activo']) ? (int)preg_replace('/[^\d]/', '', $_POST['codigo_prin_activo']) : null;
+            $idLab = !empty($_POST['id_laboratorio']) ? (int)$_POST['id_laboratorio'] : null;
+            $idCat = !empty($_POST['id_categoria']) ? (int)$_POST['id_categoria'] : null;
+
             $data = [
-                'codigo_barras' => $_POST['codigo_barras'] ?: null,
-                'nombre_generico' => $_POST['nombre_generico'],
-                'nombre_comercial' => $_POST['nombre_comercial'],
-                'concentracion' => $_POST['concentracion'],
-                'forma_farmaceutica' => $_POST['forma_farmaceutica'],
-                'registro_sanitario' => $_POST['registro_sanitario'] ?: null,
+                'codigo_barras' => !empty(trim($_POST['codigo_barras'] ?? '')) ? trim($_POST['codigo_barras']) : null,
+                'nombre_generico' => trim($_POST['nombre_generico'] ?? ''),
+                'codigo_prin_activo' => $codPrinActivo,
+                'nombre_comercial' => trim($_POST['nombre_comercial'] ?? ''),
+                'concentracion' => !empty(trim($_POST['concentracion'] ?? '')) ? trim($_POST['concentracion']) : null,
+                'forma_farmaceutica' => !empty(trim($_POST['forma_farmaceutica'] ?? '')) ? trim($_POST['forma_farmaceutica']) : null,
+                'registro_sanitario' => !empty(trim($_POST['registro_sanitario'] ?? '')) ? trim($_POST['registro_sanitario']) : null,
                 'condicion_venta' => $condicion_venta,
-                'id_laboratorio' => empty($_POST['id_laboratorio']) ? null : $_POST['id_laboratorio'],
-                'id_categoria' => empty($_POST['id_categoria']) ? null : $_POST['id_categoria'],
-                'precio_compra' => $_POST['precio_compra'],
-                'precio_venta' => $_POST['precio_venta'],
-                'margen_ganancia' => $_POST['margen_ganancia'],
-                'unidad_medida' => $_POST['unidad_medida'],
+                'id_laboratorio' => $idLab,
+                'id_categoria' => $idCat,
+                'precio_compra' => $pCompra,
+                'precio_venta' => $pVenta,
+                'precio_mayor' => $pMayor,
+                'margen_ganancia' => $pMargen,
+                'unidad_medida' => !empty($_POST['unidad_medida']) ? trim($_POST['unidad_medida']) : 'Unidad',
                 'requiere_receta' => $requiere_receta,
-                'stock_minimo' => $_POST['stock_minimo'] ?: 10,
-                'fraccionable' => isset($_POST['fraccionable']) ? 1 : 0,
-                'unidades_por_caja' => isset($_POST['fraccionable']) && !empty($_POST['unidades_por_caja']) ? $_POST['unidades_por_caja'] : 1,
-                'unidad_fraccion' => isset($_POST['fraccionable']) && !empty($_POST['unidad_fraccion']) ? $_POST['unidad_fraccion'] : null,
-                'precio_fraccion' => isset($_POST['fraccionable']) && !empty($_POST['precio_fraccion']) ? $_POST['precio_fraccion'] : 0.00,
-                'id' => $_POST['id'] ?? null
+                'stock_minimo' => $stockMin,
+                'fraccionable' => $fraccionable,
+                'unidades_por_caja' => $uCaja,
+                'unidad_fraccion' => $uFraccion,
+                'precio_fraccion' => $pFraccion,
+                'id' => !empty($_POST['id']) ? (int)$_POST['id'] : null
             ];
             
-            if (empty($data['id'])) {
-                $modelo->create($data);
-                $this->logAccion('Productos', 'CREAR', "Nuevo producto creado: " . $data['nombre_comercial']);
-            } else {
-                $modelo->update($data);
-                $this->logAccion('Productos', 'EDITAR', "Producto ID #" . $data['id'] . " editado. Precios: S/ " . $data['precio_venta'] . " (Caja) / S/ " . $data['precio_fraccion'] . " (Frac)");
+            try {
+                if (empty($data['id'])) {
+                    $modelo->create($data);
+                    $this->logAccion('Productos', 'CREAR', "Nuevo producto creado: " . $data['nombre_comercial']);
+                    $_SESSION['mensaje'] = "Producto '" . htmlspecialchars($data['nombre_comercial']) . "' creado exitosamente.";
+                } else {
+                    $modelo->update($data);
+                    $this->logAccion('Productos', 'EDITAR', "Producto ID #" . $data['id'] . " editado. Precios: S/ " . $data['precio_venta'] . " (Caja) / S/ " . $data['precio_fraccion'] . " (Frac)");
+                    $_SESSION['mensaje'] = "Producto actualizado correctamente.";
+                }
+            } catch (Exception $e) {
+                error_log("[ProductoController::save] Error: " . $e->getMessage());
+                $_SESSION['error'] = "Ocurrió un error al guardar el producto: " . $e->getMessage();
             }
         }
         header('Location: ' . BASE_URL . 'producto/index');
+        exit;
+    }
+
+    public function importarExcel() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método no permitido.';
+            header('Location: ' . BASE_URL . 'producto/index');
+            exit;
+        }
+
+        $this->validateCsrf();
+
+        if (empty($_FILES['archivo_excel']) || $_FILES['archivo_excel']['error'] !== UPLOAD_ERR_OK) {
+            $_SESSION['error'] = 'Por favor seleccione un archivo Excel (.xlsx) válido.';
+            header('Location: ' . BASE_URL . 'producto/index');
+            exit;
+        }
+
+        $fileInfo = pathinfo($_FILES['archivo_excel']['name']);
+        $ext = strtolower($fileInfo['extension'] ?? '');
+
+        if ($ext !== 'xlsx') {
+            $_SESSION['error'] = 'Formato inválido. Debe subir un archivo con extensión .xlsx (Excel).';
+            header('Location: ' . BASE_URL . 'producto/index');
+            exit;
+        }
+
+        $tmpFile = $_FILES['archivo_excel']['tmp_name'];
+
+        require_once '../app/services/ExcelProductImporter.php';
+        $db = (new Database())->getConnection();
+        $importer = new ExcelProductImporter($db, $_SESSION['user_id'] ?? 1);
+
+        $options = [
+            'crear_categorias' => isset($_POST['crear_categorias']),
+            'crear_laboratorios' => isset($_POST['crear_laboratorios']),
+            'actualizar_existentes' => isset($_POST['actualizar_existentes'])
+        ];
+
+        try {
+            $stats = $importer->procesarArchivo($tmpFile, $options);
+
+            $this->logAccion(
+                'Productos',
+                'IMPORTAR',
+                "Carga masiva Excel: {$stats['creados']} creados, {$stats['actualizados']} actualizados, {$stats['lotes_creados']} lotes generados."
+            );
+
+            $_SESSION['import_stats'] = $stats;
+            $_SESSION['mensaje'] = "¡Importación completada con éxito! Se procesaron {$stats['total_filas']} registros ({$stats['creados']} nuevos, {$stats['actualizados']} actualizados).";
+
+        } catch (Exception $e) {
+            error_log("[ProductoController::importarExcel] Error: " . $e->getMessage());
+            $_SESSION['error'] = "Error al procesar el archivo Excel: " . $e->getMessage();
+        }
+
+        header('Location: ' . BASE_URL . 'producto/index');
+        exit;
     }
 
     public function toggle($id = null) {

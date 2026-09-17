@@ -47,7 +47,7 @@ $countTotalBajos = count($data['bajos'] ?? []);
             <a href="<?php echo BASE_URL; ?>inventario/lotes" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" style="border-radius: 8px; font-weight: 600;">
                 <i class="bi bi-box-seam"></i> Inventario de Lotes
             </a>
-            <a href="<?php echo BASE_URL; ?>compra/nueva" class="btn btn-primary btn-sm d-flex align-items-center gap-1" style="border-radius: 8px; font-weight: 600; background: var(--accent-primary); border-color: var(--accent-primary);">
+            <a href="<?php echo BASE_URL; ?>compra/create" class="btn btn-primary btn-sm d-flex align-items-center gap-1" style="border-radius: 8px; font-weight: 600; background: var(--accent-primary); border-color: var(--accent-primary);">
                 <i class="bi bi-cart-plus"></i> Ordenar Compra
             </a>
         </div>

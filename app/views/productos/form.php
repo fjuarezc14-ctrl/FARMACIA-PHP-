@@ -38,6 +38,11 @@
                             <label class="form-label">Registro Sanitario (DIGEMID)</label>
                             <input type="text" class="form-control-custom" name="registro_sanitario" value="<?php echo ($p && isset($p['registro_sanitario'])) ? htmlspecialchars($p['registro_sanitario']) : ''; ?>" placeholder="Ej: N-24536-PER o EE-12345">
                         </div>
+                        <div class="col-md-6 form-group">
+                            <label class="form-label">Cód. Principio Activo (DIGEMID / Catálogo)</label>
+                            <input type="number" class="form-control-custom" name="codigo_prin_activo" value="<?php echo ($p && isset($p['codigo_prin_activo'])) ? htmlspecialchars($p['codigo_prin_activo']) : ''; ?>" placeholder="Ej: 530, 81">
+                            <small style="color:var(--text-secondary); font-size: 11px;">Código numérico de principio activo legado o catálogo.</small>
+                        </div>
                         
                         <div class="col-md-6 form-group">
                             <label class="form-label">Forma Farmacéutica</label>
@@ -165,9 +170,14 @@
                             <span class="input-group-text" style="background-color: var(--border-color); border:none; color:#fff;">%</span>
                         </div>
                     </div>
-                    <div class="form-group mb-0">
-                        <label class="form-label" style="color: var(--accent-primary);">Precio Venta Sugerido (S/)</label>
+                    <div class="form-group mb-3">
+                        <label class="form-label" style="color: var(--accent-primary);">Precio Venta Sugerido (PVP1 - S/)</label>
                         <input type="number" step="0.01" class="form-control-custom" name="precio_venta" id="pVenta" value="<?php echo $p ? $p['precio_venta'] : '0.00'; ?>" style="border-color: var(--accent-primary); font-size: 18px; font-weight: 700;" required>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="form-label" style="color: #3B82F6;">Precio Venta Mayorista (PVP2 - S/)</label>
+                        <input type="number" step="0.01" class="form-control-custom" name="precio_mayor" id="pMayor" value="<?php echo ($p && isset($p['precio_mayor']) && $p['precio_mayor'] !== null) ? $p['precio_mayor'] : ''; ?>" placeholder="Opcional (Ej: 99.50)">
+                        <small style="color:var(--text-secondary); font-size: 11px;">Precio especial por volumen / mayorista.</small>
                     </div>
                 </div>
 

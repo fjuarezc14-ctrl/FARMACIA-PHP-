@@ -33,4 +33,19 @@ class Categoria {
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }
+
+    public function findOrCreate($nombre) {
+        $nombre = trim($nombre);
+        if (empty($nombre)) return null;
+        $stmt = $this->conn->prepare("SELECT id FROM categorias WHERE LOWER(TRIM(nombre)) = LOWER(:nom) LIMIT 1");
+        $stmt->bindParam(':nom', $nombre);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) return (int)$row['id'];
+        
+        $insert = $this->conn->prepare("INSERT INTO categorias (nombre, descripcion, estado) VALUES (:nom, 'Importado de catálogo Excel', 1)");
+        $insert->bindParam(':nom', $nombre);
+        $insert->execute();
+        return (int)$this->conn->lastInsertId();
+    }
 }

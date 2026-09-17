@@ -65,7 +65,17 @@ class InventarioFisicoController extends Controller {
             $id_audit = (int)$_POST['id_auditoria'];
             $conteos = $_POST['conteo'] ?? []; // Array [id_lote => valor]
 
-            $res = $modelo->finalizarAuditoria($id_audit, $conteos, $_SESSION['user_id']);
+            // Sanitización y blindaje de conteos
+            $conteosSanitizados = [];
+            foreach ($conteos as $idLote => $cant) {
+                $idLoteInt = (int)$idLote;
+                $cantClean = (int)preg_replace('/[^\d]/', '', $cant);
+                if ($idLoteInt > 0) {
+                    $conteosSanitizados[$idLoteInt] = max(0, $cantClean);
+                }
+            }
+
+            $res = $modelo->finalizarAuditoria($id_audit, $conteosSanitizados, $_SESSION['user_id']);
             
             if ($res === true) {
                 $this->logAccion('Inventario', 'FINALIZAR', "Cierre y ajuste automático de stock por Auditoría ID #$id_audit");
@@ -75,6 +85,7 @@ class InventarioFisicoController extends Controller {
             }
         }
         header('Location: ' . BASE_URL . 'inventariofisico/index');
+        exit;
     }
 }
 

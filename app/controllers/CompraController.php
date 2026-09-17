@@ -25,6 +25,13 @@ class CompraController extends Controller {
         
         $this->view('compras/create', $data);
     }
+
+    /**
+     * Alias de create() para asegurar retrocompatibilidad con enlaces antiguos
+     */
+    public function nueva() {
+        $this->create();
+    }
     
     public function detalle($id) {
         $modelo = $this->model('Compra');
@@ -52,20 +59,22 @@ class CompraController extends Controller {
     }
 
     public function save() {
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_proveedor'])) {
             $this->validateCsrf();
             $modelo = $this->model('Compra');
             
-            // 1. Cabecera
+            // Sanitización y blindaje de cabecera
+            $totalCompra = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['total_compra'] ?? 0));
+            $impuesto = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['impuesto'] ?? 0));
+
             $cabecera = [
                 'id_proveedor' => (int)$_POST['id_proveedor'],
-                'tipo_comprobante' => $_POST['tipo_comprobante'],
-                'serie_comprobante' => $_POST['serie_comprobante'],
-                'num_comprobante' => $_POST['num_comprobante'],
-                'fecha_compra' => $_POST['fecha_compra'],
-                'impuesto' => (float)($_POST['impuesto'] ?? 0.00),
-                'total' => (float)$_POST['total_compra'],
+                'tipo_comprobante' => trim($_POST['tipo_comprobante'] ?? 'Factura'),
+                'serie_comprobante' => trim($_POST['serie_comprobante'] ?? ''),
+                'num_comprobante' => trim($_POST['num_comprobante'] ?? ''),
+                'fecha_compra' => !empty($_POST['fecha_compra']) ? $_POST['fecha_compra'] : date('Y-m-d'),
+                'impuesto' => $impuesto,
+                'total' => $totalCompra,
                 'estado' => $_POST['estado'] ?? 'Completada'
             ];
             
@@ -73,34 +82,49 @@ class CompraController extends Controller {
             $detalles = [];
             $productos = $_POST['producto_id'] ?? [];
             foreach ($productos as $i => $id_prod) {
-                // si el json o el ajax envió vacíos se filtran
-                if (empty($id_prod) || empty($_POST['cantidad'][$i])) continue;
+                $idProd = (int)$id_prod;
+                $cant = (int)preg_replace('/[^\d]/', '', $_POST['cantidad'][$i] ?? 0);
+                if ($idProd <= 0 || $cant <= 0) continue;
                 
+                $preUnit = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_c_unitario'][$i] ?? 0));
+                $sub = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['subtotal'][$i] ?? ($cant * $preUnit)));
+
+                $lote = trim($_POST['lote'][$i] ?? '');
+                if (empty($lote) || $lote === '0') $lote = 'P. SIN LOTE';
+
+                $venc = !empty($_POST['vencimiento'][$i]) ? $_POST['vencimiento'][$i] : '2099-12-31';
+
                 $detalles[] = [
-                    'id_producto' => (int)$id_prod,
-                    'cantidad' => (int)$_POST['cantidad'][$i],
-                    'precio_unitario' => (float)$_POST['precio_c_unitario'][$i],
-                    'subtotal' => (float)$_POST['subtotal'][$i],
-                    'lote' => $_POST['lote'][$i],
-                    'vencimiento' => $_POST['vencimiento'][$i],
+                    'id_producto' => $idProd,
+                    'cantidad' => $cant,
+                    'precio_unitario' => $preUnit,
+                    'subtotal' => $sub,
+                    'lote' => $lote,
+                    'vencimiento' => $venc,
                     'actualizar_precio' => isset($_POST['actualizar_precio']) ? 1 : 0
                 ];
             }
             
             if (count($detalles) > 0) {
-                $resultado = $modelo->registrarCompra($cabecera, $detalles, $_SESSION['user_id']);
-                if ($resultado) {
-                    $logMsg = ($cabecera['estado'] == 'Pendiente') ? "Registro de Orden de Compra Pendiente" : "Registro de Compra con Ingreso Directo";
-                    $this->logAccion('Compras', 'CREAR', "$logMsg. Prov: " . $_POST['id_proveedor'] . ", Total: " . $cabecera['total'], $cabecera['total']);
-                    $_SESSION['mensaje'] = "Compra y Lotes generados correctamente.";
-                } else {
-                    $_SESSION['error'] = "Error al registrar la transacción.";
+                try {
+                    $resultado = $modelo->registrarCompra($cabecera, $detalles, $_SESSION['user_id']);
+                    if ($resultado) {
+                        $logMsg = ($cabecera['estado'] == 'Pendiente') ? "Registro de Orden de Compra Pendiente" : "Registro de Compra con Ingreso Directo";
+                        $this->logAccion('Compras', 'CREAR', "$logMsg. Prov: " . $cabecera['id_proveedor'] . ", Total: " . $cabecera['total'], $cabecera['total']);
+                        $_SESSION['mensaje'] = "Compra y Lotes generados correctamente.";
+                    } else {
+                        $_SESSION['error'] = "Error al registrar la transacción en base de datos.";
+                    }
+                } catch (Exception $e) {
+                    error_log("[CompraController::save] Error: " . $e->getMessage());
+                    $_SESSION['error'] = "Ocurrió un error inesperado al procesar la compra: " . $e->getMessage();
                 }
             } else {
-                $_SESSION['error'] = "Debe agregar al menos un producto.";
+                $_SESSION['error'] = "Debe agregar al menos un producto válido con cantidad mayor a 0.";
             }
         }
         header('Location: ' . BASE_URL . 'compra/index');
+        exit;
     }
 
     public function save_devolucion() {

@@ -269,12 +269,18 @@ class VentaController extends Controller {
             $detalles = [];
             $productos = $_POST['producto_id'] ?? [];
             foreach ($productos as $i => $id_prod) {
-                if(empty($id_prod) || empty($_POST['cantidad'][$i])) continue;
+                $idProd = (int)$id_prod;
+                $cant = (int)preg_replace('/[^\d]/', '', $_POST['cantidad'][$i] ?? 0);
+                if ($idProd <= 0 || $cant <= 0) continue;
+
+                $preUnit = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_d'][$i] ?? 0));
+                $sub = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['subtotal_d'][$i] ?? ($cant * $preUnit)));
+
                 $detalles[] = [
-                    'id_producto' => (int)$id_prod,
-                    'cantidad' => (int)$_POST['cantidad'][$i],
-                    'precio_unitario' => (float)$_POST['precio_d'][$i],
-                    'subtotal' => (float)$_POST['subtotal_d'][$i],
+                    'id_producto' => $idProd,
+                    'cantidad' => $cant,
+                    'precio_unitario' => $preUnit,
+                    'subtotal' => $sub,
                     'tipo_unidad' => $_POST['tipo_unidad'][$i] ?? 'CAJA'
                 ];
             }

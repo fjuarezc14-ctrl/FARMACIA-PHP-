@@ -133,6 +133,17 @@ $migraciones = [
         logm("  + cliente_puntos_historial y configuracion de puntos listos");
     },
 
+    '2026_09_17_fase16_productos_catalogo_extendido' => function (PDO $pdo) {
+        agregarColumna($pdo, 'productos', 'precio_mayor', "decimal(10,2) DEFAULT NULL AFTER `precio_venta`");
+        agregarColumna($pdo, 'productos', 'codigo_prin_activo', "int DEFAULT NULL AFTER `nombre_generico`");
+        logm("  + productos.precio_mayor y productos.codigo_prin_activo");
+    },
+
+    '2026_09_17_fase17_productos_margen_precision' => function (PDO $pdo) {
+        $pdo->exec("ALTER TABLE `productos` MODIFY COLUMN `margen_ganancia` decimal(8,2) NOT NULL DEFAULT '0.00'");
+        logm("  + productos.margen_ganancia ampliado a decimal(8,2)");
+    },
+
 ];
 
 // ---------------------------------------------------------------------------
