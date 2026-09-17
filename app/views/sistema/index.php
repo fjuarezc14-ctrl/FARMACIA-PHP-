@@ -20,10 +20,10 @@
         </div>
     <?php endif; ?>
 
-    <div class="row g-4">
+    <div class="row g-4 justify-content-center">
         
         <!-- CARD 1: BACKUP -->
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card-metric h-100 d-flex flex-column text-center" style="border-top: 4px solid #3498DB;">
                 <div class="mb-3">
                     <div class="metric-icon mx-auto" style="background-color: rgba(52, 152, 219, 0.1); color: #3498DB; width: 64px; height: 64px; font-size: 32px;">
@@ -43,7 +43,7 @@
         </div>
 
         <!-- CARD 2: RESTORE -->
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card-metric h-100 d-flex flex-column text-center" style="border-top: 4px solid #F39C12;">
                 <div class="mb-3">
                     <div class="metric-icon mx-auto" style="background-color: rgba(243, 156, 18, 0.1); color: #F39C12; width: 64px; height: 64px; font-size: 32px;">
@@ -65,36 +65,6 @@
 
                     <button type="button" class="btn-primary-custom w-100" style="background: linear-gradient(135deg, #F39C12, #D68910);" onclick="confirmRestore()">
                         <i class="bi bi-arrow-repeat me-2"></i> Subir y Restaurar
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- CARD 3: RESET -->
-        <div class="col-md-4">
-            <div class="card-metric h-100 d-flex flex-column text-center" style="border-top: 4px solid #E74C3C; background-color: #FFF9F9;">
-                <div class="mb-3">
-                    <div class="metric-icon mx-auto" style="background-color: rgba(231, 76, 60, 0.1); color: #E74C3C; width: 64px; height: 64px; font-size: 32px;">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                    </div>
-                </div>
-                <h4 style="font-weight: 700; color: var(--danger);">Reset de Fábrica</h4>
-                <p style="color: var(--text-secondary); font-size: 14px; flex-grow: 1;">
-                    Vacía las tablas transaccionales de la botica para empezar desde cero, manteniendo la cuenta actual de Administrador.
-                </p>
-                
-                <form action="<?php echo BASE_URL; ?>sistema/reset" method="POST" id="form-reset" class="mt-3 text-start">
-                    <?php echo Controller::csrfField(); ?>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size: 13px; font-weight: 600;">Alcance del Purgado:</label>
-                        <select name="tipo_reset" class="form-control-custom" style="padding: 10px 15px; font-size: 13px;">
-                            <option value="transacciones">Solo Transacciones (Conserva Productos/Clientes)</option>
-                            <option value="todo">Limpieza Total (Nueva Empresa)</option>
-                        </select>
-                    </div>
-
-                    <button type="button" class="btn-primary-custom w-100 mt-2" style="background: linear-gradient(135deg, #E74C3C, #C0392B); box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);" onclick="confirmReset()">
-                        <i class="bi bi-trash3-fill me-2"></i> Ejecutar Reseteo
                     </button>
                 </form>
             </div>
@@ -139,36 +109,6 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('form-restore').submit();
-            }
-        });
-    }
-
-    function confirmReset() {
-        Swal.fire({
-            title: '¡PELIGRO: Reseteo de Sistema!',
-            html: `
-                <p style="color: #E74C3C; font-weight: bold;">Esta acción es IRREVERSIBLE y destructiva.</p>
-                <p>Escribe la palabra <strong>CONFIRMAR</strong> en mayúsculas para vaciar la base de datos.</p>
-            `,
-            icon: 'error',
-            input: 'text',
-            inputAttributes: {
-                autocapitalize: 'off',
-                autocomplete: 'off'
-            },
-            showCancelButton: true,
-            confirmButtonColor: '#E74C3C',
-            cancelButtonColor: '#7F8C8D',
-            confirmButtonText: 'Purgar Sistema',
-            cancelButtonText: 'Cancelar',
-            preConfirm: (inputValue) => {
-                if (inputValue !== 'CONFIRMAR') {
-                    Swal.showValidationMessage('Debes escribir CONFIRMAR exactamente.');
-                }
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('form-reset').submit();
             }
         });
     }

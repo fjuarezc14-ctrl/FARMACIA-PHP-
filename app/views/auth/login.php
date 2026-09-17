@@ -38,18 +38,18 @@
         </div>
     <?php endif; ?>
 
-    <form action="<?php echo BASE_URL; ?>auth/login" method="POST">
+    <form action="<?php echo BASE_URL; ?>auth/login" method="POST" autocomplete="off">
         <?php echo Controller::csrfField(); ?>
         <div class="form-group">
             <label class="form-label">Usuario</label>
-            <input type="text" name="username" class="form-control-custom" placeholder="Ej: admin" value="admin" required autofocus>
+            <input type="text" name="username" class="form-control-custom" placeholder="Ej: admin" value="" autocomplete="off" required autofocus>
         </div>
         <div class="form-group">
             <div class="d-flex justify-content-between">
                 <label class="form-label">Contraseña</label>
                 <a href="#" style="font-size: 13px; color: var(--accent-primary); text-decoration: none;">¿Olvidaste la clave?</a>
             </div>
-            <input type="password" name="password" class="form-control-custom" placeholder="••••••••" value="admin" required>
+            <input type="password" name="password" class="form-control-custom" placeholder="••••••••" value="" autocomplete="new-password" required>
         </div>
         <div class="form-group form-check mb-4">
             <input type="checkbox" class="form-check-input" id="remember">
