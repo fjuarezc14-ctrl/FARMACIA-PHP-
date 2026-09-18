@@ -102,11 +102,17 @@ class ProductoController extends Controller {
             $idLab = !empty($_POST['id_laboratorio']) ? (int)$_POST['id_laboratorio'] : null;
             $idCat = !empty($_POST['id_categoria']) ? (int)$_POST['id_categoria'] : null;
 
+            $nomComercial = trim($_POST['nombre_comercial'] ?? '');
+            $nomGenerico = trim($_POST['nombre_generico'] ?? '');
+            if (empty($nomGenerico)) {
+                $nomGenerico = $nomComercial;
+            }
+
             $data = [
                 'codigo_barras' => !empty(trim($_POST['codigo_barras'] ?? '')) ? trim($_POST['codigo_barras']) : null,
-                'nombre_generico' => trim($_POST['nombre_generico'] ?? ''),
+                'nombre_generico' => $nomGenerico,
                 'codigo_prin_activo' => $codPrinActivo,
-                'nombre_comercial' => trim($_POST['nombre_comercial'] ?? ''),
+                'nombre_comercial' => $nomComercial,
                 'concentracion' => !empty(trim($_POST['concentracion'] ?? '')) ? trim($_POST['concentracion']) : null,
                 'forma_farmaceutica' => !empty(trim($_POST['forma_farmaceutica'] ?? '')) ? trim($_POST['forma_farmaceutica']) : null,
                 'registro_sanitario' => !empty(trim($_POST['registro_sanitario'] ?? '')) ? trim($_POST['registro_sanitario']) : null,
@@ -151,6 +157,60 @@ class ProductoController extends Controller {
                 } else {
                     $_SESSION['error'] = "Ocurrió un error inesperado al guardar el producto.";
                 }
+            }
+        }
+        header('Location: ' . BASE_URL . 'producto/index');
+        exit;
+    }
+
+    public function quickSave() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrf();
+            $id = (int)($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                $_SESSION['error'] = "ID de producto no válido.";
+                header('Location: ' . BASE_URL . 'producto/index');
+                exit;
+            }
+
+            $modelo = $this->model('Producto');
+            $pCompra = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_compra'] ?? 0));
+            $pVenta = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_venta'] ?? 0));
+            $stockMin = (int)preg_replace('/[^\d]/', '', $_POST['stock_minimo'] ?? 10);
+            if ($stockMin <= 0) $stockMin = 10;
+
+            $fraccionable = isset($_POST['fraccionable']) ? 1 : 0;
+            $uCaja = $fraccionable ? (int)preg_replace('/[^\d]/', '', $_POST['unidades_por_caja'] ?? 1) : 1;
+            if ($uCaja <= 0) $uCaja = 1;
+            $uFraccion = $fraccionable && !empty($_POST['unidad_fraccion']) ? trim($_POST['unidad_fraccion']) : null;
+            $pFraccion = $fraccionable ? (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_fraccion'] ?? 0)) : 0.00;
+
+            $data = [
+                'nombre_comercial' => trim($_POST['nombre_comercial'] ?? ''),
+                'codigo_barras' => !empty(trim($_POST['codigo_barras'] ?? '')) ? trim($_POST['codigo_barras']) : null,
+                'id_categoria' => !empty($_POST['id_categoria']) ? (int)$_POST['id_categoria'] : null,
+                'id_laboratorio' => !empty($_POST['id_laboratorio']) ? (int)$_POST['id_laboratorio'] : null,
+                'precio_compra' => $pCompra,
+                'precio_venta' => $pVenta,
+                'stock_minimo' => $stockMin,
+                'fraccionable' => $fraccionable,
+                'unidades_por_caja' => $uCaja,
+                'unidad_fraccion' => $uFraccion,
+                'precio_fraccion' => $pFraccion
+            ];
+
+            try {
+                $modelo->quickUpdate($id, $data);
+                $this->logAccion('Productos', 'EDITAR_RAPIDO', "Edición rápida de producto ID #$id: " . $data['nombre_comercial']);
+                $_SESSION['mensaje'] = "Producto '" . htmlspecialchars($data['nombre_comercial']) . "' actualizado rápidamente con éxito.";
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000 || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                    $_SESSION['error'] = "El código de barras ingresado ya se encuentra registrado para otro producto.";
+                } else {
+                    $_SESSION['error'] = "Error al actualizar el producto.";
+                }
+            } catch (Exception $e) {
+                $_SESSION['error'] = "Ocurrió un error inesperado al actualizar.";
             }
         }
         header('Location: ' . BASE_URL . 'producto/index');

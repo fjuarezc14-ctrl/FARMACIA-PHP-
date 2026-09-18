@@ -144,6 +144,36 @@ class Producto {
         $stmt->bindParam(':id', $data['id']);
         return $stmt->execute();
     }
+
+    public function quickUpdate($id, $data) {
+        $query = "UPDATE productos SET 
+                    nombre_comercial = :nc, 
+                    codigo_barras = :cb, 
+                    id_categoria = :idc, 
+                    id_laboratorio = :idl, 
+                    precio_venta = :pv, 
+                    precio_compra = :pc, 
+                    stock_minimo = :sm, 
+                    fraccionable = :frac, 
+                    unidades_por_caja = :upc, 
+                    unidad_fraccion = :ufrac, 
+                    precio_fraccion = :pfrac 
+                  WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':nc', $data['nombre_comercial']);
+        $stmt->bindValue(':cb', !empty($data['codigo_barras']) ? $data['codigo_barras'] : null);
+        $stmt->bindValue(':idc', !empty($data['id_categoria']) ? (int)$data['id_categoria'] : null);
+        $stmt->bindValue(':idl', !empty($data['id_laboratorio']) ? (int)$data['id_laboratorio'] : null);
+        $stmt->bindValue(':pv', (float)$data['precio_venta']);
+        $stmt->bindValue(':pc', (float)$data['precio_compra']);
+        $stmt->bindValue(':sm', (int)$data['stock_minimo']);
+        $stmt->bindValue(':frac', (int)$data['fraccionable']);
+        $stmt->bindValue(':upc', (int)$data['unidades_por_caja']);
+        $stmt->bindValue(':ufrac', !empty($data['unidad_fraccion']) ? $data['unidad_fraccion'] : null);
+        $stmt->bindValue(':pfrac', (float)$data['precio_fraccion']);
+        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
     
     private function bindParams($stmt, $data) {
         $stmt->bindParam(':cb', $data['codigo_barras']);

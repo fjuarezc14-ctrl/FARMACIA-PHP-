@@ -168,10 +168,29 @@
                             <?php endif; ?>
                         </td>
                         <td class="text-end">
+                            <?php 
+                            $prodJson = htmlspecialchars(json_encode([
+                                'id' => (int)$prod['id'],
+                                'nombre_comercial' => $prod['nombre_comercial'] ?? '',
+                                'codigo_barras' => $prod['codigo_barras'] ?? '',
+                                'id_categoria' => $prod['id_categoria'] ?? '',
+                                'id_laboratorio' => $prod['id_laboratorio'] ?? '',
+                                'precio_venta' => (float)$prod['precio_venta'],
+                                'precio_compra' => (float)($prod['precio_compra'] ?? 0),
+                                'stock_minimo' => (int)($prod['stock_minimo'] ?? 10),
+                                'fraccionable' => (int)($prod['fraccionable'] ?? 0),
+                                'unidades_por_caja' => (int)($prod['unidades_por_caja'] ?? 1),
+                                'unidad_fraccion' => $prod['unidad_fraccion'] ?? 'Pastilla',
+                                'precio_fraccion' => (float)($prod['precio_fraccion'] ?? 0)
+                            ]), ENT_QUOTES, 'UTF-8');
+                            ?>
                             <?php if(isset($prod['estado']) && $prod['estado'] == 0): ?>
                                 <span class="badge bg-secondary me-1" style="font-size: 10px;">Inactivo</span>
-                                <a href="<?php echo BASE_URL; ?>producto/edit/<?php echo $prod['id']; ?>" class="btn btn-sm" style="color: #00CFE8;" title="Editar">
-                                     <i class="bi bi-pencil-square"></i>
+                                <button type="button" class="btn btn-sm" style="color: #00CFE8;" onclick="abrirEdicionRapida(<?php echo $prodJson; ?>)" title="Edición Rápida (Precios y Datos Básicos)">
+                                     <i class="bi bi-lightning-charge-fill"></i>
+                                </button>
+                                <a href="<?php echo BASE_URL; ?>producto/edit/<?php echo $prod['id']; ?>" class="btn btn-sm text-secondary" title="Ficha Técnica Completa (DIGEMID / Avanzado)">
+                                     <i class="bi bi-sliders2"></i>
                                 </a>
                                 <form action="<?php echo BASE_URL; ?>producto/toggle" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas activar este producto para su venta?');">
                                     <?php echo Controller::csrfField(); ?>
@@ -182,8 +201,11 @@
                                 </form>
                             <?php else: ?>
                                 <span class="badge bg-success me-1" style="font-size: 10px;">Activo</span>
-                                <a href="<?php echo BASE_URL; ?>producto/edit/<?php echo $prod['id']; ?>" class="btn btn-sm" style="color: #00CFE8;" title="Editar">
-                                     <i class="bi bi-pencil-square"></i>
+                                <button type="button" class="btn btn-sm" style="color: #00CFE8;" onclick="abrirEdicionRapida(<?php echo $prodJson; ?>)" title="Edición Rápida (Precios y Datos Básicos)">
+                                     <i class="bi bi-lightning-charge-fill"></i>
+                                </button>
+                                <a href="<?php echo BASE_URL; ?>producto/edit/<?php echo $prod['id']; ?>" class="btn btn-sm text-secondary" title="Ficha Técnica Completa (DIGEMID / Avanzado)">
+                                     <i class="bi bi-sliders2"></i>
                                 </a>
                                 <form action="<?php echo BASE_URL; ?>producto/toggle" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas desactivar este producto? Ya no aparecerá en el POS.');">
                                     <?php echo Controller::csrfField(); ?>
@@ -386,6 +408,125 @@
     </div>
 </div>
 
+<!-- MODAL EDICIÓN RÁPIDA (PRECIOS Y DATOS COMERCIALES) -->
+<div class="modal fade" id="modalEdicionRapida" tabindex="-1" aria-labelledby="modalEdicionRapidaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="background-color: var(--card-bg, #1e293b); color: var(--text-primary, #f8fafc); border-radius: 16px;">
+            <form action="<?php echo BASE_URL; ?>producto/quickSave" method="POST">
+                <?php echo Controller::csrfField(); ?>
+                <input type="hidden" name="id" id="quick_id">
+
+                <div class="modal-header border-secondary border-opacity-25 pb-3">
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-1 d-flex align-items-center gap-2" id="modalEdicionRapidaLabel">
+                            <i class="bi bi-lightning-charge-fill text-warning"></i> Edición Rápida de Producto
+                        </h5>
+                        <div class="text-muted" style="font-size: 13px;">Actualiza precios y datos esenciales en segundos sin salir de la lista.</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body py-3">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label text-light small fw-bold">Nombre del Producto <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre_comercial" id="quick_nombre" class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-light small fw-bold">Código de Barras</label>
+                            <input type="text" name="codigo_barras" id="quick_codigo" class="form-control bg-dark text-white border-secondary font-monospace" placeholder="Escanear...">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-light small fw-bold">Categoría</label>
+                            <select name="id_categoria" id="quick_categoria" class="form-select bg-dark text-white border-secondary">
+                                <option value="">-- Sin Categoría --</option>
+                                <?php foreach($data['categorias'] as $c): ?>
+                                <option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['nombre']); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-light small fw-bold">Laboratorio / Marca</label>
+                            <select name="id_laboratorio" id="quick_laboratorio" class="form-select bg-dark text-white border-secondary">
+                                <option value="">-- Sin Laboratorio --</option>
+                                <?php foreach($data['laboratorios'] as $l): ?>
+                                <option value="<?php echo $l['id']; ?>"><?php echo htmlspecialchars($l['nombre']); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Sección de Precios -->
+                        <div class="col-md-4">
+                            <label class="form-label text-success small fw-bold"><i class="bi bi-tag-fill"></i> Precio Venta Caja (S/) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0" name="precio_venta" id="quick_pv" class="form-control bg-dark text-success fw-bold border-success" style="font-size: 16px;" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-light small fw-bold">Precio Compra (S/)</label>
+                            <input type="number" step="0.01" min="0" name="precio_compra" id="quick_pc" class="form-control bg-dark text-white border-secondary">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-light small fw-bold">Alerta Stock Mínimo</label>
+                            <input type="number" min="1" name="stock_minimo" id="quick_sm" class="form-control bg-dark text-white border-secondary">
+                        </div>
+
+                        <!-- Fraccionamiento Rápido -->
+                        <div class="col-12 mt-3">
+                            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.15);">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="fraccionable" value="1" id="quick_fraccionable" onchange="toggleQuickFraccion()">
+                                    <label class="form-check-label text-white fw-bold small" for="quick_fraccionable">
+                                        ¿Vender también por unidad suelta (Pastilla / Blíster / Sobre)?
+                                    </label>
+                                </div>
+
+                                <div class="row g-2 mt-1" id="quick_panel_fraccion" style="display: none;">
+                                    <div class="col-md-4">
+                                        <label class="form-label text-muted small">Unidades por Caja</label>
+                                        <input type="number" min="1" name="unidades_por_caja" id="quick_upc" class="form-control form-control-sm bg-dark text-white border-secondary" value="1">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-muted small">Nombre Fracción</label>
+                                        <select name="unidad_fraccion" id="quick_ufrac" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                            <option value="Pastilla">Pastilla</option>
+                                            <option value="Blister">Blíster</option>
+                                            <option value="Sobre">Sobre</option>
+                                            <option value="Ampolla">Ampolla</option>
+                                            <option value="Unidad">Unidad</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-warning small fw-bold">Precio x Unidad (S/)</label>
+                                        <input type="number" step="0.01" min="0" name="precio_fraccion" id="quick_pfrac" class="form-control form-control-sm bg-dark text-warning fw-bold border-warning" value="0.00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer border-secondary border-opacity-25 justify-content-between">
+                    <div>
+                        <a href="#" id="quick_link_full" class="btn btn-sm btn-outline-info d-flex align-items-center gap-1">
+                            <i class="bi bi-sliders2"></i> Abrir Ficha Técnica Completa
+                        </a>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success fw-bold px-4">
+                            <i class="bi bi-check2-circle"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function actualizarNombreArchivo(input) {
     if (input.files && input.files[0]) {
@@ -405,5 +546,41 @@ function mostrarCargandoImportacion() {
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Importando...';
     btnCancel.disabled = true;
+}
+
+function abrirEdicionRapida(prod) {
+    document.getElementById('quick_id').value = prod.id || '';
+    document.getElementById('quick_nombre').value = prod.nombre_comercial || '';
+    document.getElementById('quick_codigo').value = prod.codigo_barras || '';
+    document.getElementById('quick_categoria').value = prod.id_categoria || '';
+    document.getElementById('quick_laboratorio').value = prod.id_laboratorio || '';
+    document.getElementById('quick_pv').value = parseFloat(prod.precio_venta || 0).toFixed(2);
+    document.getElementById('quick_pc').value = parseFloat(prod.precio_compra || 0).toFixed(2);
+    document.getElementById('quick_sm').value = prod.stock_minimo || 10;
+    
+    const isFrac = (parseInt(prod.fraccionable) === 1);
+    const chk = document.getElementById('quick_fraccionable');
+    chk.checked = isFrac;
+    document.getElementById('quick_upc').value = prod.unidades_por_caja || 1;
+    document.getElementById('quick_ufrac').value = prod.unidad_fraccion || 'Pastilla';
+    document.getElementById('quick_pfrac').value = parseFloat(prod.precio_fraccion || 0).toFixed(2);
+    
+    toggleQuickFraccion();
+
+    document.getElementById('quick_link_full').href = '<?php echo BASE_URL; ?>producto/edit/' + prod.id;
+
+    const modalEl = document.getElementById('modalEdicionRapida');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+}
+
+function toggleQuickFraccion() {
+    const chk = document.getElementById('quick_fraccionable');
+    const panel = document.getElementById('quick_panel_fraccion');
+    if (chk.checked) {
+        panel.style.display = 'flex';
+    } else {
+        panel.style.display = 'none';
+    }
 }
 </script>
