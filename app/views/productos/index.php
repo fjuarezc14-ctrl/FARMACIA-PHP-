@@ -460,12 +460,18 @@
                         <!-- Sección de Precios -->
                         <div class="col-md-4">
                             <label class="form-label text-success small fw-bold"><i class="bi bi-tag-fill"></i> Precio Venta Caja (S/) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0" name="precio_venta" id="quick_pv" class="form-control bg-dark text-success fw-bold border-success" style="font-size: 16px;" required>
+                            <input type="number" step="0.01" min="0" name="precio_venta" id="quick_pv" class="form-control bg-dark text-success fw-bold border-success" style="font-size: 16px;" required oninput="verificarPerdidaQuick(); sugerirPrecioFraccionQuick(false);">
+                            
+                            <!-- Alerta de Venta a Pérdida Modal Rápido -->
+                            <div id="quick_alerta_perdida" class="alert alert-danger p-2 mt-2 mb-0 d-flex align-items-center gap-1" style="display:none; font-size: 11px; border-radius: 6px;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span id="quick_texto_perdida"></span>
+                            </div>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label text-light small fw-bold">Precio Compra (S/)</label>
-                            <input type="number" step="0.01" min="0" name="precio_compra" id="quick_pc" class="form-control bg-dark text-white border-secondary">
+                            <input type="number" step="0.01" min="0" name="precio_compra" id="quick_pc" class="form-control bg-dark text-white border-secondary" oninput="verificarPerdidaQuick();">
                         </div>
 
                         <div class="col-md-4">
@@ -486,7 +492,7 @@
                                 <div class="row g-2 mt-1" id="quick_panel_fraccion" style="display: none;">
                                     <div class="col-md-4">
                                         <label class="form-label text-muted small">Unidades por Caja</label>
-                                        <input type="number" min="1" name="unidades_por_caja" id="quick_upc" class="form-control form-control-sm bg-dark text-white border-secondary" value="1">
+                                        <input type="number" min="1" name="unidades_por_caja" id="quick_upc" class="form-control form-control-sm bg-dark text-white border-secondary" value="1" oninput="sugerirPrecioFraccionQuick(false)">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label text-muted small">Nombre Fracción</label>
@@ -499,7 +505,12 @@
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label text-warning small fw-bold">Precio x Unidad (S/)</label>
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <label class="form-label text-warning small fw-bold mb-0">Precio x Unidad (S/)</label>
+                                            <button type="button" class="btn btn-link p-0 text-warning text-decoration-none" style="font-size: 11px;" onclick="sugerirPrecioFraccionQuick(true)" title="Recalcular automáticamente precio de pastilla">
+                                                <i class="bi bi-magic"></i> Sugerir
+                                            </button>
+                                        </div>
                                         <input type="number" step="0.01" min="0" name="precio_fraccion" id="quick_pfrac" class="form-control form-control-sm bg-dark text-warning fw-bold border-warning" value="0.00">
                                     </div>
                                 </div>
@@ -566,6 +577,7 @@ function abrirEdicionRapida(prod) {
     document.getElementById('quick_pfrac').value = parseFloat(prod.precio_fraccion || 0).toFixed(2);
     
     toggleQuickFraccion();
+    verificarPerdidaQuick();
 
     document.getElementById('quick_link_full').href = '<?php echo BASE_URL; ?>producto/edit/' + prod.id;
 
@@ -579,8 +591,56 @@ function toggleQuickFraccion() {
     const panel = document.getElementById('quick_panel_fraccion');
     if (chk.checked) {
         panel.style.display = 'flex';
+        sugerirPrecioFraccionQuick(false);
     } else {
         panel.style.display = 'none';
     }
 }
+
+function sugerirPrecioFraccionQuick(forzar = false) {
+    const venta = parseFloat(document.getElementById('quick_pv').value) || 0;
+    const uCaja = parseInt(document.getElementById('quick_upc').value) || 1;
+    const pFracInput = document.getElementById('quick_pfrac');
+    if (venta > 0 && uCaja > 0) {
+        const prop = (venta / uCaja).toFixed(2);
+        const actual = parseFloat(pFracInput.value) || 0;
+        if (forzar || actual <= 0) {
+            pFracInput.value = prop;
+        }
+    }
+}
+
+function verificarPerdidaQuick() {
+    const compra = parseFloat(document.getElementById('quick_pc').value) || 0;
+    const venta = parseFloat(document.getElementById('quick_pv').value) || 0;
+    const alerta = document.getElementById('quick_alerta_perdida');
+    const texto = document.getElementById('quick_texto_perdida');
+    if (compra > 0 && venta > 0 && venta < compra) {
+        const perdida = (compra - venta).toFixed(2);
+        texto.innerHTML = `<strong>Venta a Pérdida:</strong> Pierdes S/ ${perdida} por unidad.`;
+        alerta.style.display = 'flex';
+    } else {
+        alerta.style.display = 'none';
+    }
+}
+
+document.querySelector('#modalEdicionRapida form').addEventListener('submit', function(e) {
+    const chk = document.getElementById('quick_fraccionable');
+    const pFracInput = document.getElementById('quick_pfrac');
+    if (chk.checked) {
+        let pf = parseFloat(pFracInput.value) || 0;
+        if (pf <= 0) {
+            sugerirPrecioFraccionQuick(true);
+        }
+    }
+
+    const compra = parseFloat(document.getElementById('quick_pc').value) || 0;
+    const venta = parseFloat(document.getElementById('quick_pv').value) || 0;
+    if (compra > 0 && venta > 0 && venta < compra) {
+        if (!confirm(`⚠️ ALERTA FINANCIERA: El precio de venta (S/ ${venta.toFixed(2)}) es MENOR al costo de compra (S/ ${compra.toFixed(2)}).\n\n¿Deseas continuar guardando con margen negativo (Venta a Pérdida)?`)) {
+            e.preventDefault();
+            return false;
+        }
+    }
+});
 </script>

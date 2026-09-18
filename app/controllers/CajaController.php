@@ -109,8 +109,9 @@ class CajaController extends Controller {
             $observacion = trim($_POST['observacion'] ?? '');
             
             if ($cajaModel->cerrarCaja($cajaAbierta['id'], $monto_final_real, $observacion)) {
-                $_SESSION['mensaje'] = "Caja cerrada correctamente. Puede imprimir el arqueo.";
-                header('Location: ' . BASE_URL . 'caja/ticket_arqueo/' . $cajaAbierta['id']);
+                $_SESSION['mensaje'] = "Caja cerrada correctamente. Su turno ha finalizado.";
+                $_SESSION['ultimo_arqueo_cerrado'] = $cajaAbierta['id'];
+                header('Location: ' . BASE_URL . 'caja/apertura');
                 exit;
             } else {
                 $_SESSION['error'] = "Ocurrió un error al cerrar la caja.";
@@ -139,14 +140,34 @@ class CajaController extends Controller {
         } else {
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $this->validateCsrf();
-                $tipo = $_POST['tipo'];
-                $monto = (float)$_POST['monto'];
-                $motivo = trim($_POST['motivo']);
+                $tipo = trim($_POST['tipo'] ?? 'INGRESO');
+                $rawMonto = str_replace(',', '.', trim($_POST['monto'] ?? '0'));
+                $monto = (float)preg_replace('/[^\d.,\-]/', '', $rawMonto);
+                $motivo = trim($_POST['motivo'] ?? '');
                 
-                if ($monto > 0 && $cajaModel->registrarMovimiento($cajaAbierta['id'], $tipo, $monto, $motivo)) {
-                    $_SESSION['mensaje'] = "Movimiento extra registrado exitosamente.";
+                if ($monto <= 0) {
+                    $_SESSION['error'] = "El monto del movimiento debe ser mayor a S/ 0.00.";
+                    header('Location: ' . BASE_URL . 'caja/cierre');
+                    exit;
+                }
+
+                $resumen = $cajaModel->getResumenActual($cajaAbierta['id']);
+                $saldoEfectivoActual = (float)$cajaAbierta['monto_inicial'] 
+                                     + (float)($resumen['ingresos_efectivo'] ?? 0) 
+                                     + (float)($resumen['ingresos_extras'] ?? 0) 
+                                     - (float)($resumen['egresos'] ?? 0);
+
+                if ($tipo === 'EGRESO' && $monto > $saldoEfectivoActual) {
+                    $_SESSION['error'] = "Operación denegada: El egreso solicitado (S/ " . number_format($monto, 2) . ") supera el efectivo disponible en gaveta (S/ " . number_format($saldoEfectivoActual, 2) . "). No se permiten saldos negativos.";
+                    header('Location: ' . BASE_URL . 'caja/cierre');
+                    exit;
+                }
+                
+                if ($cajaModel->registrarMovimiento($cajaAbierta['id'], $tipo, $monto, $motivo)) {
+                    $this->logAccion('Caja', $tipo, "Movimiento de $tipo por S/ " . number_format($monto, 2) . " ($motivo)");
+                    $_SESSION['mensaje'] = "Movimiento de $tipo registrado exitosamente.";
                 } else {
-                    $_SESSION['error'] = "Error al registrar el movimiento.";
+                    $_SESSION['error'] = "Error al registrar el movimiento en la base de datos.";
                 }
             }
         }
@@ -159,7 +180,9 @@ class CajaController extends Controller {
         $caja = $cajaModel->getById($id);
         
         if(!$caja) {
-            die("Caja no encontrada.");
+            $_SESSION['error'] = "El arqueo de caja solicitado no fue encontrado.";
+            header('Location: ' . BASE_URL . 'dashboard/index');
+            exit;
         }
 
         // Solo el administrador o el usuario dueño de la caja puede ver el ticket de arqueo

@@ -137,7 +137,7 @@
 <div class="modal fade" id="modalCliente" tabindex="-1" data-bs-backdrop="static">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-      <form action="<?php echo BASE_URL; ?>cliente/save" method="POST">
+      <form action="<?php echo BASE_URL; ?>cliente/save" method="POST" id="formClienteModal" onsubmit="return validarDocCliente()">
           <?php echo Controller::csrfField(); ?>
           <input type="hidden" name="id" id="txtId">
           <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
@@ -147,15 +147,15 @@
           <div class="modal-body row g-3">
               <div class="col-md-4 form-group">
                   <label class="form-label">Tipo Documento</label>
-                  <select class="form-control-custom" name="tipo_documento" id="txtTipo">
+                  <select class="form-control-custom" name="tipo_documento" id="txtTipo" onchange="ajustarTipoDoc()">
                       <option value="DNI">DNI (Boleta)</option>
                       <option value="RUC">RUC (Factura)</option>
-                      <option value="Pasaporte">Pasaporte</option>
+                      <option value="Pasaporte">Pasaporte / CE</option>
                   </select>
               </div>
               <div class="col-md-8 form-group">
-                  <label class="form-label">Número Documento</label>
-                  <input type="text" class="form-control-custom" name="num_documento" id="txtNum" required>
+                  <label class="form-label">Número Documento <span id="docHelpText" class="text-muted" style="font-size:11px;">(8 dígitos)</span></label>
+                  <input type="text" class="form-control-custom" name="num_documento" id="txtNum" maxlength="8" required placeholder="Ej: 70123456" oninput="limpiarNumeroDoc(this)">
               </div>
               <div class="col-md-6 form-group">
                   <label class="form-label">Nombres Completos / Razón Social</label>
@@ -180,6 +180,53 @@
 </div>
 
 <script>
+function ajustarTipoDoc() {
+    const tipo = document.getElementById('txtTipo').value;
+    const numInput = document.getElementById('txtNum');
+    const help = document.getElementById('docHelpText');
+    if (tipo === 'DNI') {
+        numInput.maxLength = 8;
+        numInput.placeholder = 'Ej: 70123456';
+        if (help) help.textContent = '(Exactamente 8 dígitos numéricos)';
+    } else if (tipo === 'RUC') {
+        numInput.maxLength = 11;
+        numInput.placeholder = 'Ej: 20601234567';
+        if (help) help.textContent = '(Exactamente 11 dígitos numéricos)';
+    } else {
+        numInput.maxLength = 15;
+        numInput.placeholder = 'Ej: P12345678';
+        if (help) help.textContent = '(4 a 15 caracteres)';
+    }
+}
+
+function limpiarNumeroDoc(input) {
+    const tipo = document.getElementById('txtTipo').value;
+    if (tipo === 'DNI' || tipo === 'RUC') {
+        input.value = input.value.replace(/\D/g, '');
+    }
+}
+
+function validarDocCliente() {
+    const tipo = document.getElementById('txtTipo').value;
+    const num = document.getElementById('txtNum').value.trim();
+    if (tipo === 'DNI' && !/^\d{8}$/.test(num)) {
+        alert('❌ Error: El DNI debe contener exactamente 8 dígitos numéricos.');
+        document.getElementById('txtNum').focus();
+        return false;
+    }
+    if (tipo === 'RUC' && !/^\d{11}$/.test(num)) {
+        alert('❌ Error: El RUC debe contener exactamente 11 dígitos numéricos.');
+        document.getElementById('txtNum').focus();
+        return false;
+    }
+    if (tipo !== 'DNI' && tipo !== 'RUC' && num.length < 4) {
+        alert('❌ Error: El número de documento debe tener al menos 4 caracteres.');
+        document.getElementById('txtNum').focus();
+        return false;
+    }
+    return true;
+}
+
 function nuevoRegistro() {
     document.getElementById('txtId').value = '';
     document.getElementById('txtTipo').value = 'DNI';
@@ -188,6 +235,7 @@ function nuevoRegistro() {
     document.getElementById('txtTel').value = '';
     document.getElementById('txtDir').value = '';
     document.getElementById('modalTitle').innerText = 'Nuevo Cliente';
+    ajustarTipoDoc();
 }
 
 function editarRegistro(obj) {
@@ -198,6 +246,7 @@ function editarRegistro(obj) {
     document.getElementById('txtTel').value = obj.telefono;
     document.getElementById('txtDir').value = obj.direccion;
     document.getElementById('modalTitle').innerText = 'Editar Cliente';
+    ajustarTipoDoc();
     var modal = new bootstrap.Modal(document.getElementById('modalCliente'));
     modal.show();
 }

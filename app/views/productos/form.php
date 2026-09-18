@@ -1,12 +1,35 @@
-<div class="page-content">
-    <div class="mb-4">
-        <a href="<?php echo BASE_URL; ?>producto/index" style="color: var(--text-secondary); text-decoration: none; font-size: 14px;">
-            <i class="bi bi-arrow-left"></i> Volver al listado
-        </a>
-        <h1 class="page-title mt-2"><?php echo htmlspecialchars($data['title']); ?></h1>
-    </div>
-
     <?php $p = $data['producto']; ?>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <a href="<?php echo BASE_URL; ?>producto/index" style="color: var(--text-secondary); text-decoration: none; font-size: 14px;">
+                <i class="bi bi-arrow-left"></i> Volver al listado
+            </a>
+            <h1 class="page-title mt-2"><?php echo htmlspecialchars($data['title']); ?></h1>
+        </div>
+
+        <?php if($p): 
+            $stockActual = (int)($p['stock_actual'] ?? 0);
+            $stockMinimo = (int)($p['stock_minimo'] ?? 10);
+            $esCritico = $stockActual <= $stockMinimo;
+            $esAgotado = $stockActual <= 0;
+        ?>
+        <div class="p-3 d-flex align-items-center gap-3 border <?php echo $esAgotado ? 'border-danger' : ($esCritico ? 'border-warning' : 'border-success'); ?>" style="background: rgba(255,255,255,0.03); border-radius: 12px;">
+            <div style="font-size: 28px; color: <?php echo $esAgotado ? '#ef4444' : ($esCritico ? '#f59e0b' : '#10b981'); ?>;">
+                <i class="bi <?php echo $esAgotado ? 'bi-x-octagon-fill' : ($esCritico ? 'bi-exclamation-triangle-fill' : 'bi-boxes'); ?>"></i>
+            </div>
+            <div>
+                <div class="text-muted small fw-bold" style="letter-spacing: 0.5px;">STOCK FÍSICO EN ALMACÉN</div>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="fs-4 fw-bold text-white"><?php echo $stockActual; ?> unidades</span>
+                    <span class="badge <?php echo $esAgotado ? 'bg-danger' : ($esCritico ? 'bg-warning text-dark' : 'bg-success'); ?>">
+                        <?php echo $esAgotado ? 'Agotado (0)' : ($esCritico ? 'Bajo Stock Mínimo' : 'Stock Disponible'); ?>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
 
     <form action="<?php echo BASE_URL; ?>producto/save" method="POST">
         <?php echo Controller::csrfField(); ?>
@@ -179,9 +202,14 @@
                             </select>
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Precio x Fracción (S/)</label>
-                            <input type="number" step="0.01" class="form-control-custom text-warning font-weight-bold" name="precio_fraccion" id="pFraccion" value="<?php echo ($p && isset($p['precio_fraccion'])) ? $p['precio_fraccion'] : '0.00'; ?>">
-                            <small style="color:var(--text-secondary); font-size: 11px;">Suele ser más caro que el proporcional.</small>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label mb-0">Precio x Fracción (S/)</label>
+                                <button type="button" class="btn btn-link p-0 text-warning text-decoration-none" style="font-size: 11px;" onclick="sugerirPrecioFraccion(true)" title="Calcular automáticamente precio proporcional">
+                                    <i class="bi bi-magic"></i> Sugerir
+                                </button>
+                            </div>
+                            <input type="number" step="0.01" min="0" class="form-control-custom text-warning font-weight-bold" name="precio_fraccion" id="pFraccion" value="<?php echo ($p && isset($p['precio_fraccion'])) ? $p['precio_fraccion'] : '0.00'; ?>">
+                            <small style="color:var(--text-secondary); font-size: 11px;">Calculado proporcional según unidades por caja.</small>
                         </div>
                     </div>
                 </div>
@@ -194,7 +222,7 @@
                     
                     <div class="form-group">
                         <label class="form-label">Precio Compra (S/)</label>
-                        <input type="number" step="0.01" class="form-control-custom calc-in" name="precio_compra" id="pCompra" value="<?php echo $p ? $p['precio_compra'] : '0.00'; ?>" required>
+                        <input type="number" step="0.01" min="0" class="form-control-custom calc-in" name="precio_compra" id="pCompra" value="<?php echo $p ? $p['precio_compra'] : '0.00'; ?>" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Margen de Ganancia (%)</label>
@@ -205,11 +233,17 @@
                     </div>
                     <div class="form-group mb-3">
                         <label class="form-label" style="color: var(--accent-primary);">Precio Venta Sugerido (PVP1 - S/)</label>
-                        <input type="number" step="0.01" class="form-control-custom" name="precio_venta" id="pVenta" value="<?php echo $p ? $p['precio_venta'] : '0.00'; ?>" style="border-color: var(--accent-primary); font-size: 18px; font-weight: 700;" required>
+                        <input type="number" step="0.01" min="0" class="form-control-custom" name="precio_venta" id="pVenta" value="<?php echo $p ? $p['precio_venta'] : '0.00'; ?>" style="border-color: var(--accent-primary); font-size: 18px; font-weight: 700;" required>
+                        
+                        <!-- ALERTA DE VENTA A PÉRDIDA -->
+                        <div id="alertaPerdida" class="alert alert-danger p-2 mt-2 mb-0 d-flex align-items-center gap-2" style="display:none; font-size: 12px; border-radius: 8px;">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span id="textoAlertaPerdida"></span>
+                        </div>
                     </div>
                     <div class="form-group mb-0">
                         <label class="form-label" style="color: #3B82F6;">Precio Venta Mayorista (PVP2 - S/)</label>
-                        <input type="number" step="0.01" class="form-control-custom" name="precio_mayor" id="pMayor" value="<?php echo ($p && isset($p['precio_mayor']) && $p['precio_mayor'] !== null) ? $p['precio_mayor'] : ''; ?>" placeholder="Opcional (Ej: 99.50)">
+                        <input type="number" step="0.01" min="0" class="form-control-custom" name="precio_mayor" id="pMayor" value="<?php echo ($p && isset($p['precio_mayor']) && $p['precio_mayor'] !== null) ? $p['precio_mayor'] : ''; ?>" placeholder="Opcional (Ej: 99.50)">
                         <small style="color:var(--text-secondary); font-size: 11px;">Precio especial por volumen / mayorista.</small>
                     </div>
                 </div>
@@ -254,9 +288,42 @@ function calcMargen() {
 }
 
 // Eventos
-cCompra.addEventListener('input', calcVenta);
-cMargen.addEventListener('input', calcVenta);
-cVenta.addEventListener('input', calcMargen);
+cCompra.addEventListener('input', () => { calcVenta(); verificarPerdida(); });
+cMargen.addEventListener('input', () => { calcVenta(); verificarPerdida(); });
+cVenta.addEventListener('input', () => { calcMargen(); verificarPerdida(); sugerirPrecioFraccion(false); });
+
+function verificarPerdida() {
+    let compra = parseFloat(cCompra.value) || 0;
+    let venta = parseFloat(cVenta.value) || 0;
+    let alerta = document.getElementById('alertaPerdida');
+    let texto = document.getElementById('textoAlertaPerdida');
+    if (compra > 0 && venta > 0 && venta < compra) {
+        let perdida = (compra - venta).toFixed(2);
+        texto.innerHTML = `<strong>⚠️ Venta a Pérdida:</strong> El precio de venta (S/ ${venta.toFixed(2)}) es menor al costo (S/ ${compra.toFixed(2)}). Pierdes S/ ${perdida} por unidad.`;
+        alerta.style.display = 'flex';
+    } else {
+        alerta.style.display = 'none';
+    }
+}
+verificarPerdida(); // init
+
+// Autocálculo de precio por fracción
+const uCajaInput = document.getElementById('uCaja');
+const pFracInput = document.getElementById('pFraccion');
+
+function sugerirPrecioFraccion(forzar = false) {
+    const venta = parseFloat(cVenta.value) || 0;
+    const uCaja = parseInt(uCajaInput.value) || 1;
+    if (venta > 0 && uCaja > 0) {
+        const prop = (venta / uCaja).toFixed(2);
+        const actual = parseFloat(pFracInput.value) || 0;
+        if (forzar || actual <= 0) {
+            pFracInput.value = prop;
+        }
+    }
+}
+
+uCajaInput.addEventListener('input', () => sugerirPrecioFraccion(false));
 
 // Fraccionamiento toggle
 const chkFraccion = document.getElementById('fraccionable');
@@ -264,6 +331,7 @@ const panelFraccion = document.getElementById('fraccion_config');
 function toggleFraccion() {
     if(chkFraccion.checked) {
         panelFraccion.style.display = 'flex';
+        sugerirPrecioFraccion(false);
     } else {
         panelFraccion.style.display = 'none';
         document.getElementById('uCaja').value = '1';
@@ -291,12 +359,30 @@ function mostrarMensajeReceta() {
 selCondicion.addEventListener('change', mostrarMensajeReceta);
 mostrarMensajeReceta(); // init
 
-// Si nombre_generico está vacío, usar nombre comercial automáticamente
-document.querySelector('form').addEventListener('submit', function() {
+// Validaciones al enviar formulario
+document.querySelector('form').addEventListener('submit', function(e) {
     const com = document.getElementById('nombre_comercial');
     const gen = document.getElementById('nombre_generico');
     if (gen && (!gen.value || gen.value.trim() === '') && com && com.value) {
         gen.value = com.value.trim();
+    }
+
+    // Si fraccionable está activo y el precio de fracción es 0, forzar el proporcional
+    if (chkFraccion.checked) {
+        let pf = parseFloat(pFracInput.value) || 0;
+        if (pf <= 0) {
+            sugerirPrecioFraccion(true);
+        }
+    }
+
+    // Advertencia interactiva si venta es menor a costo
+    let compra = parseFloat(cCompra.value) || 0;
+    let venta = parseFloat(cVenta.value) || 0;
+    if (compra > 0 && venta > 0 && venta < compra) {
+        if (!confirm(`⚠️ ALERTA FINANCIERA: El precio de venta (S/ ${venta.toFixed(2)}) es MENOR al costo de compra (S/ ${compra.toFixed(2)}).\n\n¿Estás completamente seguro de que deseas guardar este producto vendiéndolo a pérdida?`)) {
+            e.preventDefault();
+            return false;
+        }
     }
 });
 </script>

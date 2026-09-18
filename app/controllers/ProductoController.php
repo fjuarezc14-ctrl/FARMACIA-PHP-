@@ -97,6 +97,9 @@ class ProductoController extends Controller {
             if ($uCaja <= 0) $uCaja = 1;
             $uFraccion = $fraccionable && !empty($_POST['unidad_fraccion']) ? trim($_POST['unidad_fraccion']) : null;
             $pFraccion = $fraccionable ? (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_fraccion'] ?? 0)) : 0.00;
+            if ($fraccionable && $pFraccion <= 0 && $pVenta > 0 && $uCaja > 0) {
+                $pFraccion = round($pVenta / $uCaja, 2);
+            }
 
             $codPrinActivo = !empty($_POST['codigo_prin_activo']) ? (int)preg_replace('/[^\d]/', '', $_POST['codigo_prin_activo']) : null;
             $idLab = !empty($_POST['id_laboratorio']) ? (int)$_POST['id_laboratorio'] : null;
@@ -184,6 +187,9 @@ class ProductoController extends Controller {
             if ($uCaja <= 0) $uCaja = 1;
             $uFraccion = $fraccionable && !empty($_POST['unidad_fraccion']) ? trim($_POST['unidad_fraccion']) : null;
             $pFraccion = $fraccionable ? (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_fraccion'] ?? 0)) : 0.00;
+            if ($fraccionable && $pFraccion <= 0 && $pVenta > 0 && $uCaja > 0) {
+                $pFraccion = round($pVenta / $uCaja, 2);
+            }
 
             $data = [
                 'nombre_comercial' => trim($_POST['nombre_comercial'] ?? ''),

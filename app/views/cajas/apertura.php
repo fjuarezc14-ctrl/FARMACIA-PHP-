@@ -10,6 +10,37 @@
         <div class="alert alert-danger mb-4"><?php echo $_SESSION['error']; unset($_SESSION['error']); ?></div>
     <?php endif; ?>
 
+    <?php if (isset($_SESSION['ultimo_arqueo_cerrado'])): 
+        $arqueoId = $_SESSION['ultimo_arqueo_cerrado']; 
+        unset($_SESSION['ultimo_arqueo_cerrado']);
+    ?>
+        <div class="alert alert-success border-success shadow-sm mb-4 p-3" style="border-radius: 12px; background: #ecfdf5; border-color: #6ee7b7;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 45px; height: 45px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        <i class="bi bi-check2"></i>
+                    </div>
+                    <div>
+                        <h5 class="alert-heading fw-bold mb-0 text-success">¡Turno Cerrado Correctamente!</h5>
+                        <div class="text-muted" style="font-size: 13px;">El arqueo de caja <strong>#CAJ-<?php echo str_pad($arqueoId, 6, '0', STR_PAD_LEFT); ?></strong> ha sido guardado exitosamente en el sistema.</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary fw-bold" onclick="window.open('<?php echo BASE_URL; ?>caja/ticket_arqueo/<?php echo $arqueoId; ?>', 'TicketArqueo', 'width=420,height=650,scrollbars=yes')">
+                        <i class="bi bi-printer me-1"></i> Imprimir Arqueo
+                    </button>
+                    <a href="<?php echo BASE_URL; ?>dashboard/index" class="btn btn-outline-secondary">
+                        <i class="bi bi-house me-1"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+        <script>
+            // Abrir automáticamente el ticket en una ventana emergente sin sacar al usuario de la aplicación
+            window.open('<?php echo BASE_URL; ?>caja/ticket_arqueo/<?php echo $arqueoId; ?>', 'TicketArqueo', 'width=420,height=650,scrollbars=yes');
+        </script>
+    <?php endif; ?>
+
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-4">
             <div class="card shadow-sm border-success">

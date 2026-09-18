@@ -527,7 +527,7 @@ function posBilletes($ctx) { ?>
                     <div class="row g-2 mb-2">
                         <div class="col-5">
                             <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: #444;">Tipo Doc *</label>
-                            <select class="form-select form-select-sm" name="tipo_documento" id="nuevoCliTipoDoc">
+                            <select class="form-select form-select-sm" name="tipo_documento" id="nuevoCliTipoDoc" onchange="ajustarTipoDocPos()">
                                 <option value="DNI" selected>DNI</option>
                                 <option value="RUC">RUC</option>
                                 <option value="CE">Carnet Ext.</option>
@@ -535,8 +535,8 @@ function posBilletes($ctx) { ?>
                             </select>
                         </div>
                         <div class="col-7">
-                            <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: #444;">N° Documento *</label>
-                            <input type="text" class="form-control form-control-sm" name="num_documento" id="nuevoCliNumDoc" required placeholder="Ej. 70854120">
+                            <label class="form-label mb-1" style="font-size: 11px; font-weight: 700; color: #444;">N° Documento * <span id="posDocHelp" style="font-size:10px; color:#666;">(8 díg.)</span></label>
+                            <input type="text" class="form-control form-control-sm" name="num_documento" id="nuevoCliNumDoc" maxlength="8" required placeholder="Ej. 70854120" oninput="limpiarNumeroDocPos(this)">
                         </div>
                     </div>
 
@@ -887,6 +887,13 @@ function filtrarCatalogo() {
 // CARRITO
 // -----------------------------------------
 function agregarAlCarrito(producto) {
+    if(!producto) return;
+    let stockTotal = parseInt(producto.stock) || 0;
+    if (stockTotal <= 0) {
+        alert('❌ ¡PRODUCTO AGOTADO!\nNo hay unidades disponibles de "' + (producto.nombre || 'este producto') + '" en inventario.');
+        return;
+    }
+
     let id = producto.id;
     if(carrito[id]) {
         let stockRequerido = carrito[id].cantidad;
@@ -895,10 +902,10 @@ function agregarAlCarrito(producto) {
         }
         let stockFuturo = stockRequerido + (carrito[id].tipo_unidad == 'CAJA' && carrito[id].fraccionable == 1 ? carrito[id].unidades_por_caja : 1);
 
-        if(stockFuturo <= producto.stock) {
+        if(stockFuturo <= stockTotal) {
             carrito[id].cantidad++;
         } else {
-            alert('¡Límite de stock alcanzado para este producto (Stock en unidades: '+producto.stock+')!');
+            alert('¡Límite de stock alcanzado para este producto (Stock en unidades: '+stockTotal+')!');
         }
     } else {
         carrito[id] = {
@@ -912,7 +919,7 @@ function agregarAlCarrito(producto) {
             unidades_por_caja: parseInt(producto.unidades_por_caja) || 1,
             tipo_unidad: 'CAJA',
             cantidad: 1,
-            stock: parseInt(producto.stock),
+            stock: stockTotal,
             requiere_receta: producto.requiere_receta,
             condicion_venta: producto.condicion_venta || 'Venta Libre',
             registro_sanitario: producto.registro_sanitario || ''
@@ -1118,11 +1125,60 @@ function switchPosTab(tab) {
 // -----------------------------------------
 // REGISTRO RÁPIDO DE CLIENTE
 // -----------------------------------------
+function ajustarTipoDocPos() {
+    const tipo = document.getElementById('nuevoCliTipoDoc').value;
+    const numInput = document.getElementById('nuevoCliNumDoc');
+    const help = document.getElementById('posDocHelp');
+    if (tipo === 'DNI') {
+        numInput.maxLength = 8;
+        numInput.placeholder = 'Ej: 70854120';
+        if (help) help.textContent = '(8 díg.)';
+    } else if (tipo === 'RUC') {
+        numInput.maxLength = 11;
+        numInput.placeholder = 'Ej: 20601234567';
+        if (help) help.textContent = '(11 díg.)';
+    } else {
+        numInput.maxLength = 15;
+        numInput.placeholder = 'Ej: P12345678';
+        if (help) help.textContent = '(4-15 car.)';
+    }
+}
+
+function limpiarNumeroDocPos(input) {
+    const tipo = document.getElementById('nuevoCliTipoDoc').value;
+    if (tipo === 'DNI' || tipo === 'RUC') {
+        input.value = input.value.replace(/\D/g, '');
+    }
+}
+
 function guardarClientePos(e) {
     e.preventDefault();
     const btn = document.getElementById('btnGuardarClientePos');
     const alertBox = document.getElementById('alertaErrorClientePos');
     alertBox.classList.add('d-none');
+
+    const tipo = document.getElementById('nuevoCliTipoDoc').value;
+    const num = document.getElementById('nuevoCliNumDoc').value.trim();
+
+    if (tipo === 'DNI' && !/^\d{8}$/.test(num)) {
+        alertBox.textContent = '❌ El DNI debe contener exactamente 8 dígitos numéricos.';
+        alertBox.classList.remove('d-none');
+        document.getElementById('nuevoCliNumDoc').focus();
+        return;
+    }
+    if (tipo === 'RUC' && !/^\d{11}$/.test(num)) {
+        alertBox.textContent = '❌ El RUC debe contener exactamente 11 dígitos numéricos.';
+        alertBox.classList.remove('d-none');
+        document.getElementById('nuevoCliNumDoc').focus();
+        return;
+    }
+    if (tipo !== 'DNI' && tipo !== 'RUC' && num.length < 4) {
+        alertBox.textContent = '❌ El número de documento debe tener al menos 4 caracteres.';
+        alertBox.classList.remove('d-none');
+        document.getElementById('nuevoCliNumDoc').focus();
+        return;
+    }
+
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
 
@@ -1144,6 +1200,7 @@ function guardarClientePos(e) {
             seleccionarCliente(c.id);
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalNuevoClientePos')).hide();
             form.reset();
+            ajustarTipoDocPos();
         } else {
             alertBox.textContent = data.error || 'Error al registrar cliente.';
             alertBox.classList.remove('d-none');

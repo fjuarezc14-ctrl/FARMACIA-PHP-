@@ -36,23 +36,53 @@ class ClienteController extends Controller {
     public function save() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->validateCsrf();
+            $tipoDoc = trim($_POST['tipo_documento'] ?? 'DNI');
+            $numDoc = trim($_POST['num_documento'] ?? '');
+            $nombres = trim($_POST['nombres'] ?? '');
+
+            if (empty($numDoc) || empty($nombres)) {
+                $_SESSION['error'] = "El número de documento y el nombre son obligatorios.";
+                header('Location: ' . BASE_URL . 'cliente/index');
+                exit;
+            }
+
+            $errDoc = $this->validarDocumento($tipoDoc, $numDoc);
+            if ($errDoc) {
+                $_SESSION['error'] = $errDoc;
+                header('Location: ' . BASE_URL . 'cliente/index');
+                exit;
+            }
+
             $modelo = $this->model('Cliente');
             $data = [
-                'tipo_documento' => $_POST['tipo_documento'],
-                'num_documento' => $_POST['num_documento'],
-                'nombres' => $_POST['nombres'],
-                'telefono' => $_POST['telefono'],
-                'direccion' => $_POST['direccion'],
-                'id' => $_POST['id'] ?? null
+                'tipo_documento' => $tipoDoc,
+                'num_documento' => $numDoc,
+                'nombres' => $nombres,
+                'telefono' => trim($_POST['telefono'] ?? ''),
+                'direccion' => trim($_POST['direccion'] ?? ''),
+                'id' => !empty($_POST['id']) ? (int)$_POST['id'] : null
             ];
             
-            if (empty($data['id'])) {
-                $modelo->create($data);
-            } else {
-                $modelo->update($data);
+            try {
+                if (empty($data['id'])) {
+                    $modelo->create($data);
+                    $this->logAccion('Clientes', 'CREAR', "Nuevo cliente registrado: " . $data['nombres'] . " (" . $data['num_documento'] . ")");
+                    $_SESSION['mensaje'] = "Cliente registrado correctamente.";
+                } else {
+                    $modelo->update($data);
+                    $this->logAccion('Clientes', 'EDITAR', "Cliente editado: " . $data['nombres']);
+                    $_SESSION['mensaje'] = "Cliente actualizado correctamente.";
+                }
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000 || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                    $_SESSION['error'] = "Ya existe un cliente registrado con ese número de documento.";
+                } else {
+                    $_SESSION['error'] = "Error al guardar el cliente en la base de datos.";
+                }
             }
         }
         header('Location: ' . BASE_URL . 'cliente/index');
+        exit;
     }
 
     public function delete($id = null) {
@@ -67,14 +97,15 @@ class ClienteController extends Controller {
         $this->validateCsrf();
 
         $clientId = (int)($_POST['id'] ?? $id ?? 0);
-        if ($clientId <= 0) {
-            $_SESSION['error'] = 'ID de cliente inválido.';
+        if ($clientId <= 0 || $clientId === 1) {
+            $_SESSION['error'] = 'ID de cliente inválido o protegido contra eliminación.';
             header('Location: ' . BASE_URL . 'cliente/index');
             exit;
         }
 
         $modelo = $this->model('Cliente');
         if ($modelo->delete($clientId)) {
+            $this->logAccion('Clientes', 'ELIMINAR', "Cliente eliminado ID #$clientId");
             $_SESSION['mensaje'] = 'Cliente eliminado correctamente.';
         } else {
             $_SESSION['error'] = 'No se pudo eliminar el cliente especificado.';
@@ -108,6 +139,12 @@ class ClienteController extends Controller {
             exit;
         }
 
+        $errDoc = $this->validarDocumento($tipoDoc, $numDoc);
+        if ($errDoc) {
+            echo json_encode(['success' => false, 'error' => $errDoc]);
+            exit;
+        }
+
         $modelo = $this->model('Cliente');
         $data = [
             'tipo_documento' => $tipoDoc,
@@ -117,21 +154,47 @@ class ClienteController extends Controller {
             'direccion'      => $dir
         ];
 
-        $newId = $modelo->create($data);
-        if ($newId) {
-            echo json_encode([
-                'success' => true,
-                'cliente' => [
-                    'id'             => $newId,
-                    'tipo_documento' => $tipoDoc,
-                    'num_documento'  => $numDoc,
-                    'nombres'        => $nombres
-                ]
-            ]);
-        } else {
-            echo json_encode(['success' => false, 'error' => 'No se pudo guardar el cliente en la base de datos.']);
+        try {
+            $newId = $modelo->create($data);
+            if ($newId) {
+                echo json_encode([
+                    'success' => true,
+                    'cliente' => [
+                        'id'             => $newId,
+                        'tipo_documento' => $tipoDoc,
+                        'num_documento'  => $numDoc,
+                        'nombres'        => $nombres
+                    ]
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'No se pudo guardar el cliente en la base de datos.']);
+            }
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000 || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                echo json_encode(['success' => false, 'error' => 'Ya existe un cliente con ese número de documento.']);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Error de base de datos al guardar cliente.']);
+            }
         }
         exit;
+    }
+
+    private function validarDocumento($tipoDoc, $numDoc) {
+        $numDoc = trim($numDoc);
+        if ($tipoDoc === 'DNI') {
+            if (!preg_match('/^\d{8}$/', $numDoc)) {
+                return "El DNI debe contener exactamente 8 dígitos numéricos.";
+            }
+        } elseif ($tipoDoc === 'RUC') {
+            if (!preg_match('/^\d{11}$/', $numDoc)) {
+                return "El RUC debe contener exactamente 11 dígitos numéricos.";
+            }
+        } elseif ($tipoDoc === 'CE' || $tipoDoc === 'Pasaporte') {
+            if (strlen($numDoc) < 4 || strlen($numDoc) > 15) {
+                return "El documento debe contener entre 4 y 15 caracteres.";
+            }
+        }
+        return null;
     }
 
     /**

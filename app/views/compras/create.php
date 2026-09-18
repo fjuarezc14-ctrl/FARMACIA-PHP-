@@ -166,7 +166,7 @@ function agregarFila() {
             </select>
         </td>
         <td><input type="text" class="form-control-custom" name="lote[]" placeholder="EJ: L-123" required></td>
-        <td><input type="date" class="form-control-custom" name="vencimiento[]" required></td>
+        <td><input type="date" class="form-control-custom" name="vencimiento[]" min="<?php echo date('Y-m-d'); ?>" required></td>
         <td><input type="number" class="form-control-custom fila-cant" name="cantidad[]" value="1" min="1" oninput="calcularFila(${rowIndex})" required></td>
         <td><input type="number" class="form-control-custom fila-precio" name="precio_c_unitario[]" step="0.01" value="0.00" oninput="calcularFila(${rowIndex})" required></td>
         <td><input type="number" class="form-control-custom fila-subtotal bg-dark text-white border-0" name="subtotal[]" value="0.00" readonly></td>

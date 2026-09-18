@@ -10,10 +10,29 @@
         .bold { font-weight: bold; }
         .line { border-bottom: 1px dashed #000; margin: 10px 0; }
         .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        @media print { body { width: 100%; margin: 0; padding: 0; padding-right:15px; } }
+        .no-print { text-align: center; margin-bottom: 15px; padding: 10px; background: #f1f5f9; border-radius: 8px; border: 1px solid #cbd5e1; }
+        .no-print button, .no-print a { display: inline-block; padding: 6px 12px; margin: 3px; font-size: 11px; font-weight: bold; border-radius: 6px; text-decoration: none; cursor: pointer; }
+        .btn-print { background: #047857; color: #fff; border: none; }
+        .btn-back { background: #1e293b; color: #fff; }
+        .btn-new { background: #2563eb; color: #fff; }
+        @media print { 
+            body { width: 100%; margin: 0; padding: 0; padding-right:15px; } 
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body onload="window.print()">
+
+<div class="no-print">
+    <div style="font-weight: bold; margin-bottom: 6px; font-size: 12px; color: #0f172a;">
+        ✓ Turno Cerrado Exitosamente
+    </div>
+    <div>
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
+        <a href="<?php echo BASE_URL; ?>caja/apertura" class="btn-new">➕ Nueva Caja</a>
+        <a href="<?php echo BASE_URL; ?>dashboard/index" class="btn-back">🏠 Dashboard</a>
+    </div>
+</div>
 
 <div class="center bold" style="font-size: 16px; margin-bottom:5px;">CENGFARMA</div>
 <div class="center">TICKET DE ARQUEO CAJA</div>
@@ -64,5 +83,13 @@ if($diferencia != 0):
 
 <div class="center" style="margin-top: 20px; font-size:10px;">Impreso: <?php echo date('d/m/Y H:i:s'); ?></div>
 
+<script>
+    // Auto-cerrar la ventana si fue abierta como ventana emergente tras imprimir
+    window.addEventListener('afterprint', function() {
+        if (window.opener) {
+            window.close();
+        }
+    });
+</script>
 </body>
 </html>
