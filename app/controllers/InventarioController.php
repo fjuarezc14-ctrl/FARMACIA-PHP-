@@ -77,9 +77,20 @@ class InventarioController extends Controller {
                 header('Location: ' . BASE_URL . 'inventario/kardex');
                 exit;
             }
+
+            if ($vencimiento !== '2099-12-31' && $vencimiento < date('Y-m-d')) {
+                $_SESSION['error'] = "Validación Sanitaria Rechazada: No se permite registrar ingresos manuales con lote expirado ($vencimiento).";
+                header('Location: ' . BASE_URL . 'inventario/kardex');
+                exit;
+            }
             
             $db = new Database();
             $conn = $db->getConnection();
+            if (!$conn) {
+                $_SESSION['error'] = "No se pudo conectar a la base de datos.";
+                header('Location: ' . BASE_URL . 'inventario/kardex');
+                exit;
+            }
             $modelo = new Inventario($conn);
             
             try {

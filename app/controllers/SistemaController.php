@@ -135,6 +135,12 @@ class SistemaController extends Controller {
         $database = new Database();
         $connection = $database->getConnection();
 
+        if (!$connection) {
+            $_SESSION['error'] = "No se pudo establecer conexión con la base de datos.";
+            header('Location: ' . BASE_URL . 'sistema/index');
+            exit;
+        }
+
         try {
             $sqlContent = file_get_contents($file['tmp_name']);
             if ($sqlContent === false || trim($sqlContent) === '') {
@@ -149,7 +155,9 @@ class SistemaController extends Controller {
             $_SESSION['success'] = "Base de datos restaurada correctamente.";
 
         } catch (Exception $exception) {
-            $connection->exec("SET FOREIGN_KEY_CHECKS = 1;");
+            if ($connection instanceof PDO) {
+                try { $connection->exec("SET FOREIGN_KEY_CHECKS = 1;"); } catch (Exception $e) {}
+            }
             error_log("[SistemaController::restaurar] Fallo al restaurar base de datos: " . $exception->getMessage());
             $_SESSION['error'] = "Error al restaurar la base de datos. Verifique la sintaxis del archivo SQL.";
         }
@@ -170,6 +178,11 @@ class SistemaController extends Controller {
         $this->validateCsrf();
         $database = new Database();
         $connection = $database->getConnection();
+        if (!$connection) {
+            $_SESSION['error'] = "No se pudo establecer conexión con la base de datos.";
+            header('Location: ' . BASE_URL . 'sistema/index');
+            exit;
+        }
 
         try {
             $connection->beginTransaction();
@@ -212,10 +225,14 @@ class SistemaController extends Controller {
             $_SESSION['success'] = "Sistema reseteado exitosamente.";
 
         } catch (Exception $exception) {
-            $connection->rollBack();
-            $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+            if ($connection instanceof PDO) {
+                if ($connection->inTransaction()) {
+                    $connection->rollBack();
+                }
+                try { $connection->exec("SET FOREIGN_KEY_CHECKS = 1"); } catch (Exception $e) {}
+            }
             error_log("[SistemaController::reset] Fallo en reseteo: " . $exception->getMessage());
-            $_SESSION['error'] = "Error al resetear los datos del sistema.";
+            $_SESSION['error'] = "Error al resetear los datos del sistema: " . $exception->getMessage();
         }
 
         header('Location: ' . BASE_URL . 'sistema/index');
