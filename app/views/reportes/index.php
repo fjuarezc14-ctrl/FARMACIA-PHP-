@@ -14,6 +14,7 @@
                     <h5 class="text-primary font-weight-bold mb-3"><i class="bi bi-file-earmark-excel-fill text-success"></i> Extracto de Ventas</h5>
                     <p class="text-muted" style="font-size: 13px;">Genera un archivo Excel (.csv) con el desglose de ventas, impuestos asimilados y métodos de pago.</p>
                     
+                    <?php if (($_SESSION['rol_id'] ?? 0) == 1): ?>
                     <form action="<?php echo BASE_URL; ?>reporte/exportar_ventas" method="GET" class="mt-auto">
                         <div class="row g-2 mb-3">
                             <div class="col-6">
@@ -38,6 +39,12 @@
                             </div>
                         </div>
                     </form>
+                    <?php else: ?>
+                    <div class="mt-auto p-3 rounded text-center" style="background: rgba(0,0,0,0.03); border: 1px dashed var(--border-color);">
+                        <i class="bi bi-shield-lock text-muted fs-4 mb-1 d-block"></i>
+                        <span class="text-muted" style="font-size: 12px; font-weight: 600;">Reservado para Administrador</span>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

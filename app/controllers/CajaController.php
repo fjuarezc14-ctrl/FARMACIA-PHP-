@@ -186,7 +186,8 @@ class CajaController extends Controller {
         }
 
         // Solo el administrador o el usuario dueño de la caja puede ver el ticket de arqueo
-        if ((int)($_SESSION['rol_id'] ?? 0) !== 1 && (int)$caja['id_usuario'] !== (int)$_SESSION['user_id']) {
+        $cajaUserId = (int)($caja['usuario_id'] ?? $caja['id_usuario'] ?? 0);
+        if ((int)($_SESSION['rol_id'] ?? 0) !== 1 && $cajaUserId !== (int)$_SESSION['user_id']) {
             $_SESSION['error'] = "No tiene permiso para visualizar arqueos de otros usuarios.";
             header('Location: ' . BASE_URL . 'caja/cierre');
             exit;

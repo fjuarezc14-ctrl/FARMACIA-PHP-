@@ -15,10 +15,17 @@ if (!$clienteDefault && !empty($clientesPos)) $clienteDefault = $clientesPos[0];
 ?>
 <style>
 /* ============ POS CENGFARMA ============ */
-.pos-layout { display: flex; gap: 18px; height: calc(100vh - 145px); min-height: 580px; }
+.pos-layout { display: flex; gap: 18px; height: calc(100vh - 120px); min-height: 460px; }
 .pos-catalog-col { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .pos-ticket-col { flex: 0 0 430px; display: flex; flex-direction: column; min-width: 0; }
-@media (max-width: 1200px) { .pos-layout { height: calc(100vh - 115px); } .pos-ticket-col { flex-basis: 390px; } }
+@media (max-width: 1200px) { .pos-layout { height: calc(100vh - 105px); } .pos-ticket-col { flex-basis: 390px; } }
+@media (max-height: 768px) {
+    .pos-layout { height: calc(100vh - 95px); min-height: 440px; }
+    .pos-search input { height: 42px; font-size: 14px; }
+    .item-card { min-height: 92px; padding: 10px; }
+    .ticket-head { padding: 10px 12px 8px; }
+    .ticket-foot { padding: 10px 12px 12px; }
+}
 
 .pos-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; box-shadow: 0 2px 10px rgba(26,34,56,0.04); }
 .pos-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-secondary); margin-bottom: 6px; }

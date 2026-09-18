@@ -42,7 +42,7 @@
                                 <input type="text" name="lote[]" class="form-control-custom" placeholder="Lote / Batch" required>
                             </td>
                             <td>
-                                <input type="date" name="vencimiento[]" class="form-control-custom" required>
+                                <input type="date" name="vencimiento[]" class="form-control-custom" min="<?php echo date('Y-m-d'); ?>" required>
                             </td>
                         </tr>
                         <?php endforeach; ?>

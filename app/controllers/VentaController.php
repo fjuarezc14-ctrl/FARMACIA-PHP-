@@ -333,12 +333,32 @@ class VentaController extends Controller {
                             ];
                         }
 
+                        // Obtener datos fiscales reales del cliente para SUNAT
+                        $cliQ = $conn2->prepare("SELECT num_documento, tipo_documento, nombres FROM clientes WHERE id = ?");
+                        $cliQ->execute([$id_cliente]);
+                        $cliData = $cliQ->fetch(PDO::FETCH_ASSOC);
+
+                        $nombreCliente = !empty($cliData['nombres']) ? $cliData['nombres'] : 'PUBLICO GENERAL';
+                        $docCliente    = !empty($cliData['num_documento']) ? $cliData['num_documento'] : '00000000';
+                        $tipoDocCli    = $cliData['tipo_documento'] ?? 'DNI';
+                        
+                        $sunatTipoDoc = '1'; // Default DNI
+                        if ($tipoDocCli === 'RUC') {
+                            $sunatTipoDoc = '6';
+                        } elseif ($tipoDocCli === 'CE' || $tipoDocCli === 'Pasaporte') {
+                            $sunatTipoDoc = '4';
+                        } elseif ($id_cliente == 1) {
+                            $sunatTipoDoc = '0';
+                        }
+
                         // Usar los datos de cabecera para generar el XML
                         $ventaXml = $cabecera;
-                        $ventaXml['igv']         = (float)$_POST['igv_venta'];
-                        $ventaXml['total']        = (float)$_POST['total_venta'];
-                        $ventaXml['cliente']      = $venta_cliente ?? 'PUBLICO GENERAL';
-                        $ventaXml['fecha_venta']  = date('Y-m-d H:i:s');
+                        $ventaXml['igv']              = (float)$_POST['igv_venta'];
+                        $ventaXml['total']            = (float)$_POST['total_venta'];
+                        $ventaXml['cliente']          = $nombreCliente;
+                        $ventaXml['doc_cliente']      = $docCliente;
+                        $ventaXml['tipo_doc_cliente'] = $sunatTipoDoc;
+                        $ventaXml['fecha_venta']      = date('Y-m-d H:i:s');
 
                         try {
                             // 1. GENERAR XML UBL 2.1

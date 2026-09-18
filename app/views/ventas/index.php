@@ -198,11 +198,11 @@
                                     <i class="bi bi-file-earmark-code"></i>
                                 </a>
                                 <?php endif; ?>
-                                <?php if ($v['estado'] != 'Anulada'): ?>
+                                <?php if ($v['estado'] != 'Anulada' && ($_SESSION['rol_id'] ?? 0) == 1): ?>
                                 <form action="<?php echo BASE_URL; ?>venta/anular" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de ANULAR esta venta? El stock se devolverá al almacén de forma íntegra.')">
                                     <?php echo Controller::csrfField(); ?>
                                     <input type="hidden" name="id_venta" value="<?php echo $v['id']; ?>">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Anular Venta">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Anular Venta (Solo Administrador)">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
                                 </form>

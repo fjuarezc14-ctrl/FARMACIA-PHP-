@@ -37,7 +37,7 @@
                             <th>Inicial (S/)</th>
                             <th>Ingresos Efectivo</th>
                             <th>Tran/Tarj</th>
-                            <th>Dif.</td>
+                            <th>Dif.</th>
                             <th>Estado</th>
                             <th>Opciones</th>
                         </tr>

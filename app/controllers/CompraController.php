@@ -202,11 +202,22 @@ class CompraController extends Controller {
             $id_compra = (int)$_POST['id_compra'];
             
             $lotes_data = [];
+            $hoy = date('Y-m-d');
             foreach ($_POST['detalle_id'] as $i => $id_det) {
+                $venc = !empty($_POST['vencimiento'][$i]) ? trim($_POST['vencimiento'][$i]) : '2099-12-31';
+                $lote = trim($_POST['lote'][$i] ?? 'P. SIN LOTE');
+                if (empty($lote)) $lote = 'P. SIN LOTE';
+
+                if ($venc !== '2099-12-31' && $venc < $hoy) {
+                    $_SESSION['error'] = "Validación Sanitaria Rechazada: El lote '$lote' tiene fecha de vencimiento expirada ($venc). No se permite recibir mercadería caducada.";
+                    header('Location: ' . BASE_URL . 'compra/recepcion/' . $id_compra);
+                    exit;
+                }
+
                 $lotes_data[] = [
                     'id_detalle' => (int)$id_det,
-                    'lote' => $_POST['lote'][$i],
-                    'vencimiento' => $_POST['vencimiento'][$i]
+                    'lote' => $lote,
+                    'vencimiento' => $venc
                 ];
             }
             

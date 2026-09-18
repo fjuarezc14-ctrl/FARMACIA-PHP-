@@ -74,8 +74,8 @@
                 </button>
             </div>
             
-            <div class="table-responsive" style="overflow-x: visible;">
-                <table class="table-custom" id="tablaDetalles">
+            <div class="table-responsive">
+                <table class="table-custom" id="tablaDetalles" style="min-width: 780px;">
                     <thead>
                         <tr>
                             <th width="28%">Búsqueda de Producto</th>
