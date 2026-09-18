@@ -50,44 +50,56 @@
         </div>
     </div>
 
-    <h1 class="titulo-reporte">REPORTE DE ALERTA SANITARIA: LOTES PRÓXIMOS A VENCER <br><small style="font-size:11px; font-weight:normal;">Alerta Preventiva a 90 días</small></h1>
+    <?php
+        $rango = $data['rango'] ?? '90';
+        $subtitulo = 'Alerta Preventiva a 90 días';
+        if ($rango === 'vencidos') $subtitulo = 'Relación de Lotes Ya Vencidos (Para Retiro Inmediato / Cuarentena)';
+        elseif ($rango === '30') $subtitulo = 'Alerta Crítica: Vencimiento en los Próximos 30 Días';
+        elseif ($rango === '180') $subtitulo = 'Planificación Semestral: Vencimiento en los Próximos 180 Días';
+        elseif ($rango === 'todos') $subtitulo = 'Catálogo Completo de Lotes Activos en Almacén';
+    ?>
+    <h1 class="titulo-reporte">REPORTE DE ALERTA SANITARIA: CONTROL DE VENCIMIENTOS (FEFO)<br><small style="font-size:11px; font-weight:normal;"><?php echo $subtitulo; ?></small></h1>
 
     <table>
         <thead>
             <tr>
                 <th>MEDICAMENTO / PRODUCTO</th>
+                <th>LABORATORIO</th>
                 <th>CÓDIGO DE LOTE</th>
                 <th class="text-center">FECHA VENCIMIENTO</th>
                 <th class="text-center">ESTADO / DÍAS RESTANTES</th>
-                <th class="text-center">STOCK AFECTADO</th>
+                <th class="text-center">STOCK DISPONIBLE</th>
             </tr>
         </thead>
         <tbody>
             <?php 
             if(empty($data['lotes'])): ?>
-                <tr><td colspan="5" style="text-align:center; padding: 20px;">✓ Excelente. No hay lotes próximos a vencer en los siguientes 90 días.</td></tr>
+                <tr><td colspan="6" style="text-align:center; padding: 20px;">✓ No se encontraron lotes para el criterio de búsqueda seleccionado.</td></tr>
             <?php else: ?>
                 <?php 
                 $hoy = new DateTime();
                 foreach($data['lotes'] as $l): 
                     $fv = new DateTime($l['fecha_vencimiento']);
-                    $diff = $hoy->diff($fv)->days;
-                    $isVencido = $fv < $hoy;
+                    $diff = (int)($l['dias_restantes'] ?? 0);
+                    $isVencido = $diff < 0;
                 ?>
                 <tr>
                     <td><strong><?php echo htmlspecialchars($l['producto']); ?></strong></td>
-                    <td><?php echo htmlspecialchars($l['lote']); ?></td>
+                    <td><?php echo htmlspecialchars($l['laboratorio'] ?? 'Sin Laboratorio'); ?></td>
+                    <td style="font-family: monospace; font-weight: bold;"><?php echo htmlspecialchars($l['lote']); ?></td>
                     <td class="text-center"><?php echo date('d/m/Y', strtotime($l['fecha_vencimiento'])); ?></td>
                     <td class="text-center">
                         <?php if($isVencido): ?>
-                            <span class="badge-rojo">¡VENCIDO!</span>
+                            <span class="badge-rojo">¡VENCIDO! (hace <?php echo abs($diff); ?>d)</span>
                         <?php elseif($diff <= 30): ?>
                             <span class="badge-rojo">CRÍTICO: <?php echo $diff; ?> DÍAS</span>
-                        <?php else: ?>
+                        <?php elseif($diff <= 90): ?>
                             <span class="badge-naranja">En <?php echo $diff; ?> días</span>
+                        <?php else: ?>
+                            <span style="color: #28a745; font-weight: bold;">Sano (<?php echo $diff; ?> días)</span>
                         <?php endif; ?>
                     </td>
-                    <td class="text-center"><strong><?php echo htmlspecialchars($l['stock']); ?> unid.</strong></td>
+                    <td class="text-center"><strong><?php echo number_format($l['stock']); ?> unid.</strong></td>
                 </tr>
                 <?php endforeach; ?>
             <?php endif; ?>

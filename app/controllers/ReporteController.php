@@ -6,7 +6,11 @@ class ReporteController extends Controller {
     }
 
     public function index() {
-        $this->view('reportes/index', ['title' => 'Reportes Gerenciales']);
+        $labModel = $this->model('Laboratorio');
+        $this->view('reportes/index', [
+            'title'        => 'Reportes Gerenciales',
+            'laboratorios' => $labModel->getAll()
+        ]);
     }
 
     public function exportar_ventas() {
@@ -122,60 +126,66 @@ class ReporteController extends Controller {
     }
 
     public function vencimientos_excel() {
+        $rango = $_GET['rango'] ?? '90';
+        $id_laboratorio = !empty($_GET['id_laboratorio']) ? (int)$_GET['id_laboratorio'] : null;
+
         $inventarioModel = $this->model('Inventario');
-        $lotes = $inventarioModel->getLotesProximosVencer(90); // a 90 dias
+        $lotes = $inventarioModel->getLotesProximosVencer($rango, $id_laboratorio);
         
+        $configModel = $this->model('Configuracion');
+        $configs = $configModel->getAll();
+        $nombreBotica = $configs['nombre_botica']['valor'] ?? 'BOTICA CENGFARMA';
+        $rucBotica = $configs['ruc']['valor'] ?? '';
+
         header("Content-Type: text/csv; charset=utf-8");
-        header("Content-Disposition: attachment; filename=Reporte_Lotes_Vencer.csv");
+        header("Content-Disposition: attachment; filename=Reporte_Vencimientos_" . date('Y-m-d') . ".csv");
         
         $output = fopen("php://output", "w");
         fwrite($output, "\xEF\xBB\xBF");
-        fputcsv($output, ['Producto', 'Lote', 'Fecha Vencimiento', 'Stock', 'Dias Restantes']);
         
-        $hoy = new DateTime();
+        fputcsv($output, [$nombreBotica . ' - CONTROL DE VENCIMIENTOS'], ";");
+        fputcsv($output, ["RUC: $rucBotica", "Filtro: " . strtoupper($rango), "Generado: " . date('d/m/Y H:i:s')], ";");
+        fputcsv($output, [], ";");
+        
+        fputcsv($output, ['Producto', 'Laboratorio', 'Lote', 'Fecha Vencimiento', 'Stock Disponible', 'Días Restantes', 'Estado FEFO'], ";");
+        
         foreach($lotes as $l) {
-            $fv = new DateTime($l['fecha_vencimiento']);
-            $diff = $hoy->diff($fv)->days;
-            $f_status = ($fv < $hoy) ? 'VENCIDO' : $diff;
+            $diff = (int)($l['dias_restantes'] ?? 0);
+            if ($diff < 0) {
+                $status = 'VENCIDO (' . abs($diff) . ' días atrás)';
+            } elseif ($diff <= 30) {
+                $status = 'CRÍTICO (' . $diff . ' días)';
+            } elseif ($diff <= 90) {
+                $status = 'RIESGO (' . $diff . ' días)';
+            } else {
+                $status = 'SANO (' . $diff . ' días)';
+            }
             
             fputcsv($output, [
                 $l['producto'],
+                $l['laboratorio'] ?? 'Sin Laboratorio',
                 $l['lote'],
-                $l['fecha_vencimiento'],
+                date('d/m/Y', strtotime($l['fecha_vencimiento'])),
                 $l['stock'],
-                $f_status
+                $diff,
+                $status
             ], ";");
         }
         fclose($output);
         exit;
     }
 
-    public function ventas_pdf() {
-        $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-d');
-        $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
-        
-        $ventaModel = $this->model('Venta');
-        $filtradas = $ventaModel->getByDateRange($fecha_inicio, $fecha_fin); 
-
-        $configModel = $this->model('Configuracion');
-        
-        $data = [
-            'fecha_inicio' => $fecha_inicio,
-            'fecha_fin' => $fecha_fin,
-            'ventas' => $filtradas,
-            'config' => $configModel->getAll()
-        ];
-        
-        // Vista estricta para impresión (sin layout main)
-        require_once '../app/views/reportes/ventas_pdf.php';
-    }
-
     public function vencimientos_pdf() {
+        $rango = $_GET['rango'] ?? '90';
+        $id_laboratorio = !empty($_GET['id_laboratorio']) ? (int)$_GET['id_laboratorio'] : null;
+
         $inventarioModel = $this->model('Inventario');
-        $lotes = $inventarioModel->getLotesProximosVencer(90); 
+        $lotes = $inventarioModel->getLotesProximosVencer($rango, $id_laboratorio); 
         $configModel = $this->model('Configuracion');
         
         $data = [
+            'rango' => $rango,
+            'id_laboratorio' => $id_laboratorio,
             'lotes' => $lotes,
             'config' => $configModel->getAll()
         ];

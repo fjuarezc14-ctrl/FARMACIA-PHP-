@@ -6,47 +6,104 @@
         <div class="alert alert-success mb-4"><i class="bi bi-check-circle-fill"></i> <?php echo $_SESSION['mensaje']; unset($_SESSION['mensaje']); ?></div>
     <?php endif; ?>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h1 class="page-title">Categorías</h1>
-            <div class="page-subtitle">Gestiona la clasificación de medicamentos y productos.</div>
+            <h1 class="page-title">Categorías de Productos</h1>
+            <div class="page-subtitle">Gestiona la clasificación farmacéutica y comercial de medicamentos y artículos.</div>
         </div>
         <button class="btn-primary-custom" style="width: auto; padding: 10px 20px;" data-bs-toggle="modal" data-bs-target="#modalCategoria" onclick="nuevoRegistro()">
             <i class="bi bi-plus-lg"></i> Nueva Categoría
         </button>
     </div>
 
+    <!-- Buscador y Filtro -->
+    <div class="card-metric mb-3 p-3">
+        <form action="<?php echo BASE_URL; ?>categoria/index" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-7 col-sm-12">
+                <div class="search-box w-100">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="search" value="<?php echo htmlspecialchars($data['search'] ?? ''); ?>" placeholder="Buscar por nombre o descripción de categoría...">
+                </div>
+            </div>
+            <div class="col-md-2 col-sm-6">
+                <select name="limit" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="15" <?php echo ($data['limit'] ?? 15) == 15 ? 'selected' : ''; ?>>15 por pág.</option>
+                    <option value="25" <?php echo ($data['limit'] ?? 15) == 25 ? 'selected' : ''; ?>>25 por pág.</option>
+                    <option value="50" <?php echo ($data['limit'] ?? 15) == 50 ? 'selected' : ''; ?>>50 por pág.</option>
+                    <option value="100" <?php echo ($data['limit'] ?? 15) == 100 ? 'selected' : ''; ?>>100 por pág.</option>
+                </select>
+            </div>
+            <div class="col-md-3 col-sm-6 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-success fw-bold flex-grow-1" style="height: 38px;">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                <?php if (!empty($data['search'])): ?>
+                    <a href="<?php echo BASE_URL; ?>categoria/index" class="btn btn-sm btn-outline-secondary" style="height: 38px; display: flex; align-items: center;" title="Limpiar búsqueda">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de Categorías -->
     <div class="card-metric">
         <div class="table-responsive">
             <table class="table table-hover align-middle" style="width: 100%; font-size: 14px;">
                 <thead>
                     <tr>
-                        <th width="50">ID</th>
-                        <th>Nombre</th>
+                        <th width="70">ID</th>
+                        <th>Nombre de Categoría</th>
                         <th>Descripción</th>
-                        <th width="150" class="text-end">Acciones</th>
+                        <th width="150" class="text-center">Medicamentos</th>
+                        <th width="160" class="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if(empty($data['categorias'])): ?>
-                    <tr><td colspan="4" class="text-center text-muted">No hay datos registrados</td></tr>
+                    <tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-inbox fs-4 d-block mb-2"></i>No se encontraron categorías registradas</td></tr>
                     <?php else: ?>
                     <?php foreach($data['categorias'] as $cat): ?>
                     <tr>
-                        <td><?php echo $cat['id']; ?></td>
-                        <td style="font-weight:700; color:var(--text-primary);"><?php echo htmlspecialchars($cat['nombre']); ?></td>
-                        <td style="color:var(--text-secondary);"><?php echo htmlspecialchars($cat['descripcion'] ?? ''); ?></td>
+                        <td style="color: var(--text-secondary); font-family: monospace; font-weight: 600;">#<?php echo $cat['id']; ?></td>
+                        <td>
+                            <div style="font-weight:700; color:var(--text-primary);"><?php echo htmlspecialchars($cat['nombre']); ?></div>
+                        </td>
+                        <td style="color:var(--text-secondary); font-size: 13px;">
+                            <?php echo !empty($cat['descripcion']) ? htmlspecialchars($cat['descripcion']) : '<span class="text-muted fst-italic">Sin descripción</span>'; ?>
+                        </td>
+                        <td class="text-center">
+                            <?php if (($cat['total_productos'] ?? 0) > 0): ?>
+                                <span class="badge" style="background: rgba(0, 207, 232, 0.15); color: #00CFE8; border: 1px solid rgba(0, 207, 232, 0.3); font-size: 12px; padding: 5px 10px;">
+                                    <i class="bi bi-capsule"></i> <?php echo number_format($cat['total_productos']); ?> prods
+                                </span>
+                            <?php else: ?>
+                                <span class="badge" style="background: rgba(108, 117, 125, 0.15); color: #a0a0a0; border: 1px solid rgba(108, 117, 125, 0.3); font-size: 12px; padding: 5px 10px;">
+                                    <i class="bi bi-box"></i> 0 prods
+                                </span>
+                            <?php endif; ?>
+                        </td>
                         <td class="text-end">
-                            <button class="btn btn-sm" style="color: #00CFE8;" onclick="editarRegistro(<?php echo htmlspecialchars(json_encode($cat)); ?>)">
+                            <!-- Editar -->
+                            <button class="btn btn-sm" style="color: #00CFE8;" onclick="editarRegistro(<?php echo htmlspecialchars(json_encode($cat)); ?>)" title="Editar categoría">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
-                            <form action="<?php echo BASE_URL; ?>categoria/delete" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría?');">
-                                <?php echo Controller::csrfField(); ?>
-                                <input type="hidden" name="id" value="<?php echo $cat['id']; ?>">
-                                <button type="submit" class="btn btn-sm" style="color: var(--danger);" title="Eliminar">
-                                    <i class="bi bi-trash"></i>
+
+                            <?php if (($cat['total_productos'] ?? 0) == 0): ?>
+                                <!-- Eliminar directo (permitido porque tiene 0 productos) -->
+                                <form action="<?php echo BASE_URL; ?>categoria/delete" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría? No tiene productos asociados.');">
+                                    <?php echo Controller::csrfField(); ?>
+                                    <input type="hidden" name="id" value="<?php echo $cat['id']; ?>">
+                                    <button type="submit" class="btn btn-sm" style="color: var(--danger);" title="Eliminar categoría vacía">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <!-- Reasignar y Eliminar (seguro para categorías con productos) -->
+                                <button type="button" class="btn btn-sm text-warning" onclick="abrirModalReasignar(<?php echo (int)$cat['id']; ?>, '<?php echo htmlspecialchars(addslashes($cat['nombre'])); ?>', <?php echo (int)$cat['total_productos']; ?>)" title="Reasignar <?php echo $cat['total_productos']; ?> productos y eliminar categoría">
+                                    <i class="bi bi-arrow-left-right"></i>
                                 </button>
-                            </form>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -54,10 +111,57 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Paginación Server-Side -->
+        <?php if(($data['total_paginas'] ?? 1) > 1 || ($data['total_registros'] ?? 0) > 0): ?>
+        <div class="d-flex justify-content-between align-items-center p-3 border-top border-secondary border-opacity-25 flex-wrap gap-2">
+            <div class="text-muted" style="font-size: 13px;">
+                Mostrando página <strong><?php echo $data['pagina_actual'] ?? 1; ?></strong> de <strong><?php echo $data['total_paginas'] ?? 1; ?></strong> (Total: <strong><?php echo $data['total_registros'] ?? count($data['categorias']); ?></strong> categorías)
+            </div>
+            <?php if(($data['total_paginas'] ?? 1) > 1): ?>
+            <nav aria-label="Paginación de categorías">
+                <ul class="pagination pagination-sm mb-0">
+                    <?php
+                    $queryParams = $_GET;
+                    if(($data['pagina_actual'] ?? 1) > 1):
+                        $queryParams['page'] = $data['pagina_actual'] - 1;
+                        $prevUrl = BASE_URL . 'categoria/index?' . http_build_query($queryParams);
+                    ?>
+                        <li class="page-item"><a class="page-link" href="<?php echo $prevUrl; ?>">&laquo; Anterior</a></li>
+                    <?php else: ?>
+                        <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
+                    <?php endif; ?>
+
+                    <?php
+                    $inicio = max(1, ($data['pagina_actual'] ?? 1) - 2);
+                    $fin = min($data['total_paginas'], ($data['pagina_actual'] ?? 1) + 2);
+                    for($i = $inicio; $i <= $fin; $i++):
+                        $queryParams['page'] = $i;
+                        $pageUrl = BASE_URL . 'categoria/index?' . http_build_query($queryParams);
+                    ?>
+                        <li class="page-item <?php echo $i == ($data['pagina_actual'] ?? 1) ? 'active' : ''; ?>">
+                            <a class="page-link" href="<?php echo $pageUrl; ?>"><?php echo $i; ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <?php
+                    if(($data['pagina_actual'] ?? 1) < ($data['total_paginas'] ?? 1)):
+                        $queryParams['page'] = $data['pagina_actual'] + 1;
+                        $nextUrl = BASE_URL . 'categoria/index?' . http_build_query($queryParams);
+                    ?>
+                        <li class="page-item"><a class="page-link" href="<?php echo $nextUrl; ?>">Siguiente &raquo;</a></li>
+                    <?php else: ?>
+                        <li class="page-item disabled"><span class="page-link">Siguiente &raquo;</span></li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 
-<!-- Modal Categoría -->
+<!-- Modal Crear / Editar Categoría -->
 <div class="modal fade" id="modalCategoria" tabindex="-1" data-bs-backdrop="static">
   <div class="modal-dialog">
     <div class="modal-content" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
@@ -69,18 +173,59 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-              <div class="form-group">
-                  <label class="form-label">Nombre de Categoría</label>
-                  <input type="text" class="form-control-custom" name="nombre" id="txtNombre" required>
+              <div class="form-group mb-3">
+                  <label class="form-label" style="font-weight:600;">Nombre de Categoría <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control-custom" name="nombre" id="txtNombre" required placeholder="Ej. ANTIBIÓTICOS">
               </div>
               <div class="form-group mb-0">
-                  <label class="form-label">Descripción (Opcional)</label>
-                  <textarea class="form-control-custom" name="descripcion" id="txtDesc" rows="3"></textarea>
+                  <label class="form-label" style="font-weight:600;">Descripción (Opcional)</label>
+                  <textarea class="form-control-custom" name="descripcion" id="txtDesc" rows="3" placeholder="Detalles de clasificación o notas internas..."></textarea>
               </div>
           </div>
           <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
             <button type="button" class="btn btn-secondary" style="border-radius:10px;" data-bs-dismiss="modal">Cancelar</button>
             <button type="submit" class="btn-primary-custom" style="width: auto; padding: 8px 20px;">Guardar Cambios</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Reasignar y Eliminar Categoría -->
+<div class="modal fade" id="modalReasignar" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+      <form action="<?php echo BASE_URL; ?>categoria/reasignar" method="POST">
+          <?php echo Controller::csrfField(); ?>
+          <input type="hidden" name="id_origen" id="reasignarIdOrigen">
+          <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+            <h5 class="modal-title" style="color: #ffc107; font-size: 16px; font-weight:700;">
+                <i class="bi bi-arrow-left-right"></i> Reasignar Productos y Eliminar
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+              <div class="alert alert-warning mb-3" style="font-size: 13px;">
+                  <i class="bi bi-shield-exclamation me-1"></i> La categoría <strong id="lblNombreOrigen"></strong> tiene <strong id="lblCantProductos"></strong> medicamento(s) asociado(s). 
+                  Para no dejarlos huérfanos, seleccione a qué categoría desea transferirlos:
+              </div>
+              <div class="form-group mb-3">
+                  <label class="form-label" style="font-weight:600;">Categoría Destino <span class="text-danger">*</span></label>
+                  <select name="id_destino" id="selectCategoriaDestino" class="form-select" required>
+                      <option value="">-- Seleccionar categoría de destino --</option>
+                      <?php if (!empty($data['todasCategorias'])): foreach($data['todasCategorias'] as $tc): ?>
+                          <option value="<?php echo $tc['id']; ?>" data-id="<?php echo $tc['id']; ?>">
+                              <?php echo htmlspecialchars($tc['nombre']); ?>
+                          </option>
+                      <?php endforeach; endif; ?>
+                  </select>
+              </div>
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+            <button type="button" class="btn btn-secondary" style="border-radius:10px;" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-warning fw-bold text-dark" style="border-radius:10px; padding: 8px 20px;">
+                <i class="bi bi-check2-circle"></i> Confirmar y Eliminar
+            </button>
           </div>
       </form>
     </div>
@@ -98,9 +243,31 @@ function nuevoRegistro() {
 function editarRegistro(obj) {
     document.getElementById('txtId').value = obj.id;
     document.getElementById('txtNombre').value = obj.nombre;
-    document.getElementById('txtDesc').value = obj.descripcion;
+    document.getElementById('txtDesc').value = obj.descripcion || '';
     document.getElementById('modalTitle').innerText = 'Editar Categoría';
     var modal = new bootstrap.Modal(document.getElementById('modalCategoria'));
+    modal.show();
+}
+
+function abrirModalReasignar(idOrigen, nombreOrigen, cantProds) {
+    document.getElementById('reasignarIdOrigen').value = idOrigen;
+    document.getElementById('lblNombreOrigen').innerText = '"' + nombreOrigen + '"';
+    document.getElementById('lblCantProductos').innerText = cantProds;
+
+    var select = document.getElementById('selectCategoriaDestino');
+    for (var i = 0; i < select.options.length; i++) {
+        var opt = select.options[i];
+        if (opt.getAttribute('data-id') == idOrigen) {
+            opt.disabled = true;
+            opt.hidden = true;
+        } else {
+            opt.disabled = false;
+            opt.hidden = false;
+        }
+    }
+    select.value = '';
+
+    var modal = new bootstrap.Modal(document.getElementById('modalReasignar'));
     modal.show();
 }
 </script>

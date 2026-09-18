@@ -11,12 +11,147 @@ class Inventario {
         }
     }
 
+    public function getResumenKpisLotes() {
+        $sql = "SELECT 
+                    COUNT(*) as total_lotes,
+                    SUM(CASE WHEN l.fecha_vencimiento < CURDATE() THEN 1 ELSE 0 END) as vencidos,
+                    SUM(CASE WHEN l.fecha_vencimiento >= CURDATE() AND l.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as criticos_30,
+                    SUM(CASE WHEN l.fecha_vencimiento > DATE_ADD(CURDATE(), INTERVAL 30 DAY) AND l.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 90 DAY) THEN 1 ELSE 0 END) as riesgo_90,
+                    SUM(CASE WHEN l.fecha_vencimiento > DATE_ADD(CURDATE(), INTERVAL 90 DAY) THEN 1 ELSE 0 END) as sanos,
+                    COALESCE(SUM(l.cantidad_disponible), 0) as unidades_totales
+                FROM inventario_lotes l
+                WHERE l.cantidad_disponible > 0 AND l.estado = 1";
+        $stmt = $this->conn->query($sql);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: [
+            'total_lotes' => 0, 'vencidos' => 0, 'criticos_30' => 0, 'riesgo_90' => 0, 'sanos' => 0, 'unidades_totales' => 0
+        ];
+    }
+
+    public function getLotesPaginados($filtros = [], $limit = 25, $offset = 0) {
+        $sql = "SELECT l.*, 
+                       p.nombre_comercial, p.nombre_generico, p.forma_farmaceutica, p.concentracion,
+                       c.nombre as categoria, 
+                       lab.nombre as laboratorio,
+                       DATEDIFF(l.fecha_vencimiento, CURDATE()) as dias_restantes
+                FROM inventario_lotes l
+                INNER JOIN productos p ON l.id_producto = p.id
+                LEFT JOIN categorias c ON p.id_categoria = c.id
+                LEFT JOIN laboratorios lab ON p.id_laboratorio = lab.id
+                WHERE l.estado = 1 ";
+
+        if (empty($filtros['stock']) || $filtros['stock'] !== 'todos') {
+            $sql .= "AND l.cantidad_disponible > 0 ";
+        }
+
+        if (!empty($filtros['search'])) {
+            $sql .= "AND (p.nombre_comercial LIKE :s1 OR p.nombre_generico LIKE :s2 OR l.codigo_lote LIKE :s3) ";
+        }
+
+        if (!empty($filtros['alerta'])) {
+            if ($filtros['alerta'] === 'vencidos') {
+                $sql .= "AND l.fecha_vencimiento < CURDATE() ";
+            } elseif ($filtros['alerta'] === 'criticos_30') {
+                $sql .= "AND l.fecha_vencimiento >= CURDATE() AND l.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) ";
+            } elseif ($filtros['alerta'] === 'riesgo_90') {
+                $sql .= "AND l.fecha_vencimiento >= CURDATE() AND l.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 90 DAY) ";
+            } elseif ($filtros['alerta'] === 'sanos') {
+                $sql .= "AND l.fecha_vencimiento > DATE_ADD(CURDATE(), INTERVAL 90 DAY) ";
+            }
+        }
+
+        if (!empty($filtros['id_laboratorio'])) {
+            $sql .= "AND p.id_laboratorio = :id_lab ";
+        }
+
+        if (!empty($filtros['id_categoria'])) {
+            $sql .= "AND p.id_categoria = :id_cat ";
+        }
+
+        $sql .= "ORDER BY l.fecha_vencimiento ASC LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->conn->prepare($sql);
+
+        if (!empty($filtros['search'])) {
+            $s = "%{$filtros['search']}%";
+            $stmt->bindValue(':s1', $s, PDO::PARAM_STR);
+            $stmt->bindValue(':s2', $s, PDO::PARAM_STR);
+            $stmt->bindValue(':s3', $s, PDO::PARAM_STR);
+        }
+        if (!empty($filtros['id_laboratorio'])) {
+            $stmt->bindValue(':id_lab', (int)$filtros['id_laboratorio'], PDO::PARAM_INT);
+        }
+        if (!empty($filtros['id_categoria'])) {
+            $stmt->bindValue(':id_cat', (int)$filtros['id_categoria'], PDO::PARAM_INT);
+        }
+
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function contarLotes($filtros = []) {
+        $sql = "SELECT COUNT(*) as total
+                FROM inventario_lotes l
+                INNER JOIN productos p ON l.id_producto = p.id
+                WHERE l.estado = 1 ";
+
+        if (empty($filtros['stock']) || $filtros['stock'] !== 'todos') {
+            $sql .= "AND l.cantidad_disponible > 0 ";
+        }
+
+        if (!empty($filtros['search'])) {
+            $sql .= "AND (p.nombre_comercial LIKE :s1 OR p.nombre_generico LIKE :s2 OR l.codigo_lote LIKE :s3) ";
+        }
+
+        if (!empty($filtros['alerta'])) {
+            if ($filtros['alerta'] === 'vencidos') {
+                $sql .= "AND l.fecha_vencimiento < CURDATE() ";
+            } elseif ($filtros['alerta'] === 'criticos_30') {
+                $sql .= "AND l.fecha_vencimiento >= CURDATE() AND l.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) ";
+            } elseif ($filtros['alerta'] === 'riesgo_90') {
+                $sql .= "AND l.fecha_vencimiento >= CURDATE() AND l.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 90 DAY) ";
+            } elseif ($filtros['alerta'] === 'sanos') {
+                $sql .= "AND l.fecha_vencimiento > DATE_ADD(CURDATE(), INTERVAL 90 DAY) ";
+            }
+        }
+
+        if (!empty($filtros['id_laboratorio'])) {
+            $sql .= "AND p.id_laboratorio = :id_lab ";
+        }
+
+        if (!empty($filtros['id_categoria'])) {
+            $sql .= "AND p.id_categoria = :id_cat ";
+        }
+
+        $stmt = $this->conn->prepare($sql);
+
+        if (!empty($filtros['search'])) {
+            $s = "%{$filtros['search']}%";
+            $stmt->bindValue(':s1', $s, PDO::PARAM_STR);
+            $stmt->bindValue(':s2', $s, PDO::PARAM_STR);
+            $stmt->bindValue(':s3', $s, PDO::PARAM_STR);
+        }
+        if (!empty($filtros['id_laboratorio'])) {
+            $stmt->bindValue(':id_lab', (int)$filtros['id_laboratorio'], PDO::PARAM_INT);
+        }
+        if (!empty($filtros['id_categoria'])) {
+            $stmt->bindValue(':id_cat', (int)$filtros['id_categoria'], PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)($row['total'] ?? 0);
+    }
+
     public function getLotesActivos() {
         // Trae los lotes que aún tienen stock disponible o están por vencer
-        $query = "SELECT l.*, p.nombre_comercial, p.forma_farmaceutica, p.concentracion, c.nombre as categoria
+        $query = "SELECT l.*, p.nombre_comercial, p.forma_farmaceutica, p.concentracion, c.nombre as categoria, lab.nombre as laboratorio
                   FROM inventario_lotes l
                   INNER JOIN productos p ON l.id_producto = p.id
                   LEFT JOIN categorias c ON p.id_categoria = c.id
+                  LEFT JOIN laboratorios lab ON p.id_laboratorio = lab.id
                   WHERE l.cantidad_disponible > 0 AND l.estado = 1
                   ORDER BY l.fecha_vencimiento ASC";
         $stmt = $this->conn->prepare($query);
@@ -24,16 +159,41 @@ class Inventario {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function getLotesProximosVencer($dias = 90) {
-        $query = "SELECT p.id as id_producto, p.nombre_comercial as producto, l.id as id_lote, l.codigo_lote as lote, l.fecha_vencimiento, l.cantidad_disponible as stock
-                  FROM inventario_lotes l
-                  INNER JOIN productos p ON l.id_producto = p.id
-                  WHERE l.cantidad_disponible > 0 
-                  AND l.estado = 1 
-                  AND l.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL :dias DAY)
-                  ORDER BY l.fecha_vencimiento ASC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':dias', $dias, PDO::PARAM_INT);
+    public function getLotesProximosVencer($rango = '90', $id_laboratorio = null) {
+        $sql = "SELECT p.id as id_producto, p.nombre_comercial as producto, lab.nombre as laboratorio,
+                       l.id as id_lote, l.codigo_lote as lote, l.fecha_vencimiento, l.cantidad_disponible as stock,
+                       DATEDIFF(l.fecha_vencimiento, CURDATE()) as dias_restantes
+                FROM inventario_lotes l
+                INNER JOIN productos p ON l.id_producto = p.id
+                LEFT JOIN laboratorios lab ON p.id_laboratorio = lab.id
+                WHERE l.cantidad_disponible > 0 
+                AND l.estado = 1 ";
+
+        if ($rango === 'vencidos') {
+            $sql .= "AND l.fecha_vencimiento < CURDATE() ";
+        } elseif ($rango === 'todos') {
+            // Sin filtro de fecha
+        } else {
+            $dias = is_numeric($rango) ? (int)$rango : 90;
+            $sql .= "AND l.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL :dias DAY) ";
+        }
+
+        if (!empty($id_laboratorio)) {
+            $sql .= "AND p.id_laboratorio = :id_lab ";
+        }
+
+        $sql .= "ORDER BY l.fecha_vencimiento ASC";
+
+        $stmt = $this->conn->prepare($sql);
+
+        if ($rango !== 'vencidos' && $rango !== 'todos') {
+            $dias = is_numeric($rango) ? (int)$rango : 90;
+            $stmt->bindValue(':dias', $dias, PDO::PARAM_INT);
+        }
+        if (!empty($id_laboratorio)) {
+            $stmt->bindValue(':id_lab', (int)$id_laboratorio, PDO::PARAM_INT);
+        }
+
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

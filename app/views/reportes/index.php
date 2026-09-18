@@ -45,22 +45,47 @@
         <!-- Tarjeta: Lotes por Vencer -->
         <div class="col-md-4">
             <div class="card card-metric h-100">
-                <div class="card-body d-flex flex-column" style="padding: 5px;">
-                    <h5 class="text-primary font-weight-bold mb-3"><i class="bi bi-box-seam-fill text-warning"></i> Medicamentos por Vencer</h5>
-                    <p class="text-muted" style="font-size: 13px;">Descarga la relación de lotes farmacológicos cuyo vencimiento esté marcado dentro de los próximos 90 días.</p>
+                <div class="card-body d-flex flex-column" style="padding: 15px;">
+                    <h5 class="text-primary font-weight-bold mb-2"><i class="bi bi-box-seam-fill text-warning"></i> Medicamentos por Vencer</h5>
+                    <p class="text-muted" style="font-size: 13px; margin-bottom: 10px;">Descarga la relación de lotes farmacológicos filtrando por rango de alerta y laboratorio.</p>
                     
-                    <div class="row g-2 mt-auto">
-                        <div class="col-6">
-                            <a href="<?php echo BASE_URL; ?>reporte/vencimientos_excel" class="btn btn-outline-success btn-sm w-100 font-weight-bold">
-                                <i class="bi bi-file-earmark-spreadsheet"></i> CSV
-                            </a>
+                    <form action="<?php echo BASE_URL; ?>reporte/vencimientos_excel" method="GET" class="mt-auto">
+                        <div class="row g-2 mb-2">
+                            <div class="col-12">
+                                <label class="form-label mb-1" style="font-size: 11px; font-weight:600;">Rango de Alerta</label>
+                                <select name="rango" class="form-select form-select-sm">
+                                    <option value="90" selected>🟡 Preventivo (Próximos 90 días)</option>
+                                    <option value="30">🟠 Crítico (Próximos 30 días)</option>
+                                    <option value="vencidos">🔴 Solo Lotes Vencidos</option>
+                                    <option value="180">Próximos 6 meses (180 días)</option>
+                                    <option value="todos">Todos los lotes con stock</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label mb-1" style="font-size: 11px; font-weight:600;">Laboratorio (Opcional)</label>
+                                <select name="id_laboratorio" class="form-select form-select-sm">
+                                    <option value="">-- Todos los laboratorios --</option>
+                                    <?php if(!empty($data['laboratorios'])): foreach($data['laboratorios'] as $lab): ?>
+                                        <option value="<?php echo $lab['id']; ?>">
+                                            <?php echo htmlspecialchars($lab['nombre']); ?>
+                                        </option>
+                                    <?php endforeach; endif; ?>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-6">
-                            <a href="<?php echo BASE_URL; ?>reporte/vencimientos_pdf" target="_blank" class="btn btn-warning btn-sm w-100 font-weight-bold text-dark">
-                                <i class="bi bi-file-earmark-pdf"></i> PDF
-                            </a>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="submit" class="btn btn-outline-success btn-sm w-100 font-weight-bold">
+                                    <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" onclick="this.form.action='<?php echo BASE_URL; ?>reporte/vencimientos_pdf'; this.form.target='_blank'; this.form.submit(); this.form.action='<?php echo BASE_URL; ?>reporte/vencimientos_excel'; this.form.target='_self';" class="btn btn-warning btn-sm w-100 font-weight-bold text-dark">
+                                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
