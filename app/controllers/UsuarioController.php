@@ -9,9 +9,15 @@ class UsuarioController extends Controller {
         $userModel = $this->model('User');
         $roleModel = $this->model('Role');
         
+        $usuarios = $userModel->getAll();
+        foreach ($usuarios as &$u) {
+            unset($u['password']);
+        }
+        unset($u);
+
         $data = [
             'title' => 'Gestión de Personal',
-            'usuarios' => $userModel->getAll(),
+            'usuarios' => $usuarios,
             'roles' => $roleModel->getAll()
         ];
         

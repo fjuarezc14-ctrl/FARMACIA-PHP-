@@ -43,10 +43,10 @@
             <img src="<?php echo htmlspecialchars($logoUrl); ?>" class="logo" alt="Logo">
         </div>
         <div class="info-empresa">
-            <h2><?php echo htmlspecialchars($data['config']['nombre_botica']['valor']); ?></h2>
-            <p>RUC: <?php echo htmlspecialchars($data['config']['ruc']['valor']); ?></p>
-            <p><?php echo htmlspecialchars($data['config']['direccion']['valor']); ?></p>
-            <p>Tel: <?php echo htmlspecialchars($data['config']['telefono']['valor']); ?></p>
+            <h2><?php echo htmlspecialchars($data['config']['nombre_botica']['valor'] ?? ''); ?></h2>
+            <p>RUC: <?php echo htmlspecialchars($data['config']['ruc']['valor'] ?? ''); ?></p>
+            <p><?php echo htmlspecialchars($data['config']['direccion']['valor'] ?? ''); ?></p>
+            <p>Tel: <?php echo htmlspecialchars($data['config']['telefono']['valor'] ?? ''); ?></p>
         </div>
     </div>
 
@@ -69,7 +69,7 @@
                 <tr><td colspan="6" style="text-align:center; padding: 20px;">✓ Excelente. Ningún producto se encuentra por debajo de su stock mínimo de seguridad.</td></tr>
             <?php else: ?>
                 <?php foreach($data['productos'] as $p): 
-                    $faltante = $p['stock_minimo'] - $p['stock_actual'];
+                    $faltante = ($p['stock_minimo'] ?? 0) - ($p['stock_actual'] ?? 0);
                     if ($faltante < 0) $faltante = 0;
                     
                     // Sugerimos pedir el déficit + 50% de margen de seguridad
@@ -77,12 +77,12 @@
                     if ($sugerido == 0) $sugerido = 1; // al menos 1
                 ?>
                 <tr>
-                    <td style="font-family: monospace;"><?php echo htmlspecialchars($p['codigo_barras']); ?></td>
-                    <td><strong><?php echo htmlspecialchars($p['nombre_comercial']); ?></strong> <?php echo htmlspecialchars($p['concentracion']); ?></td>
-                    <td><?php echo htmlspecialchars($p['laboratorio']); ?></td>
-                    <td class="text-center"><?php echo $p['stock_minimo']; ?></td>
+                    <td style="font-family: monospace;"><?php echo htmlspecialchars($p['codigo_barras'] ?? ''); ?></td>
+                    <td><strong><?php echo htmlspecialchars($p['nombre_comercial'] ?? ''); ?></strong> <?php echo htmlspecialchars($p['concentracion'] ?? ''); ?></td>
+                    <td><?php echo htmlspecialchars($p['laboratorio'] ?? 'Sin Laboratorio'); ?></td>
+                    <td class="text-center"><?php echo $p['stock_minimo'] ?? 0; ?></td>
                     <td class="text-center">
-                        <?php if($p['stock_actual'] <= 0): ?>
+                        <?php if(($p['stock_actual'] ?? 0) <= 0): ?>
                             <span class="badge-rojo">AGOTADO (0)</span>
                         <?php else: ?>
                             <span class="badge-naranja"><?php echo $p['stock_actual']; ?></span>

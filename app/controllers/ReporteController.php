@@ -2,7 +2,7 @@
 class ReporteController extends Controller {
 
     public function __construct() {
-        $this->requireRole(1, 'venta/pos');
+        $this->requireRole([1, 2, 4], 'venta/pos');
     }
 
     public function index() {
@@ -14,6 +14,7 @@ class ReporteController extends Controller {
     }
 
     public function exportar_ventas() {
+        $this->requireRole(1, 'reporte/index');
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-d');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         
@@ -123,6 +124,26 @@ class ReporteController extends Controller {
 
         fclose($output);
         exit;
+    }
+
+    public function ventas_pdf() {
+        $this->requireRole(1, 'reporte/index');
+        $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-d');
+        $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
+        
+        $ventaModel = $this->model('Venta');
+        $filtradas = $ventaModel->getByDateRange($fecha_inicio, $fecha_fin); 
+
+        $configModel = $this->model('Configuracion');
+        
+        $data = [
+            'fecha_inicio' => $fecha_inicio,
+            'fecha_fin' => $fecha_fin,
+            'ventas' => $filtradas,
+            'config' => $configModel->getAll()
+        ];
+        
+        require_once '../app/views/reportes/ventas_pdf.php';
     }
 
     public function vencimientos_excel() {

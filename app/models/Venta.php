@@ -390,4 +390,16 @@ class Venta {
             return false;
         }
     }
+
+    public function getById($id) {
+        $query = "SELECT v.*, c.nombres as cliente, u.nombres as cajero 
+                  FROM ventas v 
+                  INNER JOIN clientes c ON v.id_cliente = c.id 
+                  INNER JOIN usuarios u ON v.id_usuario = u.id 
+                  WHERE v.id = :id LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

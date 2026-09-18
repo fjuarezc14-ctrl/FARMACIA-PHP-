@@ -2,7 +2,7 @@
 class ProveedorController extends Controller {
 
     public function __construct() {
-        $this->requireRole(1, 'venta/pos');
+        $this->requireRole([1, 2, 4], 'venta/pos');
     }
 
     public function index() {

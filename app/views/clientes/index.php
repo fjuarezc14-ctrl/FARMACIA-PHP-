@@ -63,9 +63,10 @@
                             <?php if($cli['id'] == 1): ?>
                             <span class="badge bg-secondary">Genérico</span>
                             <?php else: ?>
-                            <button class="btn btn-sm" style="color: #00CFE8;" onclick="editarRegistro(<?php echo htmlspecialchars(json_encode($cli)); ?>)">
+                            <button class="btn btn-sm" style="color: #00CFE8;" onclick="editarRegistro(<?php echo htmlspecialchars(json_encode($cli)); ?>)" title="Editar Cliente">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
+                            <?php if(($_SESSION['rol_id'] ?? 0) == 1): ?>
                             <form action="<?php echo BASE_URL; ?>cliente/delete" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar este cliente?');">
                                 <?php echo Controller::csrfField(); ?>
                                 <input type="hidden" name="id" value="<?php echo $cli['id']; ?>">
@@ -73,6 +74,7 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
+                            <?php endif; ?>
                             <?php endif; ?>
                         </td>
                     </tr>

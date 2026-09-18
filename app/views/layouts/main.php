@@ -101,7 +101,9 @@ $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . 
                         <li class="ceng-dropdown-title"><i class="bi bi-receipt text-warning me-1"></i> Ventas &amp; Clientes</li>
                         <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>venta/index"><i class="bi bi-receipt"></i> Historial de Ventas</a></li>
                         <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>cliente/index"><i class="bi bi-people-fill"></i> Clientes</a></li>
+                        <?php if(in_array($_SESSION['rol_id'], [1, 2, 4])): ?>
                         <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>puntos/index"><i class="bi bi-star-fill text-warning"></i> Club de Puntos</a></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
 
@@ -131,6 +133,7 @@ $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . 
                 <?php endif; ?>
 
                 <!-- Módulo: Administración & Sistema -->
+                <?php if(in_array($_SESSION['rol_id'], [1, 2, 4])): ?>
                 <div class="dropdown ceng-dropdown">
                     <button class="ceng-nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-route="notificacion,reporte,usuario,configuracion,auditoria,sistema">
                         <i class="bi bi-sliders"></i>
@@ -168,6 +171,7 @@ $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . 
                         <?php endif; ?>
                     </ul>
                 </div>
+                <?php endif; ?>
 
             </nav>
         </div>
@@ -182,6 +186,7 @@ $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . 
             </form>
 
             <!-- Campana de Alertas Sanitarias -->
+            <?php if(in_array($_SESSION['rol_id'], [1, 2, 4])): ?>
             <a href="<?php echo BASE_URL; ?>notificacion/index" class="ceng-alert-bell" title="Alertas Sanitarias">
                 <i class="bi bi-bell-fill"></i>
                 <?php if($_totalNotifs > 0): ?>
@@ -189,6 +194,7 @@ $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . 
                 <span class="ceng-bell-badge"><?php echo $_totalNotifs; ?></span>
                 <?php endif; ?>
             </a>
+            <?php endif; ?>
 
             <!-- Dropdown Usuario / Perfil -->
             <div class="dropdown">
@@ -273,7 +279,9 @@ $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . 
                         <?php endif; ?>
                         <a href="<?php echo BASE_URL; ?>venta/index" class="ceng-drawer-sublink"><i class="bi bi-receipt"></i> Historial de Ventas</a>
                         <a href="<?php echo BASE_URL; ?>cliente/index" class="ceng-drawer-sublink"><i class="bi bi-people-fill"></i> Clientes</a>
+                        <?php if(in_array($_SESSION['rol_id'], [1, 2, 4])): ?>
                         <a href="<?php echo BASE_URL; ?>puntos/index" class="ceng-drawer-sublink"><i class="bi bi-star-fill text-warning"></i> Club de Puntos</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -302,6 +310,7 @@ $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . 
             <?php endif; ?>
 
             <!-- Grupo Administración -->
+            <?php if(in_array($_SESSION['rol_id'], [1, 2, 4])): ?>
             <div class="accordion-item bg-transparent border-0 mb-2">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed ceng-drawer-acc-btn" type="button" data-bs-toggle="collapse" data-bs-target="#accAdmin">
@@ -328,6 +337,7 @@ $logoSrc = (strpos($effectiveLogo, 'http') === 0) ? $effectiveLogo : BASE_URL . 
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Perfil & Salir Móvil -->
             <div class="pt-3 mt-3 border-top border-secondary">

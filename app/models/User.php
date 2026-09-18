@@ -31,7 +31,10 @@ class User {
     }
 
     public function getAll() {
-        $query = "SELECT u.*, r.nombre as rol_nombre FROM " . $this->table_name . " u LEFT JOIN roles r ON u.rol_id = r.id ORDER BY u.id ASC";
+        $query = "SELECT u.id, u.nombres, u.apellidos, u.usuario, u.email, u.rol_id, u.estado, u.ultimo_login, r.nombre as rol_nombre 
+                  FROM " . $this->table_name . " u 
+                  LEFT JOIN roles r ON u.rol_id = r.id 
+                  ORDER BY u.id ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

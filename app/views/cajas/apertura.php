@@ -20,7 +20,7 @@
                         <?php echo Controller::csrfField(); ?>
                         <div class="mb-3">
                             <label class="form-label text-start d-block font-weight-bold">Monto Base (S/)</label>
-                            <input type="number" step="0.01" name="monto_inicial" class="form-control form-control-lg text-center" style="font-size: 1.5rem; font-weight: bold;" placeholder="0.00" required autofocus>
+                            <input type="number" step="0.01" min="0" max="10000" name="monto_inicial" class="form-control form-control-lg text-center" style="font-size: 1.5rem; font-weight: bold;" placeholder="0.00" required autofocus>
                             <small class="text-muted text-start d-block mt-2">Monto físico (monedas/billetes) disponible en gaveta al iniciar.</small>
                         </div>
                         <button type="submit" class="btn btn-success btn-lg w-100 font-weight-bold">

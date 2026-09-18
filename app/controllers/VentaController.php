@@ -74,17 +74,15 @@ class VentaController extends Controller {
     }
 
     public function ticket($id) {
+        $id = (int)$id;
         $modelo = $this->model('Venta');
-        $ventas = $modelo->getAll();
+        $venta_actual = $modelo->getById($id);
         
-        $venta_actual = null;
-        foreach($ventas as $v) {
-            if($v['id'] == $id) {
-                $venta_actual = $v; break;
-            }
+        if(!$venta_actual) {
+            $_SESSION['error'] = "El ticket de venta solicitado (#$id) no fue encontrado.";
+            header('Location: ' . BASE_URL . 'venta/index');
+            exit;
         }
-        
-        if(!$venta_actual) die("Ticket no encontrado.");
         
         $detalles = $modelo->getDetalles($id);
         $configModel = $this->model('Configuracion');
@@ -97,18 +95,19 @@ class VentaController extends Controller {
         
         // Cargar vista HTML plana (sin layout)
         require_once '../app/views/ventas/ticket.php';
+        exit;
     }
 
     public function pdf($id) {
+        $id = (int)$id;
         $modelo = $this->model('Venta');
-        $ventas = $modelo->getAll();
+        $venta_actual = $modelo->getById($id);
         
-        $venta_actual = null;
-        foreach($ventas as $v) {
-            if($v['id'] == $id) { $venta_actual = $v; break; }
+        if(!$venta_actual) {
+            $_SESSION['error'] = "El comprobante solicitado (#$id) no fue encontrado.";
+            header('Location: ' . BASE_URL . 'venta/index');
+            exit;
         }
-        
-        if(!$venta_actual) die("Comprobante no encontrado.");
         
         $detalles    = $modelo->getDetalles($id);
         $configModel = $this->model('Configuracion');

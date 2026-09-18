@@ -20,27 +20,30 @@
 <div class="center bold" style="font-size: 14px; margin-top:5px;">#CAJ-<?php echo str_pad($caja['id'], 6, '0', STR_PAD_LEFT); ?></div>
 <div class="line"></div>
 
-<div class="row"><span>Cajero:</span> <span class="bold"><?php echo htmlspecialchars($caja['nombres'] . ' ' . $caja['apellidos']); ?></span></div>
-<div class="row"><span>Apertura:</span> <span><?php echo date('d/m/Y H:i', strtotime($caja['fecha_apertura'])); ?></span></div>
-<div class="row"><span>Cierre:</span> <span><?php echo date('d/m/Y H:i', strtotime($caja['fecha_cierre'])); ?></span></div>
+<div class="row"><span>Cajero:</span> <span class="bold"><?php echo htmlspecialchars(($caja['nombres'] ?? '') . ' ' . ($caja['apellidos'] ?? '')); ?></span></div>
+<div class="row"><span>Apertura:</span> <span><?php echo !empty($caja['fecha_apertura']) ? date('d/m/Y H:i', strtotime($caja['fecha_apertura'])) : '-'; ?></span></div>
+<div class="row"><span>Cierre:</span> <span><?php echo !empty($caja['fecha_cierre']) ? date('d/m/Y H:i', strtotime($caja['fecha_cierre'])) : 'Abierta / En Curso'; ?></span></div>
 
 <div class="line"></div>
 <div class="center bold" style="margin-bottom: 5px;">SISTEMA / ESPERADO</div>
 
-<div class="row"><span>Saldo Inicial:</span> <span>S/ <?php echo number_format($caja['monto_inicial'], 2); ?></span></div>
-<div class="row"><span>Ventas Efectivo:</span> <span>S/ <?php echo number_format($caja['ingresos_efectivo'], 2); ?></span></div>
-<div class="row"><span>Ventas Trans/Tarj:</span> <span>S/ <?php echo number_format($caja['ingresos_transferencia'], 2); ?></span></div>
-<div class="row bold"><span>EFECTIVO ESPERADO:</span> <span>S/ <?php echo number_format($caja['monto_final_esperado'], 2); ?></span></div>
+<div class="row"><span>Saldo Inicial:</span> <span>S/ <?php echo number_format((float)($caja['monto_inicial'] ?? 0), 2); ?></span></div>
+<div class="row"><span>Ventas Efectivo:</span> <span>S/ <?php echo number_format((float)($caja['ingresos_efectivo'] ?? 0), 2); ?></span></div>
+<div class="row"><span>Ventas Trans/Tarj:</span> <span>S/ <?php echo number_format((float)($caja['ingresos_transferencia'] ?? 0), 2); ?></span></div>
+<div class="row bold"><span>EFECTIVO ESPERADO:</span> <span>S/ <?php echo number_format((float)($caja['monto_final_esperado'] ?? 0), 2); ?></span></div>
 
 <div class="line"></div>
 <div class="center bold" style="margin-bottom: 5px;">DECLARADO / REAL</div>
 
-<div class="row bold text-lg"><span>EFECTIVO CONTADO:</span> <span>S/ <?php echo number_format($caja['monto_final_real'], 2); ?></span></div>
+<div class="row bold text-lg"><span>EFECTIVO CONTADO:</span> <span>S/ <?php echo number_format((float)($caja['monto_final_real'] ?? 0), 2); ?></span></div>
 
-<?php if($caja['diferencia'] != 0): ?>
+<?php 
+$diferencia = (float)($caja['diferencia'] ?? 0);
+if($diferencia != 0): 
+?>
     <div class="row bold" style="margin-top:5px;">
-        <span><?php echo $caja['diferencia'] > 0 ? "SOBRANTE:" : "FALTANTE:"; ?></span> 
-        <span>S/ <?php echo number_format($caja['diferencia'], 2); ?></span>
+        <span><?php echo $diferencia > 0 ? "SOBRANTE:" : "FALTANTE:"; ?></span> 
+        <span>S/ <?php echo number_format(abs($diferencia), 2); ?></span>
     </div>
 <?php else: ?>
     <div class="row bold" style="margin-top:5px; text-align:center; width:100%">

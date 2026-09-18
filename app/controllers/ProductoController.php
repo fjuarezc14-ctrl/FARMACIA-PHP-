@@ -137,9 +137,20 @@ class ProductoController extends Controller {
                     $this->logAccion('Productos', 'EDITAR', "Producto ID #" . $data['id'] . " editado. Precios: S/ " . $data['precio_venta'] . " (Caja) / S/ " . $data['precio_fraccion'] . " (Frac)");
                     $_SESSION['mensaje'] = "Producto actualizado correctamente.";
                 }
+            } catch (PDOException $e) {
+                error_log("[ProductoController::save] PDOException: " . $e->getMessage());
+                if ($e->getCode() == 23000 || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                    $_SESSION['error'] = "El código de barras ingresado ya se encuentra registrado para otro producto.";
+                } else {
+                    $_SESSION['error'] = "Error al procesar la solicitud en la base de datos.";
+                }
             } catch (Exception $e) {
-                error_log("[ProductoController::save] Error: " . $e->getMessage());
-                $_SESSION['error'] = "Ocurrió un error al guardar el producto: " . $e->getMessage();
+                error_log("[ProductoController::save] Exception: " . $e->getMessage());
+                if (strpos($e->getMessage(), 'Duplicate entry') !== false || strpos($e->getMessage(), '23000') !== false) {
+                    $_SESSION['error'] = "El código de barras ingresado ya se encuentra registrado para otro producto.";
+                } else {
+                    $_SESSION['error'] = "Ocurrió un error inesperado al guardar el producto.";
+                }
             }
         }
         header('Location: ' . BASE_URL . 'producto/index');

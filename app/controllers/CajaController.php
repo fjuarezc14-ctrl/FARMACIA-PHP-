@@ -36,10 +36,30 @@ class CajaController extends Controller {
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->validateCsrf();
-            $monto_inicial = (float)($_POST['monto_inicial'] ?? 0);
+            
+            $raw_monto = str_replace(',', '.', trim($_POST['monto_inicial'] ?? '0'));
+            if (!is_numeric($raw_monto)) {
+                $_SESSION['error'] = "El monto inicial debe ser un valor numérico válido.";
+                header('Location: ' . BASE_URL . 'caja/apertura');
+                exit;
+            }
+
+            $monto_inicial = (float)$raw_monto;
+
+            if ($monto_inicial < 0) {
+                $_SESSION['error'] = "El monto inicial de apertura no puede ser negativo.";
+                header('Location: ' . BASE_URL . 'caja/apertura');
+                exit;
+            }
+
+            if ($monto_inicial > 10000) {
+                $_SESSION['error'] = "El monto inicial (S/ " . number_format($monto_inicial, 2) . ") excede el límite máximo permitido para apertura de turno (S/ 10,000.00).";
+                header('Location: ' . BASE_URL . 'caja/apertura');
+                exit;
+            }
             
             if ($cajaModel->abrirCaja($_SESSION['user_id'], $monto_inicial)) {
-                $_SESSION['mensaje'] = "Caja aperturada exitosamente. Puede iniciar la venta.";
+                $_SESSION['mensaje'] = "Caja aperturada exitosamente con S/ " . number_format($monto_inicial, 2) . ". Puede iniciar la venta.";
                 header('Location: ' . BASE_URL . 'venta/pos');
                 exit;
             } else {
@@ -64,7 +84,28 @@ class CajaController extends Controller {
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->validateCsrf();
-            $monto_final_real = (float)($_POST['monto_final_real'] ?? 0);
+            
+            $raw_final = str_replace(',', '.', trim($_POST['monto_final_real'] ?? '0'));
+            if (!is_numeric($raw_final)) {
+                $_SESSION['error'] = "El monto final real debe ser un valor numérico válido.";
+                header('Location: ' . BASE_URL . 'caja/cierre');
+                exit;
+            }
+
+            $monto_final_real = (float)$raw_final;
+
+            if ($monto_final_real < 0) {
+                $_SESSION['error'] = "El monto de efectivo contado no puede ser negativo.";
+                header('Location: ' . BASE_URL . 'caja/cierre');
+                exit;
+            }
+
+            if ($monto_final_real > 500000) {
+                $_SESSION['error'] = "El monto declarado (S/ " . number_format($monto_final_real, 2) . ") excede el límite permitido para un arqueo de turno.";
+                header('Location: ' . BASE_URL . 'caja/cierre');
+                exit;
+            }
+
             $observacion = trim($_POST['observacion'] ?? '');
             
             if ($cajaModel->cerrarCaja($cajaAbierta['id'], $monto_final_real, $observacion)) {
