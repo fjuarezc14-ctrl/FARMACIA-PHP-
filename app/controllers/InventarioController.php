@@ -91,6 +91,7 @@ class InventarioController extends Controller {
                 header('Location: ' . BASE_URL . 'inventario/kardex');
                 exit;
             }
+            require_once dirname(__DIR__) . '/models/Inventario.php';
             $modelo = new Inventario($conn);
             
             try {
