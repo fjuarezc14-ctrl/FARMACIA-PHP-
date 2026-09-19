@@ -18,6 +18,7 @@ class AuthController extends Controller {
         }
 
         $error = '';
+        $bloqueo = 0;
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->validateCsrf();
 
@@ -25,9 +26,24 @@ class AuthController extends Controller {
             $username = $_POST['username'] ?? '';
             $password = $_POST['password'] ?? '';
 
+            // Límite de intentos fallidos (fuerza bruta)
+            $intentos = $this->model('LoginIntento');
+            $usuarioKey = LoginIntento::normalizarUsuario($username);
+            $ip = LoginIntento::ipCliente();
+
+            $bloqueo = $intentos->segundosBloqueo($usuarioKey, $ip);
+            if ($bloqueo > 0) {
+                // Bloqueado: ni siquiera se verifica la contraseña
+                $error = 'Demasiados intentos fallidos. Intente nuevamente en ' . LoginIntento::formatoEspera($bloqueo) . '.';
+                $this->view('auth/login', ['error' => $error, 'bloqueo' => $bloqueo]);
+                return;
+            }
+
             $user = $userModel->login($username, $password);
 
             if ($user) {
+                $intentos->limpiar($usuarioKey, $ip);
+
                 // Regenerar id de sesión para mitigar Session Fixation
                 session_regenerate_id(true);
 
@@ -47,11 +63,23 @@ class AuthController extends Controller {
                 header('Location: ' . BASE_URL . 'auth/index');
                 exit;
             } else {
-                $error = 'Usuario o contraseña incorrectos';
+                $intentos->registrarFallo($usuarioKey, $ip);
+                $bloqueo = $intentos->segundosBloqueo($usuarioKey, $ip);
+                if ($bloqueo > 0) {
+                    $error = 'Demasiados intentos fallidos. Acceso bloqueado por ' . LoginIntento::formatoEspera($bloqueo) . '.';
+                } else {
+                    $restantes = $intentos->intentosRestantes($usuarioKey, $ip);
+                    $error = 'Usuario o contraseña incorrectos';
+                    if ($restantes <= 3) {
+                        $error .= $restantes === 1
+                            ? '. Le queda 1 intento antes del bloqueo temporal.'
+                            : ". Le quedan $restantes intentos antes del bloqueo temporal.";
+                    }
+                }
             }
         }
 
-        $this->view('auth/login', ['error' => $error]);
+        $this->view('auth/login', ['error' => $error, 'bloqueo' => $bloqueo]);
     }
 
     public function logout() {

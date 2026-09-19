@@ -144,6 +144,20 @@ $migraciones = [
         logm("  + productos.margen_ganancia ampliado a decimal(8,2)");
     },
 
+    '2026_09_19_fase18_login_intentos' => function (PDO $pdo) {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `login_intentos` (
+            `id` int NOT NULL AUTO_INCREMENT,
+            `usuario` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+            `ip` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+            `user_agent` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+            `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `idx_li_usuario_ip` (`usuario`, `ip`, `created_at`),
+            KEY `idx_li_ip` (`ip`, `created_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        logm("  + login_intentos");
+    },
+
 ];
 
 // ---------------------------------------------------------------------------

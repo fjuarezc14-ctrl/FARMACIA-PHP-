@@ -37,6 +37,7 @@
             <i class="bi bi-exclamation-triangle"></i> <?php echo htmlspecialchars($displayError, ENT_QUOTES, 'UTF-8'); ?>
         </div>
     <?php endif; ?>
+    <?php $bloqueoSeg = (int)($data['bloqueo'] ?? 0); ?>
 
     <form action="<?php echo BASE_URL; ?>auth/login" method="POST" autocomplete="off">
         <?php echo Controller::csrfField(); ?>
@@ -56,8 +57,31 @@
             <label class="form-check-label" for="remember" style="color: var(--text-secondary); font-size: 13px;">Recordarme en este equipo</label>
         </div>
         
-        <button type="submit" class="btn-primary-custom">Iniciar Sesión</button>
+        <button type="submit" class="btn-primary-custom" id="btnLogin"<?php echo $bloqueoSeg > 0 ? ' disabled style="opacity:.6; cursor:not-allowed;"' : ''; ?>>Iniciar Sesión</button>
     </form>
+    <?php if ($bloqueoSeg > 0): ?>
+    <script>
+    // Cuenta regresiva del bloqueo temporal por intentos fallidos
+    (function () {
+        let resta = <?php echo $bloqueoSeg; ?>;
+        const btn = document.getElementById('btnLogin');
+        const tick = () => {
+            if (resta <= 0) {
+                btn.disabled = false;
+                btn.style.opacity = '';
+                btn.style.cursor = '';
+                btn.textContent = 'Iniciar Sesión';
+                return;
+            }
+            const m = Math.floor(resta / 60), s = resta % 60;
+            btn.textContent = 'Bloqueado · ' + m + ':' + String(s).padStart(2, '0');
+            resta--;
+            setTimeout(tick, 1000);
+        };
+        tick();
+    })();
+    </script>
+    <?php endif; ?>
 </div>
 
 <!-- Suite Nativa de Accesibilidad Web (Widget y Lógica) -->
