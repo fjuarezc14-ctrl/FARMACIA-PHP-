@@ -134,16 +134,16 @@
 
 <style>
 /* Estilos para los dropdowns predictivos en Compras */
-.dropdown-item-marca {
+.dropdown-item-ceng {
     padding: 10px 14px;
     cursor: pointer;
     border-bottom: 1px solid var(--border-color);
     transition: background 0.15s ease;
 }
-.dropdown-item-marca:hover, .dropdown-item-marca.active {
+.dropdown-item-ceng:hover, .dropdown-item-ceng.active {
     background: var(--accent-light, rgba(4, 123, 7, 0.12));
 }
-.dropdown-item-marca:last-child {
+.dropdown-item-ceng:last-child {
     border-bottom: none;
 }
 </style>
@@ -187,7 +187,7 @@ function filtrarProveedores(q) {
     }
 
     sugProv.innerHTML = matches.map(p => `
-        <div class="dropdown-item-marca d-flex justify-content-between align-items-center" onmousedown="event.preventDefault(); seleccionarProveedor(${p.id})">
+        <div class="dropdown-item-ceng d-flex justify-content-between align-items-center" onmousedown="event.preventDefault(); seleccionarProveedor(${p.id})">
             <div>
                 <strong style="color: var(--text-primary); font-size: 13px;">${escHtml(p.razon_social)}</strong>
                 <div style="font-size: 11px; color: var(--text-secondary);">
@@ -330,7 +330,7 @@ function filtrarProductoFila(input, index) {
     }
 
     sug.innerHTML = matches.map(p => `
-        <div class="dropdown-item-marca d-flex justify-content-between align-items-center" onmousedown="event.preventDefault(); seleccionarProductoData(${index}, ${p.id})">
+        <div class="dropdown-item-ceng d-flex justify-content-between align-items-center" onmousedown="event.preventDefault(); seleccionarProductoData(${index}, ${p.id})">
             <div>
                 <strong style="color: var(--text-primary); font-size: 13px;">${escHtml(p.nombre_comercial)}</strong>
                 <div style="font-size: 11px; color: var(--text-secondary);">

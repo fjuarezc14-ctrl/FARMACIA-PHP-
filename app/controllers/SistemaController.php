@@ -35,7 +35,7 @@ class SistemaController extends Controller {
                 $tables[] = $row[0];
             }
 
-            $backupFilename = "backup_farmacia_" . date("Y-m-d_H-i-s") . ".sql";
+            $backupFilename = "backup_cengfarma_" . date("Y-m-d_H-i-s") . ".sql";
 
             header('Content-Description: File Transfer');
             header('Content-Type: application/sql; charset=utf-8');
@@ -48,7 +48,7 @@ class SistemaController extends Controller {
 
             // Encabezado del script SQL
             fwrite($output, "-- ==========================================================\n");
-            fwrite($output, "-- Respaldo de Base de Datos - Farmacia Prueba\n");
+            fwrite($output, "-- Respaldo de Base de Datos - CENGFARMA\n");
             fwrite($output, "-- Fecha y Hora: " . date('Y-m-d H:i:s') . "\n");
             fwrite($output, "-- ==========================================================\n\n");
             fwrite($output, "SET FOREIGN_KEY_CHECKS = 0;\n");

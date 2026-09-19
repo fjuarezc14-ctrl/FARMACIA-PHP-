@@ -14,7 +14,7 @@ foreach ($clientesPos as $c) { if ($c['id'] === 1) { $clienteDefault = $c; break
 if (!$clienteDefault && !empty($clientesPos)) $clienteDefault = $clientesPos[0];
 ?>
 <style>
-/* ============ POS Farmacia Prueba ============ */
+/* ============ POS CENGFARMA ============ */
 .pos-layout { display: flex; gap: 18px; height: calc(100vh - 120px); min-height: 460px; }
 .pos-catalog-col { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .pos-ticket-col { flex: 0 0 430px; display: flex; flex-direction: column; min-width: 0; }

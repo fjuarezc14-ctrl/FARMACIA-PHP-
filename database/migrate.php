@@ -1,6 +1,6 @@
 <?php
 /**
- * Migraciones automáticas de base de datos - Farmacia Prueba
+ * Migraciones automáticas de base de datos - CENGFARMA
  *
  * Se ejecuta al iniciar el contenedor (docker/entrypoint.sh) y también a mano:
  *   docker exec sistema-botica-app php database/migrate.php

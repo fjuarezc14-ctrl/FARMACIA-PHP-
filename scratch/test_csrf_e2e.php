@@ -56,7 +56,7 @@ $res = curl_exec($ch);
 $finalUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
 curl_close($ch);
 
-$loginSuccess = (str_contains($res, 'Dashboard') || str_contains($res, 'Farmacia Prueba') || str_contains($finalUrl, 'dashboard') || str_contains($finalUrl, 'venta/pos'));
+$loginSuccess = (str_contains($res, 'Dashboard') || str_contains($res, 'CENGFARMA') || str_contains($finalUrl, 'dashboard') || str_contains($finalUrl, 'venta/pos'));
 echo "[E2E-3] Login con token CSRF válido -> " . ($loginSuccess ? "Autenticación EXITOSA (PASS)" : "FAIL") . "\n";
 
 // 4. Obtener página de categorías con la sesión autenticada

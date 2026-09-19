@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte Financiero de Ventas - Farmacia Prueba</title>
+    <title>Reporte Financiero de Ventas - CENGFARMA</title>
     <style>
         @page {
             size: A4 portrait;
@@ -261,13 +261,13 @@
     <div class="header-box">
         <div class="logo-wrap">
             <?php 
-                $rawLogo = !empty($data['config']['logo']['valor']) ? $data['config']['logo']['valor'] : 'img/logo_banner.png';
+                $rawLogo = !empty($data['config']['logo']['valor']) ? $data['config']['logo']['valor'] : 'img/cengfarma_banner.png';
                 $logoUrl = (strpos($rawLogo, 'http') === 0) ? $rawLogo : BASE_URL . ltrim($rawLogo, '/');
             ?>
-            <img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="Logo Farmacia Prueba">
+            <img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="Logo CENGFARMA">
         </div>
         <div class="company-info">
-            <h1 class="company-name"><?php echo htmlspecialchars($data['config']['nombre_botica']['valor'] ?? 'FARMACIA PRUEBA'); ?></h1>
+            <h1 class="company-name"><?php echo htmlspecialchars($data['config']['nombre_botica']['valor'] ?? 'BOTICA CENGFARMA'); ?></h1>
             <p class="company-meta"><strong>RUC:</strong> <?php echo htmlspecialchars($data['config']['ruc']['valor'] ?? '-'); ?></p>
             <p class="company-meta"><?php echo htmlspecialchars($data['config']['direccion']['valor'] ?? '-'); ?></p>
             <p class="company-meta"><strong>Teléfono:</strong> <?php echo htmlspecialchars($data['config']['telefono']['valor'] ?? '-'); ?></p>
@@ -440,7 +440,7 @@
 
     <!-- Pie de Página Legal -->
     <div class="report-footer">
-        Documento oficial generado por el Sistema de Farmacia Farmacia Prueba el <?php echo date('d/m/Y H:i:s'); ?>.<br>
+        Documento oficial generado por el Sistema de Farmacia CENGFARMA el <?php echo date('d/m/Y H:i:s'); ?>.<br>
         La información contenida en este reporte es estrictamente confidencial para fines contables y tributarios.
     </div>
 

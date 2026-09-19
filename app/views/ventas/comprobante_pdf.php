@@ -106,9 +106,9 @@
                 if(!empty($pdfLogo)): 
                     $pdfLogoSrc = (strpos($pdfLogo, 'http') === 0) ? $pdfLogo : BASE_URL . $pdfLogo;
                 ?>
-                    <img src="<?php echo htmlspecialchars($pdfLogoSrc); ?>" alt="Farmacia Prueba" style="max-height:55px; max-width:220px; object-fit:contain; margin-bottom:8px;">
+                    <img src="<?php echo htmlspecialchars($pdfLogoSrc); ?>" alt="CENGFARMA" style="max-height:55px; max-width:220px; object-fit:contain; margin-bottom:8px;">
                 <?php endif; ?>
-                <h1><?php echo htmlspecialchars($data['config']['nombre_botica']['valor'] ?? 'Farmacia Prueba'); ?></h1>
+                <h1><?php echo htmlspecialchars($data['config']['nombre_botica']['valor'] ?? 'CENGFARMA'); ?></h1>
                 <p>
                     RUC: <?php echo htmlspecialchars($data['config']['ruc']['valor'] ?? '---'); ?><br>
                     <?php echo htmlspecialchars($data['config']['direccion']['valor'] ?? ''); ?><br>
