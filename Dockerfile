@@ -12,12 +12,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Habilitar mod_rewrite de Apache para el enrutamiento MVC
 RUN a2enmod rewrite
 
-# Permitir el uso de .htaccess (AllowOverride All) en /var/www/html
+# Configurar DocumentRoot en /var/www/html/public y prohibir listado de directorios (-Indexes)
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
 RUN { \
-    echo '<Directory /var/www/html>'; \
-    echo '    Options Indexes FollowSymLinks'; \
+    echo '<Directory /var/www/html/public>'; \
+    echo '    Options -Indexes +FollowSymLinks'; \
     echo '    AllowOverride All'; \
     echo '    Require all granted'; \
+    echo '</Directory>'; \
+    echo '<Directory /var/www/html>'; \
+    echo '    Options -Indexes'; \
     echo '</Directory>'; \
 } > /etc/apache2/conf-available/override.conf \
 && a2enconf override

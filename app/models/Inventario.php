@@ -310,23 +310,36 @@ class Inventario {
         try {
             $this->conn->beginTransaction();
 
+            // Bloquear la auditoría para asegurar exclusividad
+            $stmtAudit = $this->conn->prepare("SELECT estado FROM inventario_auditorias WHERE id = :id FOR UPDATE");
+            $stmtAudit->execute([':id' => $id_audit]);
+            $auditRow = $stmtAudit->fetch(PDO::FETCH_ASSOC);
+            if (!$auditRow || $auditRow['estado'] !== 'Abierta') {
+                throw new Exception("La auditoría ya fue finalizada o no se encuentra abierta.");
+            }
+
             foreach ($conteos as $lote_id => $fisico) {
-                // 1. Obtener datos actuales del detalle y del producto
-                $stmt = $this->conn->prepare("SELECT d.*, l.id_producto FROM inventario_auditoria_detalles d 
-                                              INNER JOIN inventario_lotes l ON d.id_lote = l.id 
+                // 1. Bloquear y consultar el saldo REAL actual del lote en BD
+                $stmtLote = $this->conn->prepare("SELECT cantidad_disponible, id_producto FROM inventario_lotes WHERE id = :idl FOR UPDATE");
+                $stmtLote->bindParam(':idl', $lote_id);
+                $stmtLote->execute();
+                $loteActual = $stmtLote->fetch(PDO::FETCH_ASSOC);
+                if (!$loteActual) continue;
+
+                // 2. Obtener registro de detalle de la auditoría
+                $stmt = $this->conn->prepare("SELECT d.* FROM inventario_auditoria_detalles d 
                                               WHERE d.id_auditoria = :ida AND d.id_lote = :idl");
                 $stmt->bindParam(':ida', $id_audit);
                 $stmt->bindParam(':idl', $lote_id);
                 $stmt->execute();
                 $det = $stmt->fetch(PDO::FETCH_ASSOC);
-
                 if (!$det) continue;
 
-                $fisico = (int)$fisico;
-                $sistema = (int)$det['stock_sistema'];
-                $dif = $fisico - $sistema;
+                $fisico = max(0, (int)$fisico);
+                $sistemaActual = (int)$loteActual['cantidad_disponible'];
+                $dif = $fisico - $sistemaActual;
 
-                // 2. Actualizar detalle de auditoría
+                // 3. Actualizar detalle de auditoría
                 $updDet = $this->conn->prepare("UPDATE inventario_auditoria_detalles SET stock_fisico = :fis, diferencia = :dif WHERE id = :id");
                 $updDet->bindParam(':fis', $fisico);
                 $updDet->bindParam(':dif', $dif);
@@ -334,36 +347,32 @@ class Inventario {
                 $updDet->execute();
 
                 if ($dif != 0) {
-                    // 3. Actualizar Lote
+                    // 4. Actualizar Lote
                     $updLote = $this->conn->prepare("UPDATE inventario_lotes SET cantidad_disponible = :fis WHERE id = :idl");
                     $updLote->bindParam(':fis', $fisico);
                     $updLote->bindParam(':idl', $lote_id);
                     $updLote->execute();
 
-                    // 4. Registrar en Kardex el AJUSTE
+                    // 5. Actualizar Producto y Kardex con bloqueo
                     $motivo = "Ajuste por Inventario Físico #" . $id_audit;
-                    $tipo = ($dif > 0) ? 'AJUSTE' : 'SALIDA'; // Podría ser ENTRADA/SALIDA, usamos AJUSTE como comodín o ENUM según DB
-
-                    // Recalcular saldo parcial para el Kardex
                     $stmtS = $this->conn->prepare("SELECT stock_actual FROM productos WHERE id = :idp FOR UPDATE");
-                    $stmtS->bindParam(':idp', $det['id_producto']);
+                    $stmtS->bindParam(':idp', $loteActual['id_producto']);
                     $stmtS->execute();
                     $stock_anterior = $stmtS->fetch(PDO::FETCH_ASSOC)['stock_actual'];
                     $nuevo_saldo = $stock_anterior + $dif;
 
                     $stmtK = $this->conn->prepare("INSERT INTO kardex (id_producto, id_usuario, tipo_movimiento, motivo, cantidad, saldo_actual) 
                                                    VALUES (:idp, :usr, 'AJUSTE', :mot, :cant, :sld)");
-                    $stmtK->bindParam(':idp', $det['id_producto']);
+                    $stmtK->bindParam(':idp', $loteActual['id_producto']);
                     $stmtK->bindParam(':usr', $id_usuario);
                     $stmtK->bindParam(':mot', $motivo);
                     $stmtK->bindParam(':cant', $dif);
                     $stmtK->bindParam(':sld', $nuevo_saldo);
                     $stmtK->execute();
 
-                    // 5. Actualizar Stock del Producto
                     $updP = $this->conn->prepare("UPDATE productos SET stock_actual = :sld WHERE id = :idp");
                     $updP->bindParam(':sld', $nuevo_saldo);
-                    $updP->bindParam(':idp', $det['id_producto']);
+                    $updP->bindParam(':idp', $loteActual['id_producto']);
                     $updP->execute();
                 }
             }

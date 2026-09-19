@@ -32,16 +32,30 @@ class ConfiguracionController extends Controller {
                 'igv'            => trim($_POST['igv'])
             ];
             
-            // Upload Logo
+            // Upload Logo con validación de tipo MIME real y extensión segura
             if (isset($_FILES['logo']) && $_FILES['logo']['error'] == UPLOAD_ERR_OK) {
-                $allowed = ['jpg', 'jpeg', 'png', 'gif'];
-                $ext = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
-                if (in_array(strtolower($ext), $allowed)) {
-                    $newFileName = 'logo_botica_' . time() . '.' . strtolower($ext);
-                    $destPath = 'img/' . $newFileName;
-                    if (move_uploaded_file($_FILES['logo']['tmp_name'], $destPath)) {
-                        $updates['logo'] = BASE_URL . $destPath;
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+                $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
+                $tmpPath = $_FILES['logo']['tmp_name'];
+
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mime = finfo_file($finfo, $tmpPath);
+                finfo_close($finfo);
+
+                if (in_array($ext, $allowedExtensions, true) && in_array($mime, $allowedMimes, true)) {
+                    $newFileName = 'logo_botica_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    $destDir = (defined('BASE_PATH') ? BASE_PATH : dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR) . 'public/img/';
+                    if (!file_exists($destDir)) {
+                        mkdir($destDir, 0755, true);
                     }
+                    $destPath = $destDir . $newFileName;
+                    if (move_uploaded_file($tmpPath, $destPath)) {
+                        $updates['logo'] = 'img/' . $newFileName;
+                    }
+                } else {
+                    $_SESSION['error'] = "El archivo seleccionado para el logo no es una imagen válida (formatos permitidos: JPG, PNG, GIF, WEBP).";
                 }
             }
             

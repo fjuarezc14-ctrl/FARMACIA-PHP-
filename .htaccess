@@ -1,5 +1,13 @@
+Options -Indexes
+
+# Bloquear acceso a archivos sensibles y de configuración
+<FilesMatch "(^\.|\.env|\.sql|\.md|Dockerfile|docker-compose\.yml|\.log)$">
+    Require all denied
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule ^$ public/ [L]
     RewriteRule (.*) public/$1 [L]
 </IfModule>
+

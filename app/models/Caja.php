@@ -100,43 +100,57 @@ class Caja {
     }
 
     public function cerrarCaja($caja_id, $monto_final_real, $observacion) {
-        $resumen = $this->getResumenActual($caja_id);
-        
-        // El cajero debe tener en la caja: Saldo Inicial + Ventas en Efectivo
-        // Las ventas por transferencia no cuentan en la gaveta física
-        
-        $queryCaja = "SELECT monto_inicial FROM " . $this->table_name . " WHERE id = :id";
-        $stmt = $this->conn->prepare($queryCaja);
-        $stmt->bindParam(':id', $caja_id);
-        $stmt->execute();
-        $caja = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        $monto_inicial = $caja['monto_inicial'];
-        // Ajustamos la caja esperada = Inicial + Venta Efectivo + Ingresos Extra - Retiros
-        $monto_final_esperado = $monto_inicial + $resumen['ingresos_efectivo'] + $resumen['ingresos_extras'] - $resumen['egresos'];
-        $diferencia = $monto_final_real - $monto_final_esperado;
-        
-        $query = "UPDATE " . $this->table_name . " SET 
-                  fecha_cierre = NOW(), 
-                  ingresos_efectivo = :ingresos_efectivo,
-                  ingresos_transferencia = :ingresos_transferencia,
-                  monto_final_esperado = :monto_final_esperado,
-                  monto_final_real = :monto_final_real,
-                  diferencia = :diferencia,
-                  observacion = :observacion,
-                  estado = 0 
-                  WHERE id = :id";
-                  
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':ingresos_efectivo', $resumen['ingresos_efectivo']);
-        $stmt->bindParam(':ingresos_transferencia', $resumen['ingresos_transferencia']);
-        $stmt->bindParam(':monto_final_esperado', $monto_final_esperado);
-        $stmt->bindParam(':monto_final_real', $monto_final_real);
-        $stmt->bindParam(':diferencia', $diferencia);
-        $stmt->bindParam(':observacion', $observacion);
-        $stmt->bindParam(':id', $caja_id);
-        
-        return $stmt->execute();
+        try {
+            $this->conn->beginTransaction();
+
+            // Bloquear registro de caja con FOR UPDATE y verificar estado
+            $queryCaja = "SELECT monto_inicial, estado FROM " . $this->table_name . " WHERE id = :id FOR UPDATE";
+            $stmt = $this->conn->prepare($queryCaja);
+            $stmt->bindParam(':id', $caja_id);
+            $stmt->execute();
+            $caja = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$caja || (int)$caja['estado'] === 0) {
+                throw new Exception("La caja no existe o ya ha sido cerrada.");
+            }
+
+            $resumen = $this->getResumenActual($caja_id);
+            $monto_inicial = (float)$caja['monto_inicial'];
+            // Ajustamos la caja esperada = Inicial + Venta Efectivo + Ingresos Extra - Retiros
+            $monto_final_esperado = $monto_inicial + (float)$resumen['ingresos_efectivo'] + (float)$resumen['ingresos_extras'] - (float)$resumen['egresos'];
+            $diferencia = (float)$monto_final_real - $monto_final_esperado;
+
+            $query = "UPDATE " . $this->table_name . " SET 
+                      fecha_cierre = NOW(), 
+                      ingresos_efectivo = :ingresos_efectivo,
+                      ingresos_transferencia = :ingresos_transferencia,
+                      monto_final_esperado = :monto_final_esperado,
+                      monto_final_real = :monto_final_real,
+                      diferencia = :diferencia,
+                      observacion = :observacion,
+                      estado = 0 
+                      WHERE id = :id";
+                      
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':ingresos_efectivo', $resumen['ingresos_efectivo']);
+            $stmt->bindParam(':ingresos_transferencia', $resumen['ingresos_transferencia']);
+            $stmt->bindParam(':monto_final_esperado', $monto_final_esperado);
+            $stmt->bindParam(':monto_final_real', $monto_final_real);
+            $stmt->bindParam(':diferencia', $diferencia);
+            $stmt->bindParam(':observacion', $observacion);
+            $stmt->bindParam(':id', $caja_id);
+            
+            $resultado = $stmt->execute();
+            $this->conn->commit();
+            return $resultado;
+
+        } catch (Exception $e) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+            error_log("[Caja::cerrarCaja] Error: " . $e->getMessage());
+            return false;
+        }
     }
     
     public function getHistorial($fecha_inicio, $fecha_fin) {

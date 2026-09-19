@@ -1,0 +1,6 @@
+Options -Indexes
+
+# Prohibir descarga directa de certificados y llaves privadas
+<FilesMatch "\.(p12|pfx|pem|key|crt)$">
+    Require all denied
+</FilesMatch>

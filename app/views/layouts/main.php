@@ -13,10 +13,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- ChartJS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <?php
+    $baseFs = defined('BASE_PATH') ? BASE_PATH : dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR;
+    $vStyle = file_exists($baseFs . 'public/css/style.css') ? filemtime($baseFs . 'public/css/style.css') : '1.0';
+    $vA11y  = file_exists($baseFs . 'public/css/accessibility.css') ? filemtime($baseFs . 'public/css/accessibility.css') : '1.0';
+    ?>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=<?php echo $vStyle; ?>">
     <!-- Suite Nativa de Accesibilidad Web (WCAG 2.1 AA) -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/accessibility.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/accessibility.css?v=<?php echo $vA11y; ?>">
 </head>
 <body class="ceng-body">
 
@@ -407,7 +412,10 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 <!-- Suite Nativa de Accesibilidad Web (Widget y Lógica) -->
-<?php require_once '../app/views/partials/accessibility_widget.php'; ?>
-<script src="<?php echo BASE_URL; ?>js/accessibility.js"></script>
+<?php 
+require_once '../app/views/partials/accessibility_widget.php'; 
+$vJsA11y = file_exists($baseFs . 'public/js/accessibility.js') ? filemtime($baseFs . 'public/js/accessibility.js') : '1.0';
+?>
+<script src="<?php echo BASE_URL; ?>js/accessibility.js?v=<?php echo $vJsA11y; ?>"></script>
 </body>
 </html>

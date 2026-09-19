@@ -1,1 +1,6 @@
 .env
+public/sunat/xml/*.xml
+public/sunat/certs/*.p12
+public/sunat/certs/*.pfx
+!public/sunat/certs/.htaccess
+

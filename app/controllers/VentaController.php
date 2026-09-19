@@ -178,27 +178,73 @@ class VentaController extends Controller {
                 }
             }
             
+            // 1. Procesar y blindar detalles con precios oficiales de la base de datos
+            $detalles = [];
+            $subtotalSuma = 0.00;
+            $productos = $_POST['producto_id'] ?? [];
+            $dbPrecios = new Database();
+            $connPrecios = $dbPrecios->getConnection();
+            $stmtProd = $connPrecios->prepare("SELECT id, nombre_comercial, precio_venta, precio_fraccion, fraccionable, unidades_por_caja FROM productos WHERE id = ? AND estado = 1");
+
+            foreach ($productos as $i => $id_prod) {
+                $idProd = (int)$id_prod;
+                $cantRaw = str_replace(',', '.', trim($_POST['cantidad'][$i] ?? '0'));
+                $cant = (float)preg_replace('/[^\d.]/', '', $cantRaw);
+                if ($idProd <= 0 || $cant <= 0) continue;
+
+                $stmtProd->execute([$idProd]);
+                $pInfo = $stmtProd->fetch(PDO::FETCH_ASSOC);
+                if (!$pInfo) continue;
+
+                $tipoUnidad = ($_POST['tipo_unidad'][$i] ?? 'CAJA') === 'FRACCION' ? 'FRACCION' : 'CAJA';
+                if ($tipoUnidad === 'FRACCION' && (int)$pInfo['fraccionable'] === 1) {
+                    $preUnit = (float)$pInfo['precio_fraccion'];
+                    if ($preUnit <= 0 && (int)$pInfo['unidades_por_caja'] > 0) {
+                        $preUnit = round((float)$pInfo['precio_venta'] / (int)$pInfo['unidades_por_caja'], 2);
+                    }
+                } else {
+                    $tipoUnidad = 'CAJA';
+                    $preUnit = (float)$pInfo['precio_venta'];
+                }
+
+                $subItem = round($cant * $preUnit, 2);
+                $subtotalSuma += $subItem;
+
+                $detalles[] = [
+                    'id_producto' => $idProd,
+                    'cantidad' => $cant,
+                    'precio_unitario' => $preUnit,
+                    'subtotal' => $subItem,
+                    'tipo_unidad' => $tipoUnidad
+                ];
+            }
+
+            if (count($detalles) === 0) {
+                $_SESSION['error_pos'] = "Carrito de compras vacío o sin productos válidos.";
+                header('Location: ' . BASE_URL . 'venta/pos');
+                exit;
+            }
+
+            // 2. Trazabilidad y validación del descuento
             $puntoModel = $this->model('Punto');
             $configPuntos = $puntoModel->getConfig();
+            $puntos_usados = isset($_POST['puntos_usados']) ? max(0, (int)$_POST['puntos_usados']) : 0;
+            $descuentoSolicitado = isset($_POST['descuento_venta']) ? max(0.00, (float)$_POST['descuento_venta']) : 0.00;
 
-            $puntos_ganados = 0;
-            if($id_cliente != 1 && !empty($configPuntos['habilitado'])) {
-                $consumoBase = (float)$configPuntos['consumo_base'];
-                if ($consumoBase > 0) {
-                    $puntos_ganados = (int)floor($total / $consumoBase);
-                }
-            }
-            $puntos_usados = isset($_POST['puntos_usados']) ? (int)$_POST['puntos_usados'] : 0;
-            $descuento = isset($_POST['descuento_venta']) ? (float)$_POST['descuento_venta'] : 0.00;
-            // Trazabilidad del descuento: canje de puntos o manual con motivo obligatorio
             $tipo_descuento = null;
             $motivo_descuento = null;
-            if ($descuento > 0) {
+            $descuento = 0.00;
+
+            if ($descuentoSolicitado > 0) {
                 if ($puntos_usados > 0 && $id_cliente != 1) {
+                    $valorCanje = (float)($configPuntos['valor_canje'] ?? 0.10);
+                    $descuentoMaxPuntos = round($puntos_usados * $valorCanje, 2);
+                    $descuento = min($subtotalSuma, $descuentoMaxPuntos);
                     $tipo_descuento = 'Puntos';
                     $motivo_descuento = "Canje de $puntos_usados puntos (-S/ " . number_format($descuento, 2) . ")";
                 } else {
                     $puntos_usados = 0;
+                    $descuento = min($subtotalSuma, $descuentoSolicitado);
                     $tipo_descuento = 'Manual';
                     $motivo_descuento = mb_substr(trim($_POST['motivo_descuento'] ?? ''), 0, 255);
                     if ($motivo_descuento === '') {
@@ -210,9 +256,26 @@ class VentaController extends Controller {
             } else {
                 $puntos_usados = 0;
             }
+
+            // 3. Recálculo oficial de Total, IGV y Subtotal neto
+            $configModel = $this->model('Configuracion');
+            $total = round(max(0, $subtotalSuma - $descuento), 2);
+            $igvPct = (float)($configModel->get('igv') ?: 18);
+            $factorIgv = ($igvPct / 100) + 1;
+            $igv = round($total - ($total / $factorIgv), 2);
+            $subtotalNeto = round($total - $igv, 2);
+
+            // 4. Fidelización de puntos calculada sobre el total real
+            $puntos_ganados = 0;
+            if ($id_cliente != 1 && !empty($configPuntos['habilitado'])) {
+                $consumoBase = (float)($configPuntos['consumo_base'] ?? 10);
+                if ($consumoBase > 0) {
+                    $puntos_ganados = (int)floor($total / $consumoBase);
+                }
+            }
+
+            // 5. Procesamiento y verificación estricta de formas de pago
             $metodo_pago = trim($_POST['metodo_pago'] ?? 'Efectivo');
-            
-            // Procesamiento de montos por método
             $monto_efectivo = 0.00;
             $monto_transferencia = 0.00;
             $monto_tarjeta = 0.00;
@@ -244,7 +307,7 @@ class VentaController extends Controller {
                 
                 $sumaMixta = round($monto_efectivo + $monto_transferencia + $monto_tarjeta, 2);
                 if (abs($sumaMixta - $total) > 0.01) {
-                    $_SESSION['error_pos'] = "Error en Pago Mixto: La suma de montos (S/ $sumaMixta) no coincide con el total de la venta (S/ $total).";
+                    $_SESSION['error_pos'] = "Error en Pago Mixto: La suma de montos (S/ $sumaMixta) no coincide con el total real de la venta (S/ $total).";
                     header('Location: ' . BASE_URL . 'venta/pos');
                     exit;
                 }
@@ -269,11 +332,11 @@ class VentaController extends Controller {
                 'tipo_comprobante' => $tipo_comprobante,
                 'serie_comprobante' => $serie,
                 'num_comprobante' => $numero_t,
-                'subtotal' => (float)$_POST['subtotal_venta'],
+                'subtotal' => $subtotalNeto,
                 'descuento' => $descuento,
                 'tipo_descuento' => $tipo_descuento,
                 'motivo_descuento' => $motivo_descuento,
-                'igv' => (float)$_POST['igv_venta'],
+                'igv' => $igv,
                 'total' => $total,
                 'monto_efectivo' => $monto_efectivo,
                 'monto_transferencia' => $monto_transferencia,
@@ -287,26 +350,6 @@ class VentaController extends Controller {
                 'puntos_usados' => $puntos_usados,
                 'medico_cmp' => $_POST['medico_cmp'] ?? null
             ];
-            
-            // Detalles paralelos por arrays
-            $detalles = [];
-            $productos = $_POST['producto_id'] ?? [];
-            foreach ($productos as $i => $id_prod) {
-                $idProd = (int)$id_prod;
-                $cant = (int)preg_replace('/[^\d]/', '', $_POST['cantidad'][$i] ?? 0);
-                if ($idProd <= 0 || $cant <= 0) continue;
-
-                $preUnit = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['precio_d'][$i] ?? 0));
-                $sub = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['subtotal_d'][$i] ?? ($cant * $preUnit)));
-
-                $detalles[] = [
-                    'id_producto' => $idProd,
-                    'cantidad' => $cant,
-                    'precio_unitario' => $preUnit,
-                    'subtotal' => $sub,
-                    'tipo_unidad' => $_POST['tipo_unidad'][$i] ?? 'CAJA'
-                ];
-            }
             
             if (count($detalles) > 0) {
                 $id_venta = $modelo->registrarVenta($cabecera, $detalles, $_SESSION['user_id']);
@@ -340,20 +383,20 @@ class VentaController extends Controller {
                         $configModel = $this->model('Configuracion');
                         $empresa = $configModel->getAll();
 
-                        // Enriquecer los detalles con el nombre del producto
+                        // Enriquecer los detalles con el nombre del producto y valores calculados
                         $detallesXml = [];
                         $db2 = new Database();
                         $conn2 = $db2->getConnection();
-                        for ($i = 0; $i < count($_POST['producto_id']); $i++) {
+                        foreach ($detalles as $detItem) {
                             $pq = $conn2->prepare("SELECT nombre_comercial FROM productos WHERE id = ?");
-                            $pq->execute([$_POST['producto_id'][$i]]);
+                            $pq->execute([$detItem['id_producto']]);
                             $pName = $pq->fetchColumn();
                             $detallesXml[] = [
-                                'nombre_comercial' => $pName,
-                                'cantidad'         => $_POST['cantidad'][$i],
-                                'precio_unitario'  => $_POST['precio_d'][$i],
-                                'subtotal'         => $_POST['subtotal_d'][$i],
-                                'tipo_unidad'      => $_POST['tipo_unidad'][$i] ?? 'CAJA'
+                                'nombre_comercial' => $pName ?: 'Producto ' . $detItem['id_producto'],
+                                'cantidad'         => $detItem['cantidad'],
+                                'precio_unitario'  => $detItem['precio_unitario'],
+                                'subtotal'         => $detItem['subtotal'],
+                                'tipo_unidad'      => $detItem['tipo_unidad']
                             ];
                         }
 

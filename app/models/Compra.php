@@ -30,11 +30,11 @@ class Compra {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getCompraPorId($id) {
+    public function getCompraPorId($id, $forUpdate = false) {
         $query = "SELECT c.*, p.razon_social as proveedor 
                   FROM compras c 
                   INNER JOIN proveedores p ON c.id_proveedor = p.id 
-                  WHERE c.id = :id";
+                  WHERE c.id = :id" . ($forUpdate ? " FOR UPDATE" : "");
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
@@ -206,8 +206,8 @@ class Compra {
         try {
             $this->conn->beginTransaction();
 
-            // 1. Verificar estado y obtener compra
-            $compra = $this->getCompraPorId($id_compra);
+            // 1. Verificar estado y obtener compra con bloqueo pesimista FOR UPDATE
+            $compra = $this->getCompraPorId($id_compra, true);
             if (!$compra || $compra['estado'] !== 'Pendiente') {
                 throw new Exception("La compra no existe o ya fue procesada.");
             }

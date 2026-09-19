@@ -1,0 +1,2 @@
+# Bloqueo total de acceso HTTP a certificados digitales SUNAT (.p12, .pfx, etc.)
+Require all denied

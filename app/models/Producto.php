@@ -235,4 +235,15 @@ class Producto {
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }
+
+    /**
+     * Modifica el stock de forma estrictamente atómica en el motor de base de datos
+     * para prevenir condiciones de carrera (ej: delta = -5 o delta = +10).
+     */
+    public function modificarStockAtomico($id, $delta) {
+        $stmt = $this->conn->prepare("UPDATE productos SET stock_actual = stock_actual + :delta WHERE id = :id");
+        $stmt->bindParam(':delta', $delta);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
 }
