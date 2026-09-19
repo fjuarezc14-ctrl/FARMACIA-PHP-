@@ -1,19 +1,19 @@
 /**
  * VT VALETEC - Accessibility Manager Simplificado para Adultos Mayores
- * Diseñado a medida para la identidad de CENGFARMA
+ * Diseñado a medida para la identidad de Farmacia Prueba
  * 100% Nativo Vanilla ES6+ - Cero dependencias
  */
 
 class AccessibilityManager {
     constructor() {
-        this.storageKey = 'cengfarma_a11y_prefs';
+        this.storageKey = 'farmacia_a11y_prefs';
         this.speechSynthesis = window.speechSynthesis || null;
         this.speechVoice = null;
 
         // Estado simplificado (4 herramientas principales)
         this.state = {
             fontScale: 0,            // 0: Normal, 1: Grande (+15%), 2: Muy Grande (+30%)
-            contrast: false,         // Alto contraste CENGFARMA (Azul Noche + Verde Esmeralda)
+            contrast: false,         // Alto contraste Farmacia Prueba (Azul Noche + Verde Esmeralda)
             speechReader: false,     // Lector de voz al tocar textos
             highlightClickable: false// Cursor grande + marco en botones
         };
@@ -63,8 +63,8 @@ class AccessibilityManager {
             root.classList.add(`a11y-font-scale-${this.state.fontScale}`);
         }
 
-        // 2. Contraste CENGFARMA
-        root.classList.toggle('a11y-contrast-cengfarma', Boolean(this.state.contrast));
+        // 2. Contraste Farmacia Prueba
+        root.classList.toggle('a11y-contrast-marca', Boolean(this.state.contrast));
 
         // 3. Resaltar botones y cursor grande
         root.classList.toggle('a11y-highlight-clickable', Boolean(this.state.highlightClickable));
@@ -133,11 +133,11 @@ class AccessibilityManager {
             });
         }
 
-        // 2. Evento Contraste CENGFARMA
+        // 2. Evento Contraste Farmacia Prueba
         if (this.btnContrast) {
             this.btnContrast.addEventListener('click', () => {
                 this.state.contrast = !this.state.contrast;
-                this.onStateChange(this.state.contrast ? 'Contraste nítido CENGFARMA activado' : 'Contraste estándar restaurado');
+                this.onStateChange(this.state.contrast ? 'Contraste nítido Farmacia Prueba activado' : 'Contraste estándar restaurado');
             });
         }
 
@@ -190,13 +190,13 @@ class AccessibilityManager {
             this.btnFontIncrease.style.opacity = (this.state.fontScale === 2) ? '0.4' : '1';
         }
 
-        // 2. Contraste CENGFARMA
+        // 2. Contraste Farmacia Prueba
         if (this.btnContrast) {
             this.btnContrast.classList.toggle('a11y-btn-on', Boolean(this.state.contrast));
             this.btnContrast.textContent = this.state.contrast ? '✓ Activo' : 'Activar';
         }
         if (this.cardContrast) {
-            this.cardContrast.classList.toggle('a11y-card-active-cengfarma', Boolean(this.state.contrast));
+            this.cardContrast.classList.toggle('a11y-card-active-marca', Boolean(this.state.contrast));
         }
 
         // 3. Lector de voz
@@ -205,7 +205,7 @@ class AccessibilityManager {
             this.btnSpeech.textContent = this.state.speechReader ? '✓ Escuchando' : 'Activar';
         }
         if (this.cardSpeech) {
-            this.cardSpeech.classList.toggle('a11y-card-active-cengfarma', Boolean(this.state.speechReader));
+            this.cardSpeech.classList.toggle('a11y-card-active-marca', Boolean(this.state.speechReader));
         }
 
         // 4. Resaltar Clics
@@ -214,7 +214,7 @@ class AccessibilityManager {
             this.btnHighlight.textContent = this.state.highlightClickable ? '✓ Activo' : 'Activar';
         }
         if (this.cardHighlight) {
-            this.cardHighlight.classList.toggle('a11y-card-active-cengfarma', Boolean(this.state.highlightClickable));
+            this.cardHighlight.classList.toggle('a11y-card-active-marca', Boolean(this.state.highlightClickable));
         }
     }
 

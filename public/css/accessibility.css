@@ -1,11 +1,11 @@
 /**
  * VT VALETEC - Suite de Accesibilidad Simplificada para Adultos Mayores
- * Diseñada a medida para la identidad de CENGFARMA
+ * Diseñada a medida para la identidad de Farmacia Prueba
  * Cumplimiento WCAG 2.1 AA / ADA - 100% Nativo
  */
 
 /* ==========================================================
-   1. Botón Flotante Disparador (Verde CENGFARMA)
+   1. Botón Flotante Disparador (Verde Farmacia Prueba)
    ========================================================== */
 .a11y-trigger-btn {
     position: fixed;
@@ -13,7 +13,7 @@
     width: 58px;
     height: 58px;
     border-radius: 50%;
-    background: #047B07; /* Verde CENGFARMA */
+    background: #047B07; /* Verde Farmacia Prueba */
     color: #ffffff;
     border: 3px solid #ffffff;
     box-shadow: 0 6px 22px rgba(4, 123, 7, 0.45);
@@ -51,7 +51,7 @@
 .a11y-pos-top-left     { top: 25px; left: 25px; }
 
 /* ==========================================================
-   2. Panel Modal Senior-Friendly (Azul Noche CENGFARMA)
+   2. Panel Modal Senior-Friendly (Azul Noche Farmacia Prueba)
    ========================================================== */
 .a11y-modal-backdrop {
     position: fixed;
@@ -189,7 +189,7 @@
     background: #263250;
 }
 
-.a11y-card-active-cengfarma {
+.a11y-card-active-marca {
     border-color: #00E676 !important;
     background: rgba(0, 230, 118, 0.08) !important;
 }
@@ -338,89 +338,89 @@
 html.a11y-font-scale-1 { font-size: 115% !important; }
 html.a11y-font-scale-2 { font-size: 130% !important; }
 
-/* --- 3.2 Alto Contraste Corporativo CENGFARMA --- */
-html.a11y-contrast-cengfarma body {
+/* --- 3.2 Alto Contraste Corporativo Farmacia Prueba --- */
+html.a11y-contrast-marca body {
     background-color: #0F1523 !important;
     color: #FFFFFF !important;
 }
 
-html.a11y-contrast-cengfarma #content-wrapper,
-html.a11y-contrast-cengfarma .page-content {
+html.a11y-contrast-marca #content-wrapper,
+html.a11y-contrast-marca .page-content {
     background-color: #0F1523 !important;
 }
 
-html.a11y-contrast-cengfarma .card-metric,
-html.a11y-contrast-cengfarma .card,
-html.a11y-contrast-cengfarma #topbar,
-html.a11y-contrast-cengfarma .pos-cart,
-html.a11y-contrast-cengfarma .pos-totals,
-html.a11y-contrast-cengfarma .pos-catalog,
-html.a11y-contrast-cengfarma .settings-card,
-html.a11y-contrast-cengfarma .modal-content,
-html.a11y-contrast-cengfarma .login-card {
+html.a11y-contrast-marca .card-metric,
+html.a11y-contrast-marca .card,
+html.a11y-contrast-marca #topbar,
+html.a11y-contrast-marca .pos-cart,
+html.a11y-contrast-marca .pos-totals,
+html.a11y-contrast-marca .pos-catalog,
+html.a11y-contrast-marca .settings-card,
+html.a11y-contrast-marca .modal-content,
+html.a11y-contrast-marca .login-card {
     background-color: #1A2238 !important;
     border: 2px solid #00E676 !important;
     color: #FFFFFF !important;
     box-shadow: 0 4px 20px rgba(0, 230, 118, 0.15) !important;
 }
 
-html.a11y-contrast-cengfarma h1,
-html.a11y-contrast-cengfarma h2,
-html.a11y-contrast-cengfarma h3,
-html.a11y-contrast-cengfarma h4,
-html.a11y-contrast-cengfarma h5,
-html.a11y-contrast-cengfarma .page-title,
-html.a11y-contrast-cengfarma .metric-value,
-html.a11y-contrast-cengfarma .user-name {
+html.a11y-contrast-marca h1,
+html.a11y-contrast-marca h2,
+html.a11y-contrast-marca h3,
+html.a11y-contrast-marca h4,
+html.a11y-contrast-marca h5,
+html.a11y-contrast-marca .page-title,
+html.a11y-contrast-marca .metric-value,
+html.a11y-contrast-marca .user-name {
     color: #FFFFFF !important;
 }
 
-html.a11y-contrast-cengfarma .page-subtitle,
-html.a11y-contrast-cengfarma .text-muted,
-html.a11y-contrast-cengfarma .metric-title {
+html.a11y-contrast-marca .page-subtitle,
+html.a11y-contrast-marca .text-muted,
+html.a11y-contrast-marca .metric-title {
     color: #B8C7DD !important;
 }
 
-html.a11y-contrast-cengfarma .table,
-html.a11y-contrast-cengfarma .table-custom {
+html.a11y-contrast-marca .table,
+html.a11y-contrast-marca .table-custom {
     background-color: #1A2238 !important;
     border: 2px solid #00E676 !important;
 }
 
-html.a11y-contrast-cengfarma .table thead th,
-html.a11y-contrast-cengfarma .table-custom thead th {
+html.a11y-contrast-marca .table thead th,
+html.a11y-contrast-marca .table-custom thead th {
     background-color: #0B0E17 !important;
     color: #00E676 !important;
     border-bottom: 2px solid #00E676 !important;
 }
 
-html.a11y-contrast-cengfarma .table tbody td,
-html.a11y-contrast-cengfarma .table-custom tbody td {
+html.a11y-contrast-marca .table tbody td,
+html.a11y-contrast-marca .table-custom tbody td {
     background-color: #1A2238 !important;
     color: #FFFFFF !important;
     border-bottom: 1px solid rgba(0, 230, 118, 0.25) !important;
 }
 
-html.a11y-contrast-cengfarma .table-hover tbody tr:hover td {
+html.a11y-contrast-marca .table-hover tbody tr:hover td {
     background-color: rgba(0, 230, 118, 0.15) !important;
 }
 
-html.a11y-contrast-cengfarma .form-control-custom,
-html.a11y-contrast-cengfarma input,
-html.a11y-contrast-cengfarma select {
+html.a11y-contrast-marca .form-control-custom,
+html.a11y-contrast-marca input,
+html.a11y-contrast-marca select {
     background-color: #0B0E17 !important;
     border: 2px solid #00E676 !important;
     color: #FFFFFF !important;
 }
 
-html.a11y-contrast-cengfarma a:not(.a11y-panel a):not(.a11y-trigger-btn) {
+html.a11y-contrast-marca a:not(.a11y-panel a):not(.a11y-trigger-btn) {
     color: #00E676 !important;
     text-decoration: underline !important;
     font-weight: 700 !important;
 }
 
-html.a11y-contrast-cengfarma .btn-primary-custom,
-html.a11y-contrast-cengfarma .btn-success {
+html.a11y-contrast-marca .btn-primary-custom,
+html.a11y-contrast-marca .btn-success {
     background: #047B07 !important;
     border: 2px solid #00E676 !important;
     color: #FFFFFF !important;

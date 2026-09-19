@@ -33,10 +33,10 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
 
         <!-- Botones de Acción Inmediata (Quick Actions) -->
         <div class="d-flex flex-wrap align-items-center gap-2">
-            <a href="<?php echo BASE_URL; ?>venta/pos" class="ceng-pos-btn" title="Ir a Venta (Atajo F1)">
+            <a href="<?php echo BASE_URL; ?>venta/pos" class="marca-pos-btn" title="Ir a Venta (Atajo F1)">
                 <i class="bi bi-cart-fill"></i>
                 <span>Vender</span>
-                <span class="ceng-kbd-tag">F1</span>
+                <span class="marca-kbd-tag">F1</span>
             </a>
             <a href="<?php echo BASE_URL; ?>caja/cierre" class="btn btn-outline-secondary fw-semibold px-3 py-2 rounded-3 d-flex align-items-center gap-2 bg-white text-dark shadow-sm" style="border-color: #E2E8F0; font-size: 13px;">
                 <i class="bi bi-cash-stack text-warning"></i>
@@ -58,17 +58,17 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
         
         <!-- Tarjeta 1: Ingresos de Hoy -->
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="ceng-stat-card border-top-emerald">
+            <div class="marca-stat-card border-top-emerald">
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="ceng-stat-label">Ingresos de Hoy</span>
-                    <div class="ceng-stat-icon-wrap bg-emerald-light text-emerald">
+                    <span class="marca-stat-label">Ingresos de Hoy</span>
+                    <div class="marca-stat-icon-wrap bg-emerald-light text-emerald">
                         <i class="bi bi-wallet2"></i>
                     </div>
                 </div>
-                <div class="ceng-stat-number text-emerald">
+                <div class="marca-stat-number text-emerald">
                     S/ <?php echo number_format($data['metricas']['ingresos_hoy'], 2); ?>
                 </div>
-                <div class="ceng-stat-footer mt-2">
+                <div class="marca-stat-footer mt-2">
                     <span class="badge bg-emerald-light text-emerald px-2 py-1 rounded-pill fw-semibold" style="font-size: 11px;">
                         <i class="bi bi-arrow-up-right"></i> Facturado hoy
                     </span>
@@ -79,18 +79,18 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
 
         <!-- Tarjeta 2: Ventas y Tickets de Hoy -->
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="ceng-stat-card border-top-amber">
+            <div class="marca-stat-card border-top-amber">
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="ceng-stat-label">Tickets Cobrados</span>
-                    <div class="ceng-stat-icon-wrap bg-amber-light text-amber">
+                    <span class="marca-stat-label">Tickets Cobrados</span>
+                    <div class="marca-stat-icon-wrap bg-amber-light text-amber">
                         <i class="bi bi-receipt-cutoff"></i>
                     </div>
                 </div>
-                <div class="ceng-stat-number text-slate-800">
+                <div class="marca-stat-number text-slate-800">
                     <?php echo number_format($data['metricas']['ventas_hoy']); ?>
-                    <span class="ceng-stat-unit">ventas</span>
+                    <span class="marca-stat-unit">ventas</span>
                 </div>
-                <div class="ceng-stat-footer mt-2">
+                <div class="marca-stat-footer mt-2">
                     <span class="badge bg-amber-light text-amber px-2 py-1 rounded-pill fw-semibold" style="font-size: 11px;">
                         <i class="bi bi-clock-history"></i> Turno activo
                     </span>
@@ -101,26 +101,26 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
 
         <!-- Tarjeta 3: Stock y Alertas FEFO -->
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="ceng-stat-card <?php echo ($data['metricas']['lotes_riesgo'] > 0 || $data['metricas']['productos_riesgo_stock'] > 0) ? 'border-top-danger' : 'border-top-blue'; ?>">
+            <div class="marca-stat-card <?php echo ($data['metricas']['lotes_riesgo'] > 0 || $data['metricas']['productos_riesgo_stock'] > 0) ? 'border-top-danger' : 'border-top-blue'; ?>">
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="ceng-stat-label">Catálogo &amp; FEFO</span>
-                    <div class="ceng-stat-icon-wrap <?php echo ($data['metricas']['lotes_riesgo'] > 0) ? 'bg-danger-light text-danger' : 'bg-blue-light text-blue'; ?>">
+                    <span class="marca-stat-label">Catálogo &amp; FEFO</span>
+                    <div class="marca-stat-icon-wrap <?php echo ($data['metricas']['lotes_riesgo'] > 0) ? 'bg-danger-light text-danger' : 'bg-blue-light text-blue'; ?>">
                         <i class="bi bi-boxes"></i>
                     </div>
                 </div>
-                <div class="ceng-stat-number text-slate-800">
+                <div class="marca-stat-number text-slate-800">
                     <?php echo number_format($data['metricas']['productos_total']); ?>
-                    <span class="ceng-stat-unit">ítems activos</span>
+                    <span class="marca-stat-unit">ítems activos</span>
                 </div>
-                <div class="ceng-stat-footer d-flex flex-wrap gap-1 mt-2">
+                <div class="marca-stat-footer d-flex flex-wrap gap-1 mt-2">
                     <?php if($data['metricas']['lotes_riesgo'] > 0): ?>
-                    <a href="<?php echo BASE_URL; ?>inventario/lotes" class="ceng-interactive-chip chip-danger" title="Clic para revisar lotes próximos a vencer">
+                    <a href="<?php echo BASE_URL; ?>inventario/lotes" class="marca-interactive-chip chip-danger" title="Clic para revisar lotes próximos a vencer">
                         <i class="bi bi-exclamation-triangle-fill"></i> <?php echo $data['metricas']['lotes_riesgo']; ?> por vencer
                     </a>
                     <?php endif; ?>
 
                     <?php if($data['metricas']['productos_riesgo_stock'] > 0): ?>
-                    <a href="<?php echo BASE_URL; ?>inventario/kardex" class="ceng-interactive-chip chip-warning" title="Clic para ver productos bajo stock mínimo">
+                    <a href="<?php echo BASE_URL; ?>inventario/kardex" class="marca-interactive-chip chip-warning" title="Clic para ver productos bajo stock mínimo">
                         <i class="bi bi-box-arrow-down"></i> <?php echo $data['metricas']['productos_riesgo_stock']; ?> bajo stock
                     </a>
                     <?php endif; ?>
@@ -136,18 +136,18 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
 
         <!-- Tarjeta 4: Directorio de Clientes -->
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="ceng-stat-card border-top-purple">
+            <div class="marca-stat-card border-top-purple">
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="ceng-stat-label">Clientes &amp; Club</span>
-                    <div class="ceng-stat-icon-wrap bg-purple-light text-purple">
+                    <span class="marca-stat-label">Clientes &amp; Club</span>
+                    <div class="marca-stat-icon-wrap bg-purple-light text-purple">
                         <i class="bi bi-people-fill"></i>
                     </div>
                 </div>
-                <div class="ceng-stat-number text-slate-800">
+                <div class="marca-stat-number text-slate-800">
                     <?php echo number_format($data['metricas']['clientes_total']); ?>
-                    <span class="ceng-stat-unit">registrados</span>
+                    <span class="marca-stat-unit">registrados</span>
                 </div>
-                <div class="ceng-stat-footer mt-2">
+                <div class="marca-stat-footer mt-2">
                     <a href="<?php echo BASE_URL; ?>puntos/index" class="text-decoration-none d-flex align-items-center gap-1 text-purple fw-semibold" style="font-size: 11px;">
                         <i class="bi bi-star-fill text-warning"></i> Club de Puntos y Fidelización &rarr;
                     </a>
@@ -302,7 +302,7 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
 <!-- ESTILOS EXCLUSIVOS DEL DASHBOARD EJECUTIVO -->
 <style>
 /* Tarjetas de Métricas Ejecutivas */
-.ceng-stat-card {
+.marca-stat-card {
     background: #ffffff;
     border-radius: 16px;
     padding: 20px 22px;
@@ -314,7 +314,7 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
     flex-direction: column;
     justify-content: space-between;
 }
-.ceng-stat-card:hover {
+.marca-stat-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 24px rgba(4, 123, 7, 0.09);
 }
@@ -327,21 +327,21 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
 .border-top-purple { border-top: 3.5px solid #8B5CF6 !important; }
 
 /* Tipografía y Números */
-.ceng-stat-label {
+.marca-stat-label {
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.6px;
     color: #64748b;
 }
-.ceng-stat-number {
+.marca-stat-number {
     font-size: 28px;
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.8px;
     margin: 4px 0;
 }
-.ceng-stat-unit {
+.marca-stat-unit {
     font-size: 13px;
     font-weight: 600;
     color: #94a3b8;
@@ -349,7 +349,7 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
 }
 
 /* Envoltorios de Íconos */
-.ceng-stat-icon-wrap {
+.marca-stat-icon-wrap {
     width: 40px;
     height: 40px;
     border-radius: 10px;
@@ -379,7 +379,7 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
 .text-slate-700 { color: #334155 !important; }
 
 /* Chips Interactivos para Lotes y Stock Crítico */
-.ceng-interactive-chip {
+.marca-interactive-chip {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -390,23 +390,23 @@ $totalMes = (float)($data['graficoMensual']['total'] ?? 0);
     text-decoration: none;
     transition: all 0.15s ease;
 }
-.ceng-interactive-chip.chip-danger {
+.marca-interactive-chip.chip-danger {
     background-color: #FEF2F2;
     color: #DC2626;
     border: 1px solid #FECACA;
 }
-.ceng-interactive-chip.chip-danger:hover {
+.marca-interactive-chip.chip-danger:hover {
     background-color: #DC2626;
     color: #ffffff;
     transform: scale(1.03);
 }
 
-.ceng-interactive-chip.chip-warning {
+.marca-interactive-chip.chip-warning {
     background-color: #FFFBEB;
     color: #D97706;
     border: 1px solid #FDE68A;
 }
-.ceng-interactive-chip.chip-warning:hover {
+.marca-interactive-chip.chip-warning:hover {
     background-color: #D97706;
     color: #ffffff;
     transform: scale(1.03);

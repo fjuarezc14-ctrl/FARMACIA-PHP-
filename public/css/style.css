@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 :root {
-    /* Fondo cálido general CENGFARMA */
+    /* Fondo cálido general Farmacia Prueba */
     --bg-dark: #FFF3EC;
     /* Fondo de paneles, tarjetas y modales */
     --bg-card: #FFFFFF;
@@ -9,7 +9,7 @@
     --text-primary: #1A2238;
     --text-secondary: #5A6478;
     
-    /* Identidad Corporativa CENGFARMA: Verde Botica */
+    /* Identidad Corporativa Farmacia Prueba: Verde Botica */
     --accent-primary: #047B07;
     --accent-hover: #035E05;
     --accent-light: rgba(4, 123, 7, 0.12);
@@ -32,7 +32,7 @@
     --border-color: #E8DFD8;
 }
 
-body, .ceng-body {
+body, .marca-body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-primary);
@@ -48,9 +48,9 @@ body, .ceng-body {
 ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
 /* ==========================================================
-   BARRA DE NAVEGACIÓN HORIZONTAL SUPERIOR (TOP BAR CENGFARMA)
+   BARRA DE NAVEGACIÓN HORIZONTAL SUPERIOR (TOP BAR Farmacia Prueba)
    ========================================================== */
-.ceng-topbar {
+.marca-topbar {
     height: 68px;
     background: #0E172A; /* Azul Noche Slate Profundo */
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -60,7 +60,7 @@ body, .ceng-body {
     top: 0;
 }
 
-.ceng-topbar-inner {
+.marca-topbar-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -71,14 +71,14 @@ body, .ceng-body {
 }
 
 /* Área de Marca (Izquierda) */
-.ceng-brand-area {
+.marca-brand-area {
     display: flex;
     align-items: center;
     gap: 12px;
     flex-shrink: 0;
 }
 
-.ceng-mobile-toggler {
+.marca-mobile-toggler {
     background: transparent;
     border: none;
     color: #f8fafc;
@@ -89,11 +89,11 @@ body, .ceng-body {
     line-height: 1;
     transition: background-color 0.2s;
 }
-.ceng-mobile-toggler:hover {
+.marca-mobile-toggler:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 
-.ceng-brand-link {
+.marca-brand-link {
     display: inline-flex;
     align-items: center;
     text-decoration: none;
@@ -103,15 +103,15 @@ body, .ceng-body {
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
 }
-.ceng-brand-link:hover {
+.marca-brand-link:hover {
     transform: translateY(-1px) scale(1.02);
 }
-.ceng-brand-link:hover .ceng-brand-logo {
+.marca-brand-link:hover .marca-brand-logo {
     box-shadow: 0 0 16px rgba(4, 123, 7, 0.6), 0 4px 14px rgba(0, 0, 0, 0.35);
     border-color: rgba(16, 185, 129, 0.6);
 }
 
-.ceng-brand-logo {
+.marca-brand-logo {
     max-height: 48px;
     width: auto;
     object-fit: contain;
@@ -122,7 +122,7 @@ body, .ceng-body {
     image-rendering: -webkit-optimize-contrast;
 }
 
-.ceng-brand-active-indicator {
+.marca-brand-active-indicator {
     position: absolute;
     bottom: -6px;
     left: 50%;
@@ -134,7 +134,7 @@ body, .ceng-body {
     box-shadow: 0 0 8px #10B981;
 }
 
-.ceng-brand-name {
+.marca-brand-name {
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
     font-size: 15px;
     font-weight: 800;
@@ -143,7 +143,7 @@ body, .ceng-body {
     line-height: 1.1;
 }
 
-.ceng-brand-dot {
+.marca-brand-dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
@@ -151,7 +151,7 @@ body, .ceng-body {
     box-shadow: 0 0 8px #10B981;
 }
 
-.ceng-brand-sub {
+.marca-brand-sub {
     font-size: 10px;
     font-weight: 600;
     color: #94a3b8;
@@ -160,14 +160,14 @@ body, .ceng-body {
 }
 
 /* Menú de Navegación Central (Horizontal) */
-.ceng-nav-menu {
+.marca-nav-menu {
     display: flex;
     align-items: center;
     gap: 4px;
     flex-wrap: nowrap;
 }
 
-.ceng-nav-link {
+.marca-nav-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -183,30 +183,30 @@ body, .ceng-body {
     cursor: pointer;
     white-space: nowrap;
 }
-.ceng-nav-link i:first-child {
+.marca-nav-link i:first-child {
     font-size: 15px;
     color: #94a3b8;
     transition: color 0.2s;
 }
-.ceng-nav-link:hover {
+.marca-nav-link:hover {
     color: #ffffff;
     background-color: rgba(255, 255, 255, 0.08);
 }
-.ceng-nav-link:hover i:first-child {
+.marca-nav-link:hover i:first-child {
     color: #38bdf8;
 }
 
-.ceng-nav-link.active {
+.marca-nav-link.active {
     color: #ffffff !important;
     background-color: rgba(4, 123, 7, 0.22);
     border: 1px solid rgba(4, 123, 7, 0.55);
 }
-.ceng-nav-link.active i:first-child {
+.marca-nav-link.active i:first-child {
     color: #4ade80 !important;
 }
 
 /* Botón Estrella Unificado: Vender (POS) */
-.ceng-pos-btn {
+.marca-pos-btn {
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -223,23 +223,23 @@ body, .ceng-body {
     white-space: nowrap;
     cursor: pointer;
 }
-.ceng-pos-btn i {
+.marca-pos-btn i {
     font-size: 15px;
 }
-.ceng-pos-btn:hover {
+.marca-pos-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 5px 18px rgba(4, 123, 7, 0.55);
     filter: brightness(1.08);
     color: #ffffff !important;
 }
-.ceng-pos-btn:active {
+.marca-pos-btn:active {
     transform: translateY(0);
 }
-.ceng-pos-btn.active {
+.marca-pos-btn.active {
     box-shadow: 0 0 0 3px rgba(4, 123, 7, 0.35), 0 4px 16px rgba(4, 123, 7, 0.5);
 }
 
-.ceng-kbd-tag {
+.marca-kbd-tag {
     background: rgba(0, 0, 0, 0.22);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 5px;
@@ -252,7 +252,7 @@ body, .ceng-body {
 }
 
 /* Separador vertical entre logo y navegación */
-.ceng-topbar-sep {
+.marca-topbar-sep {
     width: 1px;
     height: 26px;
     background: rgba(255, 255, 255, 0.12);
@@ -260,7 +260,7 @@ body, .ceng-body {
 }
 
 /* Flechas limpias y únicas para dropdowns (sin duplicados) */
-.ceng-topbar .dropdown-toggle::after {
+.marca-topbar .dropdown-toggle::after {
     margin-left: 6px;
     vertical-align: middle;
     border-top: 4px solid #94a3b8;
@@ -269,22 +269,22 @@ body, .ceng-body {
     border-bottom: 0;
     transition: transform 0.2s ease, border-top-color 0.2s ease;
 }
-.ceng-topbar .dropdown:hover .dropdown-toggle::after,
-.ceng-topbar .dropdown-toggle:hover::after {
+.marca-topbar .dropdown:hover .dropdown-toggle::after,
+.marca-topbar .dropdown-toggle:hover::after {
     border-top-color: #ffffff;
 }
-.ceng-topbar .dropdown.show .dropdown-toggle::after {
+.marca-topbar .dropdown.show .dropdown-toggle::after {
     transform: rotate(180deg);
     border-top-color: #38bdf8;
 }
 
-.ceng-user-card.dropdown-toggle::after {
+.marca-user-card.dropdown-toggle::after {
     margin-left: 6px;
     border-top-color: #64748b;
 }
 
 /* Dropdown Menus Flotantes Modernos */
-.ceng-dropdown-menu {
+.marca-dropdown-menu {
     background-color: #1E293B !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 14px !important;
@@ -293,15 +293,15 @@ body, .ceng-body {
     margin-top: 10px !important;
     backdrop-filter: blur(12px);
     box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.5) !important;
-    animation: cengDropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: marcaDropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes cengDropdownIn {
+@keyframes marcaDropdownIn {
     from { opacity: 0; transform: translateY(-8px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.ceng-dropdown-title {
+.marca-dropdown-title {
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
@@ -311,7 +311,7 @@ body, .ceng-body {
     list-style: none;
 }
 
-.ceng-dropdown-menu .dropdown-item {
+.marca-dropdown-menu .dropdown-item {
     color: #e2e8f0;
     font-size: 13px;
     font-weight: 500;
@@ -322,49 +322,49 @@ body, .ceng-body {
     gap: 10px;
     transition: all 0.15s ease;
 }
-.ceng-dropdown-menu .dropdown-item i {
+.marca-dropdown-menu .dropdown-item i {
     font-size: 15px;
     width: 18px;
     text-align: center;
     color: #94a3b8;
     transition: color 0.15s;
 }
-.ceng-dropdown-menu .dropdown-item:hover {
+.marca-dropdown-menu .dropdown-item:hover {
     background-color: #334155;
     color: #ffffff;
 }
-.ceng-dropdown-menu .dropdown-item:hover i {
+.marca-dropdown-menu .dropdown-item:hover i {
     color: #38bdf8;
 }
-.ceng-dropdown-menu .dropdown-item.active {
+.marca-dropdown-menu .dropdown-item.active {
     background-color: rgba(4, 123, 7, 0.3) !important;
     color: #4ade80 !important;
     font-weight: 700;
 }
-.ceng-dropdown-menu .dropdown-item.active i {
+.marca-dropdown-menu .dropdown-item.active i {
     color: #4ade80 !important;
 }
 
-.ceng-dropdown-menu .dropdown-divider {
+.marca-dropdown-menu .dropdown-divider {
     border-color: rgba(255, 255, 255, 0.08);
     margin: 6px 0;
 }
 
 /* Área de Usuario / Derecha */
-.ceng-user-area {
+.marca-user-area {
     flex-shrink: 0;
 }
 
 /* Buscador Rápido */
-.ceng-quick-search {
+.marca-quick-search {
     position: relative;
     width: 210px;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.ceng-quick-search:focus-within {
+.marca-quick-search:focus-within {
     width: 280px;
 }
-.ceng-quick-search input {
+.marca-quick-search input {
     width: 100%;
     height: 38px;
     padding: 0 12px 0 34px;
@@ -376,12 +376,12 @@ body, .ceng-body {
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
-.ceng-quick-search input:focus {
+.marca-quick-search input:focus {
     border-color: #047B07;
     background-color: #0B1222;
     box-shadow: 0 0 0 3px rgba(4, 123, 7, 0.25);
 }
-.ceng-quick-search i {
+.marca-quick-search i {
     position: absolute;
     left: 12px;
     top: 50%;
@@ -391,7 +391,7 @@ body, .ceng-body {
 }
 
 /* Campana de Notificaciones */
-.ceng-alert-bell {
+.marca-alert-bell {
     position: relative;
     width: 38px;
     height: 38px;
@@ -405,12 +405,12 @@ body, .ceng-body {
     text-decoration: none;
     transition: all 0.2s ease;
 }
-.ceng-alert-bell:hover {
+.marca-alert-bell:hover {
     background: #334155;
     color: #ffffff;
     transform: scale(1.05);
 }
-.ceng-bell-pulse {
+.marca-bell-pulse {
     position: absolute;
     top: -2px;
     right: -2px;
@@ -418,13 +418,13 @@ body, .ceng-body {
     height: 10px;
     border-radius: 50%;
     background: #ef4444;
-    animation: cengPing 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+    animation: marcaPing 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
-@keyframes cengPing {
+@keyframes marcaPing {
     0% { transform: scale(1); opacity: 0.9; }
     75%, 100% { transform: scale(2.4); opacity: 0; }
 }
-.ceng-bell-badge {
+.marca-bell-badge {
     position: absolute;
     top: -5px;
     right: -5px;
@@ -443,7 +443,7 @@ body, .ceng-body {
 }
 
 /* Card Usuario en Topbar */
-.ceng-user-card {
+.marca-user-card {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -454,18 +454,18 @@ body, .ceng-body {
     cursor: pointer;
     transition: all 0.2s ease;
 }
-.ceng-user-card:hover {
+.marca-user-card:hover {
     background: #334155;
     border-color: rgba(255, 255, 255, 0.2);
 }
-.ceng-avatar {
+.marca-avatar {
     width: 34px;
     height: 34px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #047B07;
 }
-.ceng-user-fullname {
+.marca-user-fullname {
     font-size: 12px;
     font-weight: 700;
     color: #f8fafc;
@@ -475,12 +475,12 @@ body, .ceng-body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.ceng-user-role-badge {
+.marca-user-role-badge {
     font-size: 10px;
     font-weight: 600;
     color: #94a3b8;
 }
-.ceng-user-chevron {
+.marca-user-chevron {
     font-size: 10px;
     color: #64748b;
     margin-left: 2px;
@@ -489,13 +489,13 @@ body, .ceng-body {
 /* ==========================================================
    OFFCANVAS MÓVIL / TABLET
    ========================================================== */
-.ceng-offcanvas {
+.marca-offcanvas {
     background-color: #0E172A !important;
     color: #cbd5e1 !important;
     width: 310px !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
-.ceng-drawer-link {
+.marca-drawer-link {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -507,11 +507,11 @@ body, .ceng-body {
     font-weight: 600;
     transition: all 0.2s ease;
 }
-.ceng-drawer-link:hover {
+.marca-drawer-link:hover {
     background: #1E293B;
     color: #ffffff;
 }
-.ceng-drawer-acc-btn {
+.marca-drawer-acc-btn {
     background-color: #1E293B !important;
     color: #f8fafc !important;
     font-size: 13px !important;
@@ -520,10 +520,10 @@ body, .ceng-body {
     padding: 10px 14px !important;
     box-shadow: none !important;
 }
-.ceng-drawer-acc-btn::after {
+.marca-drawer-acc-btn::after {
     filter: invert(1);
 }
-.ceng-drawer-sublink {
+.marca-drawer-sublink {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -536,7 +536,7 @@ body, .ceng-body {
     margin-left: 6px;
     transition: all 0.15s ease;
 }
-.ceng-drawer-sublink:hover {
+.marca-drawer-sublink:hover {
     color: #ffffff;
     border-left-color: #047B07;
     background: rgba(255, 255, 255, 0.04);
@@ -545,14 +545,14 @@ body, .ceng-body {
 /* ==========================================================
    VIEWPORT PRINCIPAL (100% ANCHO DE PANTALLA)
    ========================================================== */
-#wrapper, .ceng-wrapper {
+#wrapper, .marca-wrapper {
     display: block;
     width: 100%;
     min-height: calc(100vh - 68px);
     background-color: var(--bg-dark);
 }
 
-#content-wrapper, .ceng-main-viewport {
+#content-wrapper, .marca-main-viewport {
     width: 100%;
     min-height: calc(100vh - 68px);
     display: block;
@@ -716,7 +716,7 @@ body, .ceng-body {
 }
 
 /* ==========================================================
-   TABLAS ESTANDARIZADAS CENGFARMA
+   TABLAS ESTANDARIZADAS Farmacia Prueba
    ========================================================== */
 .table {
     --bs-table-bg: transparent;
@@ -785,7 +785,7 @@ body, .ceng-body {
 }
 
 /* Badges y Acentos */
-.badge-cengfarma {
+.badge-marca {
     background-color: var(--accent-primary);
     color: #ffffff;
     font-weight: 600;
@@ -855,7 +855,7 @@ body, .ceng-body {
     .page-content {
         padding: 16px;
     }
-    .ceng-topbar-inner {
+    .marca-topbar-inner {
         padding: 0 16px;
     }
 }

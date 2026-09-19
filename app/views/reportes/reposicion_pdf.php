@@ -38,7 +38,7 @@
     <div class="cabecera">
         <div>
             <?php 
-                $rawLogo = !empty($data['config']['logo']['valor']) ? $data['config']['logo']['valor'] : 'img/cengfarma_banner.png';
+                $rawLogo = !empty($data['config']['logo']['valor']) ? $data['config']['logo']['valor'] : 'img/logo_banner.png';
                 $logoUrl = (strpos($rawLogo, 'http') === 0) ? $rawLogo : BASE_URL . ltrim($rawLogo, '/');
             ?>
             <img src="<?php echo htmlspecialchars($logoUrl); ?>" class="logo" alt="Logo">

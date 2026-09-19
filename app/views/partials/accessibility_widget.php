@@ -1,6 +1,6 @@
 <?php
 /**
- * VT VALETEC - Widget de Accesibilidad y Lectura Fácil para CENGFARMA
+ * VT VALETEC - Widget de Accesibilidad y Lectura Fácil para Farmacia Prueba
  * Diseñado especialmente para adultos mayores y personas con visión reducida
  * WCAG 2.1 Nivel AA / ADA - 100% Nativo
  */
@@ -36,7 +36,7 @@ $posClasses = $posMap[$a11yPosicion] ?? $posMap['bottom-right'];
 <!-- 2. Fondo Oscuro al Abrir Modal -->
 <div id="a11yBackdrop" class="a11y-modal-backdrop" aria-hidden="true"></div>
 
-<!-- 3. Botón Flotante Disparador (Verde CENGFARMA) -->
+<!-- 3. Botón Flotante Disparador (Verde Farmacia Prueba) -->
 <button type="button" 
         id="a11yTriggerBtn" 
         class="a11y-trigger-btn <?php echo $posClasses['btn']; ?>" 
@@ -95,7 +95,7 @@ $posClasses = $posMap[$a11yPosicion] ?? $posMap['bottom-right'];
             </div>
         </div>
 
-        <!-- Tarjeta 2: Contraste Nítido CENGFARMA -->
+        <!-- Tarjeta 2: Contraste Nítido Farmacia Prueba -->
         <div class="a11y-senior-card" id="a11yCardContrast">
             <div class="a11y-card-info">
                 <div class="a11y-card-icon-bubble">

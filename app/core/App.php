@@ -78,7 +78,7 @@ class App {
             <html lang="es">
             <head>
                 <meta charset="UTF-8">
-                <title>Error del Sistema (500) | CENGFARMA</title>
+                <title>Error del Sistema (500) | Farmacia Prueba</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <style>
                     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FFF3EC; color: #1A2238; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }

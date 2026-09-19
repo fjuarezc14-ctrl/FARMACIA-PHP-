@@ -39,7 +39,7 @@ if (!class_exists('Database')) {
                 <html lang="es">
                 <head>
                     <meta charset="UTF-8">
-                    <title>Servicio Temporalmente No Disponible | CENGFARMA</title>
+                    <title>Servicio Temporalmente No Disponible | Farmacia Prueba</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <style>
                         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FFF3EC; color: #1A2238; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
@@ -52,7 +52,7 @@ if (!class_exists('Database')) {
                 </head>
                 <body>
                     <div class="card">
-                        <h2>CENGFARMA</h2>
+                        <h2>Farmacia Prueba</h2>
                         <p><strong>El servicio de base de datos no se encuentra disponible temporalmente.</strong></p>
                         <p>El sistema se encuentra reintentando la sincronización con el servidor de datos. Por favor espere unos instantes y recargue la página.</p>
                         <button onclick="location.reload()" class="btn">🔄 Reintentar Conexión</button>

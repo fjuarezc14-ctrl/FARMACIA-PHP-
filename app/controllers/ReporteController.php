@@ -22,7 +22,7 @@ class ReporteController extends Controller {
         $filtradas = $ventaModel->getByDateRange($fecha_inicio, $fecha_fin);
         $configModel = $this->model('Configuracion');
         $configs = $configModel->getAll();
-        $nombreBotica = $configs['nombre_botica']['valor'] ?? 'BOTICA CENGFARMA';
+        $nombreBotica = $configs['nombre_botica']['valor'] ?? 'FARMACIA PRUEBA';
         $rucBotica = $configs['ruc']['valor'] ?? '';
         
         // Cabeceras Excel CSV
@@ -155,7 +155,7 @@ class ReporteController extends Controller {
         
         $configModel = $this->model('Configuracion');
         $configs = $configModel->getAll();
-        $nombreBotica = $configs['nombre_botica']['valor'] ?? 'BOTICA CENGFARMA';
+        $nombreBotica = $configs['nombre_botica']['valor'] ?? 'FARMACIA PRUEBA';
         $rucBotica = $configs['ruc']['valor'] ?? '';
 
         header("Content-Type: text/csv; charset=utf-8");
