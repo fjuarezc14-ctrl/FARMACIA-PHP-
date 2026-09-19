@@ -37,8 +37,11 @@ class Producto {
         $params = [];
 
         if (!empty($filtros['search'])) {
-            $where[] = "(p.codigo_barras LIKE :s OR p.nombre_comercial LIKE :s OR p.nombre_generico LIKE :s)";
-            $params[':s'] = "%" . $filtros['search'] . "%";
+            $where[] = "(p.codigo_barras LIKE :s1 OR p.nombre_comercial LIKE :s2 OR p.nombre_generico LIKE :s3)";
+            $s = "%" . $filtros['search'] . "%";
+            $params[':s1'] = $s;
+            $params[':s2'] = $s;
+            $params[':s3'] = $s;
         }
         if (!empty($filtros['id_categoria'])) {
             $where[] = "p.id_categoria = :cat";
@@ -81,8 +84,11 @@ class Producto {
         $params = [];
 
         if (!empty($filtros['search'])) {
-            $where[] = "(p.codigo_barras LIKE :s OR p.nombre_comercial LIKE :s OR p.nombre_generico LIKE :s)";
-            $params[':s'] = "%" . $filtros['search'] . "%";
+            $where[] = "(p.codigo_barras LIKE :s1 OR p.nombre_comercial LIKE :s2 OR p.nombre_generico LIKE :s3)";
+            $s = "%" . $filtros['search'] . "%";
+            $params[':s1'] = $s;
+            $params[':s2'] = $s;
+            $params[':s3'] = $s;
         }
         if (!empty($filtros['id_categoria'])) {
             $where[] = "p.id_categoria = :cat";

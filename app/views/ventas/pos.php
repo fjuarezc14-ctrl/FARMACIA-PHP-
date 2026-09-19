@@ -913,7 +913,8 @@ function filtrarCatalogo() {
     let items = document.querySelectorAll("#catList .item-card");
     let visibles = 0;
     items.forEach(it => {
-        const ok = it.getAttribute("data-busqueda").indexOf(input) > -1;
+        const busq = (it.getAttribute("data-busqueda") || "").toLowerCase();
+        const ok = busq.indexOf(input) > -1;
         it.style.display = ok ? "flex" : "none";
         if (ok) visibles++;
     });

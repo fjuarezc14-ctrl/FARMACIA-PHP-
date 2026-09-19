@@ -24,9 +24,11 @@ class Cliente {
             $stmt = $this->conn->prepare("SELECT * FROM clientes WHERE estado = 1 ORDER BY id = 1 DESC, nombres ASC LIMIT $limitInt OFFSET $offsetInt");
             $stmt->execute();
         } else {
-            $stmt = $this->conn->prepare("SELECT * FROM clientes WHERE estado = 1 AND (num_documento LIKE :s OR nombres LIKE :s OR telefono LIKE :s) ORDER BY nombres ASC LIMIT $limitInt OFFSET $offsetInt");
+            $stmt = $this->conn->prepare("SELECT * FROM clientes WHERE estado = 1 AND (num_documento LIKE :s1 OR nombres LIKE :s2 OR telefono LIKE :s3) ORDER BY nombres ASC LIMIT $limitInt OFFSET $offsetInt");
             $term = "%$search%";
-            $stmt->bindValue(':s', $term);
+            $stmt->bindValue(':s1', $term);
+            $stmt->bindValue(':s2', $term);
+            $stmt->bindValue(':s3', $term);
             $stmt->execute();
         }
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -41,9 +43,11 @@ class Cliente {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return $row ? (int)$row['total'] : 0;
         } else {
-            $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM clientes WHERE estado = 1 AND (num_documento LIKE :s OR nombres LIKE :s OR telefono LIKE :s)");
+            $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM clientes WHERE estado = 1 AND (num_documento LIKE :s1 OR nombres LIKE :s2 OR telefono LIKE :s3)");
             $term = "%$search%";
-            $stmt->bindValue(':s', $term);
+            $stmt->bindValue(':s1', $term);
+            $stmt->bindValue(':s2', $term);
+            $stmt->bindValue(':s3', $term);
             $stmt->execute();
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return $row ? (int)$row['total'] : 0;

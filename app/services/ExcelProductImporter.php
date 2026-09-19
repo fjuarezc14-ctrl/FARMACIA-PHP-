@@ -205,7 +205,7 @@ class ExcelProductImporter {
 
         $stmtInsertLote = $this->conn->prepare("
             INSERT INTO inventario_lotes (id_producto, codigo_lote, fecha_vencimiento, cantidad_inicial, cantidad_disponible, estado)
-            VALUES (:prod, :lote, :venc, :cant, :cant, 1)
+            VALUES (:prod, :lote, :venc, :cant_ini, :cant_disp, 1)
         ");
 
         $stmtInsertKardex = $this->conn->prepare("
@@ -390,7 +390,8 @@ class ExcelProductImporter {
                             ':prod' => $newProdId,
                             ':lote' => $loteCodigo,
                             ':venc' => $fechaVenc,
-                            ':cant' => $stock
+                            ':cant_ini' => $stock,
+                            ':cant_disp' => $stock
                         ]);
                         $stmtInsertKardex->execute([
                             ':prod' => $newProdId,

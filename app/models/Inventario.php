@@ -237,12 +237,13 @@ class Inventario {
 
         // 2. Insertar Lote
         $stmt2 = $this->conn->prepare("INSERT INTO inventario_lotes (id_producto, id_compra_detalle, codigo_lote, fecha_vencimiento, cantidad_inicial, cantidad_disponible) 
-                                       VALUES (:prod, :det, :lote, :venc, :cant, :cant)");
+                                       VALUES (:prod, :det, :lote, :venc, :cant_ini, :cant_disp)");
         $stmt2->bindParam(':prod', $id_producto);
         $stmt2->bindParam(':det', $id_compra_detalle);
         $stmt2->bindParam(':lote', $lote);
         $stmt2->bindParam(':venc', $vencimiento);
-        $stmt2->bindParam(':cant', $cantidad);
+        $stmt2->bindParam(':cant_ini', $cantidad);
+        $stmt2->bindParam(':cant_disp', $cantidad);
         $stmt2->execute();
 
         // 3. Insertar Kardex

@@ -109,8 +109,10 @@ class Punto {
         $params = [];
 
         if (!empty($search)) {
-            $where[] = "(c.nombres LIKE :search OR c.num_documento LIKE :search OR c.telefono LIKE :search)";
-            $params[':search'] = "%$search%";
+            $where[] = "(c.nombres LIKE :s1 OR c.num_documento LIKE :s2 OR c.telefono LIKE :s3)";
+            $params[':s1'] = "%$search%";
+            $params[':s2'] = "%$search%";
+            $params[':s3'] = "%$search%";
         }
 
         $whereSql = implode(" AND ", $where);
@@ -139,8 +141,10 @@ class Punto {
         $params = [];
 
         if (!empty($search)) {
-            $where[] = "(c.nombres LIKE :search OR c.num_documento LIKE :search OR c.telefono LIKE :search)";
-            $params[':search'] = "%$search%";
+            $where[] = "(c.nombres LIKE :s1 OR c.num_documento LIKE :s2 OR c.telefono LIKE :s3)";
+            $params[':s1'] = "%$search%";
+            $params[':s2'] = "%$search%";
+            $params[':s3'] = "%$search%";
         }
 
         $whereSql = implode(" AND ", $where);
