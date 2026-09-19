@@ -185,6 +185,21 @@ kbd.pos-kbd { background: #f1f3f5; color: var(--text-secondary); border: 1px sol
 .btn-confirm:hover { background: var(--accent-hover); }
 .btn-confirm:disabled { opacity: .7; }
 
+/* ---- Notificación de venta ---- */
+.pos-flash { position: relative; overflow: hidden; }
+.pos-flash-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--accent-primary); opacity: .5; transform-origin: left; }
+.pos-flash.paused .pos-flash-bar { animation-play-state: paused !important; }
+@keyframes posFlashBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* ---- Comprobante en modal ---- */
+.pay-section-lbl { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+#modalCobro .seg { margin-top: 0; margin-bottom: 6px; }
+#modalCobro .seg label { font-size: 13px; padding: 7px 4px; }
+.comp-warn { display: none; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 600; color: var(--danger); background: var(--danger-bg); border-radius: 8px; padding: 6px 10px; margin-bottom: 8px; }
+.comp-warn.show { display: flex; }
+.comp-warn button { border: none; background: var(--danger); color: #fff; border-radius: 6px; padding: 3px 10px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.comp-cli { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+
 /* ---- Responsive ---- */
 .pos-mobile-tabs { display: none; gap: 8px; margin-bottom: 10px; }
 .pos-tab-btn { flex: 1; padding: 10px; font-weight: 700; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-secondary); border-radius: 10px; }
@@ -212,27 +227,29 @@ kbd.pos-kbd { background: #f1f3f5; color: var(--text-secondary); border: 1px sol
     <button type="button" class="pos-tab-btn active" id="btnTabCart" onclick="switchPosTab('cart')"><i class="bi bi-receipt"></i> Venta <span class="badge rounded-pill ms-1" id="tabCartCount">0</span></button>
 </div>
 
-<!-- Notificaciones PHP -->
+<!-- Notificaciones PHP (se cierran solas o con la X) -->
 <?php if(isset($_SESSION['mensaje_pos'])): ?>
-    <div class="alert alert-success py-2 px-3 mb-3" style="background-color: var(--success-bg); color: var(--accent-primary); border: 1px solid var(--accent-primary); font-weight:600; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-        <span><i class="bi bi-check-circle-fill"></i> <?php echo $_SESSION['mensaje_pos']; unset($_SESSION['mensaje_pos']); ?></span>
+    <div class="alert alert-success alert-dismissible fade show pos-flash py-2 px-3 mb-3" role="alert" data-autoclose="8000" style="background-color: var(--success-bg); color: var(--accent-primary); border: 1px solid var(--accent-primary); font-weight:600; display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding-right: 3rem !important;">
+        <span class="me-auto"><i class="bi bi-check-circle-fill"></i> <?php echo $_SESSION['mensaje_pos']; unset($_SESSION['mensaje_pos']); ?></span>
         <?php if(isset($_SESSION['last_ticket'])): ?>
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-success" onclick="window.open('<?php echo BASE_URL; ?>venta/ticket/<?php echo $_SESSION['last_ticket']; ?>', 'Ticket', 'width=400,height=600')"><i class="bi bi-printer"></i> Tiquetera</button>
                 <button class="btn btn-sm btn-success" onclick="window.open('<?php echo BASE_URL; ?>venta/pdf/<?php echo $_SESSION['last_ticket']; unset($_SESSION['last_ticket']); ?>', 'PDF', 'width=900,height=700')"><i class="bi bi-file-earmark-pdf-fill"></i> PDF A4</button>
             </div>
         <?php endif; ?>
-
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar" style="padding: 0.9rem 1rem;"></button>
+        <div class="pos-flash-bar"></div>
     </div>
 <?php endif; ?>
 <?php if(isset($_SESSION['error_pos']) || isset($_SESSION['error'])): ?>
-    <div class="alert alert-danger py-2 px-3 mb-3" style="background-color: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger);">
+    <div class="alert alert-danger alert-dismissible fade show pos-flash py-2 px-3 mb-3" role="alert" style="background-color: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); padding-right: 3rem !important;">
         <i class="bi bi-exclamation-triangle-fill"></i>
         <?php
         $err = $_SESSION['error_pos'] ?? $_SESSION['error'];
         unset($_SESSION['error_pos'], $_SESSION['error']);
         echo htmlspecialchars($err, ENT_QUOTES, 'UTF-8');
         ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar" style="padding: 0.9rem 1rem;"></button>
     </div>
 <?php endif; ?>
 
@@ -322,11 +339,6 @@ kbd.pos-kbd { background: #f1f3f5; color: var(--text-secondary); border: 1px sol
                     <span id="puntosBlock" class="pts" style="display:none;"><i class="bi bi-star-fill text-warning"></i> <span id="lblPuntos">0</span> pts</span>
                 </div>
 
-                <div class="seg" role="radiogroup" aria-label="Tipo de comprobante">
-                    <input type="radio" name="tipo_comprobante" id="tcTicket" value="Ticket" checked><label for="tcTicket"><i class="bi bi-receipt"></i> Ticket</label>
-                    <input type="radio" name="tipo_comprobante" id="tcBoleta" value="Boleta"><label for="tcBoleta"><i class="bi bi-file-text"></i> Boleta</label>
-                    <input type="radio" name="tipo_comprobante" id="tcFactura" value="Factura"><label for="tcFactura"><i class="bi bi-file-earmark-text"></i> Factura</label>
-                </div>
             </div>
 
             <div class="ticket-items" id="cartContainer">
@@ -420,6 +432,19 @@ function posBilletes($ctx) { ?>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
+                <span class="pay-section-lbl">Comprobante</span>
+                <div class="seg" role="radiogroup" aria-label="Tipo de comprobante">
+                    <input type="radio" form="formVenta" name="tipo_comprobante" id="tcTicket" value="Ticket" checked onchange="validarComprobante()"><label for="tcTicket">Ticket</label>
+                    <input type="radio" form="formVenta" name="tipo_comprobante" id="tcBoleta" value="Boleta" onchange="validarComprobante()"><label for="tcBoleta">Boleta</label>
+                    <input type="radio" form="formVenta" name="tipo_comprobante" id="tcFactura" value="Factura" onchange="validarComprobante()"><label for="tcFactura">Factura</label>
+                </div>
+                <div class="comp-warn" id="compWarn">
+                    <span id="compWarnTxt"></span>
+                    <button type="button" onclick="elegirClienteDesdeCobro()">Elegir cliente</button>
+                </div>
+                <div class="comp-cli" id="compCli"></div>
+
+                <span class="pay-section-lbl">Método de pago</span>
                 <div class="pay-methods" role="radiogroup" aria-label="Método de pago">
                     <input type="radio" form="formVenta" name="metodo_pago" id="btnEfecti" value="Efectivo" checked onchange="cambiarMetodoPago('Efectivo')">
                     <label for="btnEfecti">Efectivo</label>
@@ -714,6 +739,11 @@ function seleccionarCliente(id) {
     inputFiltroCli.value = etiquetaCliente(c);
     inputFiltroCli.blur();
     evaluarClientePuntos();
+    // Si se vino desde el cobro (Boleta/Factura sin cliente), volver al modal de cobro
+    if (reabrirCobroTrasCliente) {
+        reabrirCobroTrasCliente = false;
+        setTimeout(() => abrirCobro(), 400);
+    }
 }
 
 // Compatibilidad con la firma anterior
@@ -748,6 +778,7 @@ inputFiltroCli.addEventListener('keydown', function(e) {
         e.preventDefault();
         if (opts[cliActiveIdx]) seleccionarCliente(opts[cliActiveIdx].dataset.id);
     } else if (e.key === 'Escape') {
+        reabrirCobroTrasCliente = false;
         cerrarResultadosCliente();
         this.blur();
     }
@@ -1226,6 +1257,41 @@ function guardarClientePos(e) {
 // -----------------------------------------
 const modalCobroEl = document.getElementById('modalCobro');
 
+// Boleta y Factura exigen cliente identificado; Factura además exige RUC
+function esClienteRuc(c) {
+    return !!c && (String(c.tipo).toUpperCase() === 'RUC' || /^(10|15|17|20)\d{9}$/.test(String(c.doc)));
+}
+
+function problemaComprobante() {
+    const tipo = document.querySelector('input[name="tipo_comprobante"]:checked').value;
+    const c = clienteActual;
+    const sinCliente = !c || c.id == 1;
+    if (tipo === 'Boleta' && sinCliente) return 'La boleta requiere un cliente identificado (DNI/RUC).';
+    if (tipo === 'Factura' && sinCliente) return 'La factura requiere un cliente con RUC.';
+    if (tipo === 'Factura' && !esClienteRuc(c)) return 'La factura requiere un cliente con RUC (el actual tiene ' + (c.tipo || 'DOC') + ').';
+    return '';
+}
+
+function validarComprobante() {
+    const msg = problemaComprobante();
+    const warn = document.getElementById('compWarn');
+    document.getElementById('compWarnTxt').textContent = msg;
+    warn.classList.toggle('show', msg !== '');
+    const c = clienteActual;
+    document.getElementById('compCli').innerHTML = msg === '' && c
+        ? '<i class="bi bi-person"></i> ' + escHtml(c.id == 1 ? 'Público General' : (c.tipo + ' ' + c.doc + ' · ' + c.nombres))
+        : '';
+    return msg === '';
+}
+
+let reabrirCobroTrasCliente = false;
+function elegirClienteDesdeCobro() {
+    reabrirCobroTrasCliente = true;
+    bootstrap.Modal.getOrCreateInstance(modalCobroEl).hide();
+    if (window.matchMedia('(max-width: 991px)').matches) switchPosTab('cart');
+    setTimeout(() => { inputFiltroCli.focus(); }, 350);
+}
+
 function abrirCobro(metodo) {
     if (Object.keys(carrito).length === 0) { alert("El carrito está vacío. Agregue productos antes de cobrar."); return; }
     if (!validarMotivoDescuento()) return;
@@ -1241,6 +1307,7 @@ function abrirCobro(metodo) {
         document.getElementById(map[metodo]).checked = true;
     }
     renderQuickCash();
+    validarComprobante();
     bootstrap.Modal.getOrCreateInstance(modalCobroEl).show();
 }
 
@@ -1248,6 +1315,7 @@ modalCobroEl.addEventListener('shown.bs.modal', function() {
     cambiarMetodoPago(document.querySelector('input[name="metodo_pago"]:checked').value);
 });
 modalCobroEl.addEventListener('hidden.bs.modal', function() {
+    if (reabrirCobroTrasCliente) return;
     if (window.matchMedia('(min-width: 992px)').matches) document.getElementById('buscadorPOS').focus();
 });
 
@@ -1388,6 +1456,11 @@ function confirmarVenta() {
     }
 
     if (!validarMotivoDescuento()) { bootstrap.Modal.getOrCreateInstance(modalCobroEl).hide(); return; }
+
+    if (!validarComprobante()) {
+        alert(problemaComprobante());
+        return;
+    }
 
     let metodo = document.querySelector('input[name="metodo_pago"]:checked').value;
     const inPago = document.getElementById('inPago');
@@ -1531,6 +1604,19 @@ document.addEventListener('keydown', function(e) {
 // Evitar que Enter en un campo del ticket (motivo, CMP) envíe la venta sin validar
 document.getElementById('formVenta').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.preventDefault();
+});
+
+// Notificaciones: cierre automático (se pausa con el mouse encima) y manual con la X
+document.querySelectorAll('.pos-flash[data-autoclose]').forEach(el => {
+    const ms = parseInt(el.dataset.autoclose) || 8000;
+    const bar = el.querySelector('.pos-flash-bar');
+    let restante = ms, inicio = Date.now(), timer = null;
+    const cerrar = () => bootstrap.Alert.getOrCreateInstance(el).close();
+    const iniciar = () => { inicio = Date.now(); timer = setTimeout(cerrar, restante); };
+    if (bar) bar.style.animation = `posFlashBar ${ms}ms linear forwards`;
+    el.addEventListener('mouseenter', () => { clearTimeout(timer); restante -= Date.now() - inicio; el.classList.add('paused'); });
+    el.addEventListener('mouseleave', () => { el.classList.remove('paused'); iniciar(); });
+    iniciar();
 });
 
 // Inicialización

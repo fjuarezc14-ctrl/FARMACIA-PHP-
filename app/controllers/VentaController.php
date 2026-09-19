@@ -153,6 +153,30 @@ class VentaController extends Controller {
             $numero_t = str_pad($nuevo_num, 6, '0', STR_PAD_LEFT);
             $total = (float)$_POST['total_venta'];
             $id_cliente = (int)$_POST['id_cliente'];
+
+            // Boleta y Factura requieren cliente identificado; Factura además requiere RUC
+            if (!in_array($tipo_comprobante, ['Ticket', 'Boleta', 'Factura'], true)) {
+                $_SESSION['error_pos'] = "Error: Tipo de comprobante no válido.";
+                header('Location: ' . BASE_URL . 'venta/pos');
+                exit;
+            }
+            if ($tipo_comprobante !== 'Ticket') {
+                $stCli = $conn->prepare("SELECT tipo_documento, num_documento FROM clientes WHERE id = ? AND estado = 1");
+                $stCli->execute([$id_cliente]);
+                $cliDoc = $stCli->fetch(PDO::FETCH_ASSOC);
+                $esRuc = $cliDoc && (strtoupper((string)$cliDoc['tipo_documento']) === 'RUC' || preg_match('/^(10|15|17|20)\d{9}$/', (string)$cliDoc['num_documento']));
+                $errorComp = null;
+                if (!$cliDoc || $id_cliente == 1) {
+                    $errorComp = "Error: La $tipo_comprobante requiere seleccionar un cliente identificado.";
+                } elseif ($tipo_comprobante === 'Factura' && !$esRuc) {
+                    $errorComp = "Error: La Factura requiere un cliente con RUC.";
+                }
+                if ($errorComp) {
+                    $_SESSION['error_pos'] = $errorComp;
+                    header('Location: ' . BASE_URL . 'venta/pos');
+                    exit;
+                }
+            }
             
             $puntoModel = $this->model('Punto');
             $configPuntos = $puntoModel->getConfig();
