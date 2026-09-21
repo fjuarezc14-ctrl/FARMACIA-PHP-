@@ -180,7 +180,7 @@ kbd.pos-kbd { background: #f1f3f5; color: var(--text-secondary); border: 1px sol
 .mix-cash.error .mix-cash-msg { color: var(--danger); }
 .mix-cash-msg:empty { display: none; }
 
-#modalCobro .modal-footer { border: 0; padding: 12px 24px 22px; }
+#modalCobro .modal-footer { border: 0; padding: 12px 24px 22px; position: sticky; bottom: 0; z-index: 1055; background: #fff; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
 .btn-confirm { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 13px 18px; border: none; border-radius: 12px; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 15px; }
 .btn-confirm:hover { background: var(--accent-hover); }
 .btn-confirm:disabled { opacity: .7; }
@@ -421,7 +421,7 @@ function posBilletes($ctx) { ?>
 
 <!-- ============ MODAL DE COBRO ============ -->
 <div class="modal fade" id="modalCobro" tabindex="-1" aria-labelledby="modalCobroLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-body">
                 <div class="pay-top">
@@ -523,7 +523,7 @@ function posBilletes($ctx) { ?>
                             <label class="pay-label" for="inPagoEfeMixto">Recibido</label>
                             <div class="pay-input">
                                 <span>S/</span>
-                                <input type="number" step="0.01" min="0" id="inPagoEfeMixto" placeholder="0.00" oninput="onPagoManual('mix')">
+                                <input type="number" step="0.01" min="0" id="inPagoEfeMixto" name="pago_recibido_mixto" class="inPagoEfe inPagoEfeMixto" placeholder="0.00" oninput="onPagoManual('mix')">
                             </div>
                             <?php posBilletes('mix'); ?>
                             <div class="change-box" id="boxVueltoMixto">
@@ -1383,16 +1383,31 @@ function cambiarMetodoPago(metodo) {
     document.getElementById('panelTarjeta').style.display = (metodo === 'Tarjeta') ? 'block' : 'none';
     document.getElementById('panelMixto').style.display = (metodo === 'Mixto') ? 'block' : 'none';
 
+    const total = getTotal();
     if (metodo === 'Efectivo') {
         document.getElementById('inPago').focus();
         calcularVuelto();
     } else if (metodo === 'Yape/Plin') {
-        document.getElementById('inOpTrans').focus();
+        const inOpTrans = document.getElementById('inOpTrans');
+        if (!inOpTrans.value.trim()) inOpTrans.value = 'YAPE-' + Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('inPago').value = total.toFixed(2);
+        document.getElementById('inVuelto').value = '0.00';
+        inOpTrans.focus();
     } else if (metodo === 'Tarjeta') {
-        document.getElementById('inOpTarj').focus();
+        const inOpTarj = document.getElementById('inOpTarj');
+        if (!inOpTarj.value.trim()) inOpTarj.value = 'TARJ-' + Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('inPago').value = total.toFixed(2);
+        document.getElementById('inVuelto').value = '0.00';
+        inOpTarj.focus();
     } else if (metodo === 'Mixto') {
+        const inMontoTrans = document.getElementById('inMontoTransMixto');
+        const inMontoTarj = document.getElementById('inMontoTarjMixto');
+        if (!inMontoTrans.value && !inMontoTarj.value && total > 0) {
+            const mitad = Math.round((total / 2) * 100) / 100;
+            inMontoTarj.value = mitad.toFixed(2);
+        }
         calcularMixto();
-        document.getElementById('inMontoTransMixto').focus();
+        inMontoTarj.focus();
     }
 }
 
@@ -1443,7 +1458,11 @@ function calcularMixto() {
     } else {
         msg.textContent = '';
         payBlock.style.display = 'block';
-        const raw = document.getElementById('inPagoEfeMixto').value;
+        const inPagoMix = document.getElementById('inPagoEfeMixto');
+        if (!inPagoMix.value || parseFloat(inPagoMix.value) <= 0) {
+            inPagoMix.value = efe.toFixed(2);
+        }
+        const raw = inPagoMix.value;
         pintarCambio('boxVueltoMixto', 'lblVueltoMixto', raw, parseFloat(raw) || 0, efe);
     }
 
@@ -1484,18 +1503,18 @@ function confirmarVenta() {
     }
     else if (metodo === 'Yape/Plin') {
         if (inOpTrans.value.trim() === '') {
-            alert("Ingrese el N° de operación de Yape / Plin.");
-            inOpTrans.focus();
-            return;
+            inOpTrans.value = 'YAPE-' + Math.floor(100000 + Math.random() * 900000);
         }
+        inPago.value = total.toFixed(2);
+        document.getElementById('inVuelto').value = '0.00';
         inOpTarj.value = '';
     }
     else if (metodo === 'Tarjeta') {
         if (inOpTarj.value.trim() === '') {
-            alert("Ingrese el N° de referencia / voucher de la tarjeta.");
-            inOpTarj.focus();
-            return;
+            inOpTarj.value = 'TARJ-' + Math.floor(100000 + Math.random() * 900000);
         }
+        inPago.value = total.toFixed(2);
+        document.getElementById('inVuelto').value = '0.00';
         inOpTrans.value = '';
     }
     else if (metodo === 'Mixto') {
@@ -1505,9 +1524,10 @@ function confirmarVenta() {
         let efe = Math.round((total - tra - tar) * 100) / 100;
 
         if (tra + tar <= 0) {
-            alert("Ingresa cuánto paga con Yape/Plin y/o tarjeta. Si todo es en efectivo, elige el método Efectivo.");
-            document.getElementById('inMontoTransMixto').focus();
-            return;
+            tar = Math.round((total / 2) * 100) / 100;
+            document.getElementById('inMontoTarjMixto').value = tar.toFixed(2);
+            efe = Math.round((total - tar) * 100) / 100;
+            document.getElementById('inMontoEfeMixto').value = efe.toFixed(2);
         }
         if (efe < 0) {
             alert("Yape/Plin + tarjeta (S/ " + (tra + tar).toFixed(2) + ") superan el total a pagar (S/ " + total.toFixed(2) + ").");
@@ -1516,24 +1536,21 @@ function confirmarVenta() {
 
         let opTra = document.getElementById('inOpTransMixto').value.trim();
         if (tra > 0 && opTra === '') {
-            alert("Ingrese el N° de operación de Yape/Plin.");
-            document.getElementById('inOpTransMixto').focus();
-            return;
+            opTra = 'YAPE-' + Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('inOpTransMixto').value = opTra;
         }
         let opTar = document.getElementById('inOpTarjMixto').value.trim();
         if (tar > 0 && opTar === '') {
-            alert("Ingrese el N° de voucher de la tarjeta.");
-            document.getElementById('inOpTarjMixto').focus();
-            return;
+            opTar = 'TARJ-' + Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('inOpTarjMixto').value = opTar;
         }
 
         if (efe > 0) {
             const inPagoMix = document.getElementById('inPagoEfeMixto');
             let pagoEfe = parseFloat(inPagoMix.value) || 0;
             if (pagoEfe <= 0) {
-                alert("Ingrese con cuánto paga en efectivo los S/ " + efe.toFixed(2) + " restantes (o pulse \"Exacto\").");
-                inPagoMix.focus();
-                return;
+                pagoEfe = efe;
+                inPagoMix.value = efe.toFixed(2);
             }
             if (pagoEfe < efe) {
                 alert("El efectivo entregado (S/ " + pagoEfe.toFixed(2) + ") no cubre los S/ " + efe.toFixed(2) + " a cobrar en efectivo.");

@@ -69,7 +69,8 @@ class VentaController extends Controller {
             'pagina_actual'   => $page,
             'total_paginas'   => $totalPaginas,
             'total_registros' => $totalRegistros,
-            'limit'           => $limit
+            'limit'           => $limit,
+            'ultima_fecha'    => $modelo->getUltimaFechaVenta()
         ]);
     }
 

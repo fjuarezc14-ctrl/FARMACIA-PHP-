@@ -78,12 +78,17 @@
                 </select>
             </div>
             <div class="col-12 d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-secondary border-opacity-25 flex-wrap gap-2">
-                <div class="text-muted" style="font-size: 12px;">
-                    <i class="bi bi-funnel-fill text-success"></i> Se encontraron <strong><?php echo $data['total_registros'] ?? count($data['ventas']); ?></strong> ventas registradas.
+                <div class="text-muted d-flex align-items-center gap-2" style="font-size: 12px;">
+                    <span><i class="bi bi-funnel-fill text-success"></i> Se encontraron <strong><?php echo $data['total_registros'] ?? count($data['ventas']); ?></strong> ventas.</span>
+                    <?php if(!empty($data['ultima_fecha'])): ?>
+                    <span class="badge bg-light text-secondary border d-none d-md-inline-block">
+                        <i class="bi bi-clock-history"></i> Última venta: <?php echo date('d/m/Y H:i', strtotime($data['ultima_fecha'])); ?>
+                    </span>
+                    <?php endif; ?>
                 </div>
-                <div class="d-flex gap-2">
-                    <a href="<?php echo BASE_URL; ?>venta/index" class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-x-circle"></i> Limpiar
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                    <a href="<?php echo BASE_URL; ?>venta/index" class="btn btn-sm btn-outline-secondary" title="Quitar todos los filtros">
+                        <i class="bi bi-arrow-counterclockwise"></i> Limpiar Filtros
                     </a>
                     <button type="submit" class="btn btn-sm btn-success fw-bold">
                         <i class="bi bi-search"></i> Filtrar Historial
@@ -110,7 +115,24 @@
                 </thead>
                 <tbody>
                     <?php if(empty($data['ventas'])): ?>
-                    <tr><td colspan="8" class="text-center text-muted py-4">No se encontraron ventas para los filtros seleccionados.</td></tr>
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-receipt-cutoff text-muted" style="font-size: 40px;"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1" style="color: var(--text-primary);">No se encontraron ventas para los filtros seleccionados</h6>
+                            <?php if(!empty($data['ultima_fecha'])): ?>
+                                <p class="text-muted small mb-3">
+                                    La última venta registrada en la base de datos se realizó el <strong><?php echo date('d/m/Y \a \l\a\s H:i', strtotime($data['ultima_fecha'])); ?></strong>.
+                                </p>
+                            <?php else: ?>
+                                <p class="text-muted small mb-3">No hay registros de ventas que coincidan con estos criterios.</p>
+                            <?php endif; ?>
+                            <a href="<?php echo BASE_URL; ?>venta/index" class="btn btn-sm btn-success fw-bold px-3">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Ver Todas las Ventas Recientes
+                            </a>
+                        </td>
+                    </tr>
                     <?php else: ?>
                     <?php foreach($data['ventas'] as $v): ?>
                     <tr>

@@ -254,6 +254,12 @@ class Compra {
                     $lote_info['vencimiento'],
                     $id_detalle
                 );
+
+                // Actualizar precio de compra del producto en el catálogo general
+                $updPrecio = $this->conn->prepare("UPDATE productos SET precio_compra = :precio WHERE id = :id");
+                $updPrecio->bindParam(':precio', $det['precio_unitario']);
+                $updPrecio->bindParam(':id', $det['id_producto']);
+                $updPrecio->execute();
             }
 
             // 4. Cambiar estado de la compra

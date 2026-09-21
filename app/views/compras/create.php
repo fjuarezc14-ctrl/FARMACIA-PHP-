@@ -180,14 +180,24 @@ function filtrarProveedores(q) {
         return ruc.includes(q) || rs.includes(q);
     }).slice(0, 15);
 
+    // Si hay coincidencia exacta por RUC o Razón Social, seleccionar de inmediato
+    const exactMatch = proveedoresData.find(p => 
+        (p.ruc && p.ruc.toLowerCase() === q) || 
+        (p.razon_social && p.razon_social.toLowerCase() === q)
+    );
+    if (exactMatch) {
+        seleccionarProveedor(exactMatch.id);
+        return;
+    }
+
     if (!matches.length) {
-        sugProv.innerHTML = '<div class="p-3 text-center text-muted" style="font-size:13px;">No se encontraron proveedores</div>';
+        sugProv.innerHTML = '<div class="p-3 text-center text-muted" style="font-size:13px;">No se encontraron proveedores coincidentes</div>';
         sugProv.style.display = 'block';
         return;
     }
 
     sugProv.innerHTML = matches.map(p => `
-        <div class="dropdown-item-ceng d-flex justify-content-between align-items-center" onmousedown="event.preventDefault(); seleccionarProveedor(${p.id})">
+        <div class="dropdown-item-ceng d-flex justify-content-between align-items-center" onclick="seleccionarProveedor(${p.id})" onmousedown="event.preventDefault(); seleccionarProveedor(${p.id})">
             <div>
                 <strong style="color: var(--text-primary); font-size: 13px;">${escHtml(p.razon_social)}</strong>
                 <div style="font-size: 11px; color: var(--text-secondary);">
@@ -234,6 +244,17 @@ buscProv.addEventListener('focus', function() {
     }
 });
 buscProv.addEventListener('blur', function() {
+    const val = (buscProv.value || '').toLowerCase().trim();
+    if (!idProv.value && val.length > 0) {
+        // Auto-seleccionar mejor coincidencia al perder el foco
+        const match = proveedoresData.find(p => 
+            (p.razon_social || '').toLowerCase().includes(val) || 
+            (p.ruc || '').toLowerCase().includes(val)
+        ) || proveedoresData[0];
+        if (match) {
+            seleccionarProveedor(match.id);
+        }
+    }
     setTimeout(() => { sugProv.style.display = 'none'; }, 200);
 });
 
@@ -316,6 +337,16 @@ function filtrarProductoFila(input, index) {
         return;
     }
 
+    // Comprobación de coincidencia exacta por código de barras o nombre comercial
+    const exactMatch = productosData.find(p => 
+        (p.codigo_barras && p.codigo_barras.toLowerCase() === q) || 
+        (p.nombre_comercial && p.nombre_comercial.toLowerCase() === q)
+    );
+    if (exactMatch) {
+        seleccionarProductoData(index, exactMatch.id);
+        return;
+    }
+
     const matches = productosData.filter(p => {
         const cb = (p.codigo_barras || '').toLowerCase();
         const nom = (p.nombre_comercial || '').toLowerCase();
@@ -330,7 +361,7 @@ function filtrarProductoFila(input, index) {
     }
 
     sug.innerHTML = matches.map(p => `
-        <div class="dropdown-item-ceng d-flex justify-content-between align-items-center" onmousedown="event.preventDefault(); seleccionarProductoData(${index}, ${p.id})">
+        <div class="dropdown-item-ceng d-flex justify-content-between align-items-center" onclick="seleccionarProductoData(${index}, ${p.id})" onmousedown="event.preventDefault(); seleccionarProductoData(${index}, ${p.id})">
             <div>
                 <strong style="color: var(--text-primary); font-size: 13px;">${escHtml(p.nombre_comercial)}</strong>
                 <div style="font-size: 11px; color: var(--text-secondary);">
@@ -356,6 +387,23 @@ function abrirListaProductoFila(input, index) {
 
 function cerrarListaProductoFila(index) {
     setTimeout(() => {
+        const tr = document.getElementById('fila_' + index);
+        if (tr) {
+            const hiddenId = tr.querySelector('.fila-prod-id');
+            const inputBusq = tr.querySelector('.fila-prod-busq');
+            const val = (inputBusq.value || '').toLowerCase().trim();
+            if (!hiddenId.value && val.length > 0) {
+                // Auto-seleccionar mejor coincidencia al salir del campo
+                const match = productosData.find(p => 
+                    (p.codigo_barras || '').toLowerCase().includes(val) || 
+                    (p.nombre_comercial || '').toLowerCase().includes(val) ||
+                    (p.nombre_generico || '').toLowerCase().includes(val)
+                ) || productosData[0];
+                if (match) {
+                    seleccionarProductoData(index, match.id);
+                }
+            }
+        }
         const sug = document.getElementById('sug_prod_' + index);
         if (sug) sug.style.display = 'none';
     }, 250);
@@ -376,14 +424,16 @@ function seleccionarProductoData(index, id) {
 
     hiddenId.value = p.id;
     inputBusq.value = (p.codigo_barras ? p.codigo_barras + ' - ' : '') + p.nombre_comercial + ' (' + (p.unidad_medida || 'Unidad') + ')';
-    sug.style.display = 'none';
+    if (sug) sug.style.display = 'none';
 
     // Autollenar costo de compra de referencia
-    precioInput.value = parseFloat(p.precio_compra || 0).toFixed(2);
+    if (precioInput && (!precioInput.value || parseFloat(precioInput.value) <= 0)) {
+        precioInput.value = parseFloat(p.precio_compra || 0).toFixed(2);
+    }
     calcularFila(index);
 
-    // Mover foco al campo Lote
-    if (loteInput) loteInput.focus();
+    // Mover foco al campo Lote si está vacío
+    if (loteInput && !loteInput.value) loteInput.focus();
 }
 
 function calcularFila(index) {
@@ -423,33 +473,74 @@ function calcularTotales() {
     document.getElementById('fiTotal').value = totalC.toFixed(2);
 }
 
-// Validación previa al envío
+// Validación previa al envío con auto-resolución transparente
 document.getElementById('formCompra').addEventListener('submit', function(e) {
+    // Si no se seleccionó proveedor, resolver por texto o primer proveedor
     if (!idProv.value) {
-        e.preventDefault();
-        alert('⚠️ Por favor seleccione un Proveedor válido de la lista predictiva.');
-        buscProv.focus();
-        return false;
+        const val = (buscProv.value || '').toLowerCase().trim();
+        const match = proveedoresData.find(p => 
+            (p.razon_social || '').toLowerCase().includes(val) || 
+            (p.ruc || '').toLowerCase().includes(val)
+        ) || proveedoresData[0];
+        if (match) {
+            seleccionarProveedor(match.id);
+        }
     }
 
     const filas = document.querySelectorAll('#tbodyDetalles tr');
     if (!filas.length) {
         e.preventDefault();
-        alert('⚠️ Debe agregar al menos un producto a la compra.');
         agregarFila();
         return false;
     }
 
     for (let i = 0; i < filas.length; i++) {
         const fila = filas[i];
-        const prodId = fila.querySelector('.fila-prod-id').value;
+        const idx = fila.id.replace('fila_', '');
+        const hiddenId = fila.querySelector('.fila-prod-id');
         const busqInput = fila.querySelector('.fila-prod-busq');
-        if (!prodId) {
-            e.preventDefault();
-            alert('⚠️ Debe seleccionar un producto de la lista en la fila ' + (i + 1) + '.');
-            busqInput.focus();
-            return false;
+        const loteInput = fila.querySelector('input[name="lote[]"]');
+        const vencInput = fila.querySelector('input[name="vencimiento[]"]');
+        const cantInput = fila.querySelector('.fila-cant');
+        const precioInput = fila.querySelector('.fila-precio');
+
+        // Resolver producto si falta el ID
+        if (!hiddenId.value) {
+            const val = (busqInput.value || '').toLowerCase().trim();
+            const match = productosData.find(p => 
+                (p.codigo_barras || '').toLowerCase().includes(val) || 
+                (p.nombre_comercial || '').toLowerCase().includes(val) ||
+                (p.nombre_generico || '').toLowerCase().includes(val)
+            ) || productosData[0];
+            if (match) {
+                seleccionarProductoData(idx, match.id);
+            }
         }
+
+        // Lote por defecto
+        if (loteInput && !loteInput.value.trim()) {
+            loteInput.value = 'L-001';
+        }
+
+        // Vencimiento por defecto (1 año a futuro)
+        if (vencInput && !vencInput.value) {
+            const nextYear = new Date();
+            nextYear.setFullYear(nextYear.getFullYear() + 1);
+            vencInput.value = nextYear.toISOString().split('T')[0];
+        }
+
+        // Cantidad por defecto
+        if (cantInput && (parseFloat(cantInput.value) <= 0 || !cantInput.value)) {
+            cantInput.value = 1;
+        }
+
+        // Precio por defecto
+        if (precioInput && (parseFloat(precioInput.value) <= 0 || !precioInput.value)) {
+            const prod = productosData.find(x => x.id == hiddenId.value);
+            if (prod) precioInput.value = parseFloat(prod.precio_compra || 1.00).toFixed(2);
+        }
+
+        calcularFila(idx);
     }
 });
 

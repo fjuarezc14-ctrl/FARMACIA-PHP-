@@ -9,8 +9,8 @@ class CajaController extends Controller {
         $this->requireRole(1, 'venta/pos');
         $cajaModel = $this->model('Caja');
         
-        $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-d');
-        $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
+        $fecha_inicio = !empty($_GET['fecha_inicio']) ? trim($_GET['fecha_inicio']) : date('Y-m-d', strtotime('-30 days'));
+        $fecha_fin = !empty($_GET['fecha_fin']) ? trim($_GET['fecha_fin']) : date('Y-m-d');
         
         $historial = $cajaModel->getHistorial($fecha_inicio, $fecha_fin);
         
@@ -120,12 +120,14 @@ class CajaController extends Controller {
         
         $resumen = $cajaModel->getResumenActual($cajaAbierta['id']);
         $movimientos = $cajaModel->getMovimientos($cajaAbierta['id']);
+        $ventasTurno = $cajaModel->getVentasTurno($cajaAbierta['id']);
         
         $data = [
             'title' => 'Cierre de Caja',
             'caja' => $cajaAbierta,
             'resumen' => $resumen,
-            'movimientos' => $movimientos
+            'movimientos' => $movimientos,
+            'ventas' => $ventasTurno
         ];
         
         $this->view('cajas/cierre', $data);

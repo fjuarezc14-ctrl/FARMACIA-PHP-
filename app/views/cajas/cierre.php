@@ -126,32 +126,77 @@
                         </form>
                     </div>
                     <div class="col-md-7">
-                        <h6 class="mb-3 text-secondary">Historial de Turno Actual</h6>
-                        <table class="table table-sm table-hover" style="font-size:13px;">
-                            <thead>
-                                <tr class="text-muted"><th>Hora</th><th>Tipo</th><th>Motivo</th><th>Monto</th></tr>
-                            </thead>
-                            <tbody>
-                                <?php if(empty($data['movimientos'])): ?>
-                                    <tr><td colspan="4" class="text-center text-muted">Sin movimientos extra.</td></tr>
-                                <?php else: ?>
-                                    <?php foreach($data['movimientos'] as $m): ?>
-                                    <tr>
-                                        <td><?php echo date('H:i:s', strtotime($m['fecha_movimiento'])); ?></td>
-                                        <td>
-                                            <?php if($m['tipo']=='INGRESO'): ?>
-                                                <span class="badge bg-success"><i class="bi bi-arrow-down-short"></i> INGRESO</span>
+                        <ul class="nav nav-tabs mb-2" id="turnoTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active py-1 px-3 fw-bold" id="ventas-tab" data-bs-toggle="tab" data-bs-target="#tabVentas" type="button" role="tab" style="font-size:12px;">
+                                    <i class="bi bi-cart-check-fill text-success me-1"></i> Ventas del Turno (<?php echo count($data['ventas'] ?? []); ?>)
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link py-1 px-3 fw-bold" id="movs-tab" data-bs-toggle="tab" data-bs-target="#tabMovs" type="button" role="tab" style="font-size:12px;">
+                                    <i class="bi bi-arrow-left-right text-warning me-1"></i> Movimientos Extra (<?php echo count($data['movimientos'] ?? []); ?>)
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="turnoTabsContent">
+                            <!-- Pestaña 1: Ventas del Turno -->
+                            <div class="tab-pane fade show active" id="tabVentas" role="tabpanel">
+                                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                                    <table class="table table-sm table-hover align-middle mb-0" style="font-size:12px;">
+                                        <thead class="table-light sticky-top">
+                                            <tr class="text-muted"><th>Hora</th><th>Comprobante</th><th>Cliente</th><th>Método</th><th class="text-end">Total</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if(empty($data['ventas'])): ?>
+                                                <tr><td colspan="5" class="text-center text-muted py-3">No hay ventas registradas en este turno aún.</td></tr>
                                             <?php else: ?>
-                                                <span class="badge bg-danger"><i class="bi bi-arrow-up-short"></i> EGRESO</span>
+                                                <?php foreach($data['ventas'] as $vt): ?>
+                                                <tr>
+                                                    <td><?php echo date('H:i', strtotime($vt['fecha_venta'])); ?></td>
+                                                    <td><span class="badge bg-light text-dark border"><?php echo htmlspecialchars($vt['serie_comprobante'] . '-' . $vt['num_comprobante']); ?></span></td>
+                                                    <td class="text-truncate" style="max-width: 130px;" title="<?php echo htmlspecialchars($vt['cliente']); ?>"><?php echo htmlspecialchars($vt['cliente']); ?></td>
+                                                    <td><span class="badge bg-secondary" style="font-size:10px;"><?php echo $vt['metodo_pago']; ?></span></td>
+                                                    <td class="text-end fw-bold text-success">S/ <?php echo number_format($vt['total'], 2); ?></td>
+                                                </tr>
+                                                <?php endforeach; ?>
                                             <?php endif; ?>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($m['motivo']); ?></td>
-                                        <td class="fw-bold">S/ <?php echo number_format($m['monto'],2); ?></td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Pestaña 2: Movimientos Extra -->
+                            <div class="tab-pane fade" id="tabMovs" role="tabpanel">
+                                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                                    <table class="table table-sm table-hover align-middle mb-0" style="font-size:12px;">
+                                        <thead class="table-light sticky-top">
+                                            <tr class="text-muted"><th>Hora</th><th>Tipo</th><th>Motivo</th><th class="text-end">Monto</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if(empty($data['movimientos'])): ?>
+                                                <tr><td colspan="4" class="text-center text-muted py-3">Sin movimientos extra.</td></tr>
+                                            <?php else: ?>
+                                                <?php foreach($data['movimientos'] as $m): ?>
+                                                <tr>
+                                                    <td><?php echo date('H:i:s', strtotime($m['fecha_movimiento'])); ?></td>
+                                                    <td>
+                                                        <?php if($m['tipo']=='INGRESO'): ?>
+                                                            <span class="badge bg-success"><i class="bi bi-arrow-down-short"></i> INGRESO</span>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-danger"><i class="bi bi-arrow-up-short"></i> EGRESO</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td><?php echo htmlspecialchars($m['motivo']); ?></td>
+                                                    <td class="text-end fw-bold">S/ <?php echo number_format($m['monto'],2); ?></td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

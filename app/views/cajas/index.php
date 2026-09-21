@@ -20,6 +20,11 @@
                         <i class="bi bi-search"></i> Buscar
                     </button>
                 </div>
+                <div class="col-md-2">
+                    <a href="<?php echo BASE_URL; ?>caja/index" class="btn btn-outline-secondary w-100" title="Restablecer a últimos 30 días">
+                        <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+                    </a>
+                </div>
             </form>
         </div>
     </div>

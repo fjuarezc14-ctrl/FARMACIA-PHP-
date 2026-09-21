@@ -35,6 +35,19 @@ class Venta {
     }
 
     /**
+     * Obtiene la fecha y hora de la venta más reciente registrada en el sistema
+     */
+    public function getUltimaFechaVenta() {
+        try {
+            $stmt = $this->conn->query("SELECT MAX(fecha_venta) as ultima FROM ventas");
+            $res = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $res['ultima'] ?? null;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    /**
      * Obtiene el listado de ventas con filtros avanzados y paginación
      */
     public function getVentasPaginadas($filtros = [], $limit = 25, $offset = 0) {

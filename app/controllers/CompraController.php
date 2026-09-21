@@ -67,8 +67,17 @@ class CompraController extends Controller {
             $totalCompra = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['total_compra'] ?? 0));
             $impuesto = (float)str_replace(',', '.', preg_replace('/[^\d.,\-]/', '', $_POST['impuesto'] ?? 0));
 
+            $id_proveedor = (int)($_POST['id_proveedor'] ?? 0);
+            if ($id_proveedor <= 0) {
+                $provModel = $this->model('Proveedor');
+                $todosProv = $provModel->getAll();
+                if (!empty($todosProv)) {
+                    $id_proveedor = (int)$todosProv[0]['id'];
+                }
+            }
+
             $cabecera = [
-                'id_proveedor' => (int)$_POST['id_proveedor'],
+                'id_proveedor' => $id_proveedor,
                 'tipo_comprobante' => trim($_POST['tipo_comprobante'] ?? 'Factura'),
                 'serie_comprobante' => trim($_POST['serie_comprobante'] ?? ''),
                 'num_comprobante' => trim($_POST['num_comprobante'] ?? ''),

@@ -195,4 +195,18 @@ class Caja {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getVentasTurno($caja_id) {
+        $query = "SELECT v.id, v.fecha_venta, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, 
+                         v.total, v.metodo_pago, v.monto_efectivo, v.monto_transferencia, v.monto_tarjeta, 
+                         v.estado, c.nombres as cliente
+                  FROM ventas v
+                  INNER JOIN clientes c ON v.id_cliente = c.id
+                  WHERE v.caja_id = :caja_id
+                  ORDER BY v.id DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':caja_id', $caja_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
